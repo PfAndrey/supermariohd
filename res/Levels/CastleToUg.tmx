@@ -12,7 +12,7 @@
     <property name="SubLevel" value=""/>
    </properties>
   </object>
-  <object id="147" name="Mario" type="Mario" x="512" y="416" width="32" height="32">
+  <object id="147" name="Mario" type="Mario" x="351.5" y="415.25" width="32" height="32">
    <properties>
     <property name="SpawnDirection" value=""/>
     <property name="StartScript" value="GoToPortal"/>

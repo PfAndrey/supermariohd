@@ -481,7 +481,7 @@ void CMario::physicProcessing(float delta_time)
 																				// Speed limits				
         if (std::abs(m_speed.x) < 0.01f)
 			m_speed.x = 0.f;
-		m_speed.x = math::clamp(m_speed.x, -m_x_max_speed, m_x_max_speed);
+        m_speed.x = math::clamp(m_speed.x, -m_x_max_speed, m_x_max_speed);
 		move(m_speed*delta_time);
 	}
 	else
