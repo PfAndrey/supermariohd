@@ -26,7 +26,7 @@ git clone https://bitbucket.org/AParfen/supermariohd.git --recursive
 
 **4. build project** 
 ```console
-chdir supermariohd
+cd supermariohd
 mkdir build && cd build
 cmake ..
 cmake --build . --config Release
