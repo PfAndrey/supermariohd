@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="192" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="244">
+ <tileset firstgid="1" name="Blocks" tilewidth="32" tileheight="32" tilecount="128" columns="8">
+  <image source="../Textures/Tiles.png" width="256" height="512"/>
+ </tileset>
+ <objectgroup id="1" name="Object Layer 1">
+  <object id="151" name="Background" type="Background" x="40" y="57.3333" width="32" height="32">
+   <properties>
+    <property name="NightViewFilter" type="bool" value="false"/>
+    <property name="Picture" value="Sky"/>
+   </properties>
+  </object>
+  <object id="152" name="Mario" type="Mario" x="383.667" y="415" width="32" height="32"/>
+  <object id="156" name="MoveablePlatform" type="MoveablePlatform" x="1863.67" y="255.667" width="96" height="16">
+   <properties>
+    <property name="Amplitude" type="int" value="80"/>
+    <property name="Orientation" type="int" value="0"/>
+    <property name="Period" type="float" value="6"/>
+    <property name="Phase" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="169" name="Coin" type="Coin" x="928" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="203" name="Coin" type="Coin" x="960" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="204" name="Coin" type="Coin" x="992" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="205" name="Coin" type="Coin" x="1120" y="384" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="206" name="Koopa" type="Koopa" x="1010.5" y="159.75" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="207" name="Coin" type="Coin" x="1312" y="128" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="208" name="Coin" type="Coin" x="1280" y="128" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="209" name="Goomba" type="Goomba" x="1536" y="128" width="32" height="32"/>
+  <object id="210" name="Goomba" type="Goomba" x="1472" y="128" width="32" height="32"/>
+  <object id="211" name="Coin" type="Coin" x="1664" y="224" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="212" name="Coin" type="Coin" x="1696" y="224" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="213" name="Coin" type="Coin" x="2093.33" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="214" name="Coin" type="Coin" x="2125.33" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="215" name="Coin" type="Coin" x="2157.33" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="216" name="Coin" type="Coin" x="2186.67" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="217" name="Koopa" type="Koopa" x="2612" y="256" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="2"/>
+   </properties>
+  </object>
+  <object id="218" name="Goomba" type="Goomba" x="2845.33" y="156" width="32" height="32"/>
+  <object id="219" name="MoveablePlatform" type="MoveablePlatform" x="3008" y="254.667" width="96" height="16">
+   <properties>
+    <property name="Amplitude" type="int" value="80"/>
+    <property name="Orientation" type="int" value="1"/>
+    <property name="Period" type="float" value="6"/>
+    <property name="Phase" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="220" name="MoveablePlatform" type="MoveablePlatform" x="3254.67" y="274.667" width="96" height="16">
+   <properties>
+    <property name="Amplitude" type="int" value="80"/>
+    <property name="Orientation" type="int" value="1"/>
+    <property name="Period" type="float" value="6"/>
+    <property name="Phase" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="221" name="MoveablePlatform" type="MoveablePlatform" x="4696" y="225.333" width="96" height="16">
+   <properties>
+    <property name="Amplitude" type="int" value="80"/>
+    <property name="Orientation" type="int" value="1"/>
+    <property name="Period" type="float" value="6"/>
+    <property name="Phase" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="222" name="Coin" type="Coin" x="3008" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="223" name="Coin" type="Coin" x="3037.34" y="160" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="224" name="Coin" type="Coin" x="3264" y="128" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="225" name="Coin" type="Coin" x="3293.34" y="128" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="229" name="Coin" type="Coin" x="4288" y="192" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="230" name="Coin" type="Coin" x="3936" y="416" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="231" name="Coin" type="Coin" x="3965.34" y="416" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="232" name="Coin" type="Coin" x="4000" y="416" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="234" name="Coin" type="Coin" x="3380" y="121.333" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="235" name="Coin" type="Coin" x="3409.34" y="121.333" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="236" name="Coin" type="Coin" x="4256" y="192" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="237" name="Koopa" type="Koopa" x="3968" y="192" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="2"/>
+   </properties>
+  </object>
+  <object id="238" name="Koopa" type="Koopa" x="3808" y="192" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="239" name="Koopa" type="Koopa" x="4704" y="416" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="240" name="Flag" type="EndLevelFlag" x="5361.75" y="127.917" width="32" height="32"/>
+  <object id="241" name="Portal_to_Next_Level" type="LevelPortal" x="5696.45" y="381.75" width="33.7614" height="67.125">
+   <properties>
+    <property name="ComebackPortal" value=""/>
+    <property name="Direction" value="Right"/>
+    <property name="Level" value="WORLD 1-4"/>
+    <property name="SubLevel" value=""/>
+   </properties>
+  </object>
+  <object id="242" name="castle flag" type="CastleFlag" x="5696.29" y="63.125" width="32" height="32"/>
+ </objectgroup>
+ <layer id="4" name="Tile Layer 1" width="192" height="16">
+  <data encoding="csv">
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,44,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,44,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,44,44,44,45,0,0,0,0,0,0,0,0,0,0,52,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,44,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,44,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,52,53,0,0,0,0,0,0,0,0,43,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,52,53,0,0,0,0,0,0,43,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,53,0,0,0,0,0,0,0,43,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,53,0,0,0,0,43,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,72,0,0,43,44,44,44,45,0,0,67,67,67,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,80,0,0,51,52,52,52,53,0,0,73,74,75,0,0,43,44,44,45,0,0,0,0,43,44,
+25,0,0,0,0,0,0,0,0,0,0,43,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,6,6,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,65,66,66,66,65,0,51,52,52,53,0,0,0,0,51,52,
+25,0,0,0,0,0,0,0,0,0,0,51,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,6,7,0,0,0,0,0,0,0,0,0,0,0,0,43,14,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,6,7,0,0,0,52,52,0,0,0,0,0,0,0,0,0,5,6,6,6,6,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,74,74,68,74,74,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,22,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,6,6,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,74,74,76,74,74,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,65,65,66,66,66,66,66,65,65,0,0,0,0,0,0,0,0,0,
+25,0,67,67,67,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,5,6,6,6,7,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,5,6,6,6,7,0,0,5,6,6,6,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,74,74,74,68,74,68,74,74,74,0,0,0,0,0,0,0,0,0,
+25,0,73,74,75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,6,6,6,6,6,7,0,0,0,0,0,14,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,5,6,7,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,74,74,74,76,74,76,74,74,74,0,0,0,0,0,0,0,0,0,
+25,65,66,66,66,65,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,22,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,22,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,6,6,6,7,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,74,74,74,74,74,74,74,74,74,0,0,0,0,0,0,0,47,0,
+25,74,74,68,74,74,0,42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,22,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,74,74,68,74,68,74,68,74,74,0,0,0,0,0,0,54,55,56,
+25,74,74,76,74,74,48,57,0,0,0,0,0,0,62,0,0,0,0,0,5,6,7,0,0,0,0,0,0,22,22,0,0,0,5,6,7,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,60,0,64,0,0,0,4,0,0,62,0,0,0,74,74,76,74,76,74,76,74,74,0,71,0,0,64,54,63,63,63,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,14,0,0,0,0,0,0,0,22,22,0,0,0,0,14,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,5,6,6,6,7,0,0,0,0,0,0,0,5,6,6,6,7,0,0,5,6,6,6,7,0,0,22,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,22,0,0,0,0,0,5,6,7,0,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,22,0,0,0,0,0,0,0,22,22,0,0,0,0,22,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,14,22,0,0,0,0,0,14,0,0,0,0,22,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,25,22,0,0,0,0,0,0,14,0,0,0,0,0,22,0,0,0,0,0,0,22,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</data>
+ </layer>
+</map>

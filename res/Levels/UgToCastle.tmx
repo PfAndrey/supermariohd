@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="36" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="149">
+ <tileset firstgid="1" name="Blocks" tilewidth="32" tileheight="32" tilecount="128" columns="8">
+  <image source="../Textures/Tiles.png" width="256" height="512"/>
+ </tileset>
+ <objectgroup id="1" name="Object Layer 1">
+  <object id="126" name="Portal_to_Next_Level" type="LevelPortal" x="894.53" y="381.928" width="33.7614" height="67.125">
+   <properties>
+    <property name="ComebackPortal" value=""/>
+    <property name="Direction" value="Right"/>
+    <property name="Level" value="[NEXT_LEVEL]"/>
+   </properties>
+  </object>
+  <object id="144" name="Flag" type="EndLevelFlag" x="626" y="128.32" width="32" height="32"/>
+  <object id="146" name="castle flag" type="CastleFlag" x="896.102" y="256.125" width="32" height="32"/>
+  <object id="147" name="Mario" type="Mario" x="48.125" y="351.75" width="32" height="32">
+   <properties>
+    <property name="SpawnDirection" value="Up"/>
+   </properties>
+  </object>
+  <object id="148" name="Background" type="Background" x="4" y="2.66667" width="32" height="32">
+   <properties>
+    <property name="NightViewFilter" type="bool" value="false"/>
+    <property name="Picture" value="Sky"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <layer id="2" name="Tile Layer 1" width="36" height="16">
+  <data encoding="csv">
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,43,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,51,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,43,44,44,45,0,0,0,0,0,0,0,0,0,0,0,0,0,0,72,0,0,43,44,44,44,45,0,0,0,0,0,0,0,0,0,
+25,51,52,52,53,0,0,0,0,0,0,0,0,0,0,0,0,0,0,80,0,0,51,52,52,52,53,0,0,0,0,0,0,0,43,44,
+25,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,51,52,
+25,0,0,0,0,0,0,0,0,0,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,4,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,67,67,67,0,0,0,0,0,0,
+25,0,0,0,0,0,4,4,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,0,73,74,75,0,0,0,0,0,0,
+25,0,0,0,0,4,4,4,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,65,66,66,66,65,0,0,0,0,0,
+25,15,16,0,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,80,0,0,0,0,0,0,74,74,68,74,74,0,0,0,0,0,
+25,23,24,4,4,4,4,4,4,4,4,4,4,60,0,64,0,0,0,4,0,0,62,0,0,0,74,74,76,74,74,0,0,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</data>
+ </layer>
+</map>

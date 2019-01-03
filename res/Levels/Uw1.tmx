@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="100" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="113">
+ <tileset firstgid="1" name="Tiles" tilewidth="32" tileheight="32" tilecount="128" columns="8">
+  <image source="../Textures/Tiles.png" width="256" height="512"/>
+ </tileset>
+ <objectgroup id="1" name="Object Layer 1">
+  <object id="43" name="Coin" type="Coin" x="2446.62" y="386.01" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="46" name="Coin" type="Coin" x="2478.65" y="368.67" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="48" name="Coin" type="Coin" x="2414.68" y="406.677" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="50" name="Coin" type="Coin" x="798.564" y="220.042" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="51" name="Coin" type="Coin" x="861.319" y="314.727" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="52" name="Coin" type="Coin" x="862.61" y="220.087" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="53" name="Coin" type="Coin" x="797.265" y="314.712" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="54" name="Coin" type="Coin" x="734.599" y="220.049" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="55" name="Coin" type="Coin" x="766.537" y="220.049" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="56" name="Coin" type="Coin" x="829.292" y="314.705" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="58" name="Coin" type="Coin" x="765.328" y="314.712" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="59" name="Coin" type="Coin" x="830.501" y="220.042" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="60" name="Mario" type="Mario" x="87.3337" y="42" width="32" height="32">
+   <properties>
+    <property name="InWater" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="62" name="Coin" type="Coin" x="797.126" y="416.145" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="63" name="Coin" type="Coin" x="765.09" y="416.134" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="65" name="Coin" type="Coin" x="733.137" y="314.85" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="66" name="Coin" type="Coin" x="1329.18" y="353.432" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="73" name="Coin" type="Coin" x="829.064" y="416.145" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="74" name="Coin" type="Coin" x="861.091" y="416.138" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="77" name="Coin" type="Coin" x="733.153" y="416.134" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="78" name="Coin" type="Coin" x="1393.15" y="353.443" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="79" name="Coin" type="Coin" x="2350.39" y="406.77" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="84" name="Coin" type="Coin" x="2286.42" y="368.777" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="85" name="Coin" type="Coin" x="2318.45" y="386.103" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="86" name="Coin" type="Coin" x="1361.11" y="353.432" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="87" name="Coin" type="Coin" x="2383.16" y="415.481" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="94" name="CameBackPortal" type="LevelPortal" x="3129.78" y="252.7" width="43.4773" height="70">
+   <properties>
+    <property name="Direction" value="Right"/>
+    <property name="Level" value=""/>
+   </properties>
+  </object>
+  <object id="95" name="Background" type="Background" x="17" y="7" width="32" height="32">
+   <properties>
+    <property name="NightViewFilter" type="bool" value="false"/>
+    <property name="Picture" value="Water"/>
+   </properties>
+  </object>
+  <object id="96" name="Cheep" type="CheepCheep" x="671" y="193" width="32" height="32"/>
+  <object id="97" name="CheepCheep" type="CheepCheep" x="837" y="300" width="32" height="32"/>
+  <object id="98" name="CheepCheep" type="CheepCheep" x="1190" y="132" width="32" height="32"/>
+  <object id="99" name="CheepCheep" type="CheepCheep" x="1370" y="257" width="32" height="32"/>
+  <object id="100" name="CheepCheep" type="CheepCheep" x="1641" y="391" width="32" height="32"/>
+  <object id="101" name="CheepCheep" type="CheepCheep" x="1890" y="139" width="32" height="32"/>
+  <object id="102" name="CheepCheep" type="CheepCheep" x="2121" y="362" width="32" height="32"/>
+  <object id="103" name="CheepCheep" type="CheepCheep" x="2372" y="200" width="32" height="32"/>
+  <object id="104" name="CheepCheep" type="CheepCheep" x="2647" y="358" width="32" height="32"/>
+  <object id="105" name="CheepCheep" type="CheepCheep" x="2758" y="153" width="32" height="32"/>
+  <object id="106" name="CheepCheep" type="CheepCheep" x="3018" y="274" width="32" height="32"/>
+  <object id="107" name="Blooper" type="Blooper" x="1110" y="129" width="32" height="32"/>
+  <object id="108" name="Blooper" type="Blooper" x="937" y="329" width="32" height="32"/>
+  <object id="109" name="Blooper" type="Blooper" x="1959" y="370" width="32" height="32"/>
+  <object id="110" name="Blooper" type="Blooper" x="2977" y="160" width="32" height="32"/>
+  <object id="111" name="Blooper" type="Blooper" x="2844" y="404" width="32" height="32"/>
+  <object id="112" name="Blooper" type="Blooper" x="2197" y="137" width="32" height="32"/>
+ </objectgroup>
+ <layer id="2" name="Tile Layer 1" width="100" height="16">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,35,35,35,
+50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,35,35,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,35,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,35,35,35,35,35,35,35,35,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,35,35,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,35,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,35,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,0,0,0,0,0,35,35,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,0,0,0,0,0,0,0,0,0,0,0,0,
+25,0,0,0,0,0,0,0,0,35,35,35,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,29,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,35,0,0,0,0,35,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,37,
+25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,35,0,0,0,0,35,0,0,0,0,0,0,0,0,34,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,
+25,0,0,0,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,35,35,0,0,0,0,35,35,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,35,
+25,0,0,0,0,0,0,0,0,0,0,0,0,34,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,0,0,0,0,35,35,0,0,0,0,35,35,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,34,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,34,0,0,0,0,0,35,35,35,35,35,35,35,
+25,0,0,0,34,0,0,0,0,0,0,0,0,34,0,0,0,0,0,35,0,0,0,0,0,0,0,0,0,0,0,35,0,0,0,34,0,0,0,35,35,0,0,0,0,35,35,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,0,34,0,0,0,0,0,35,35,0,0,0,0,0,0,0,0,35,35,0,0,0,0,0,0,34,0,0,0,0,35,35,35,35,35,35,35,35,
+35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,35,35,35,35,35,0,0,0,0,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,0,0,0,0,0,0,0,0,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,
+35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,0,0,0,0,0,0,0,0,0,0,0,35,35,35,35,35,35,35,35,35,35,0,0,0,0,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,0,0,0,0,0,0,0,0,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35
+</data>
+ </layer>
+</map>

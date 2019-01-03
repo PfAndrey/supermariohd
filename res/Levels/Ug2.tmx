@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="27" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="97">
+ <tileset firstgid="1" name="Tiles" tilewidth="32" tileheight="32" tilecount="128" columns="8">
+  <image source="../Textures/Tiles.png" width="256" height="512"/>
+ </tileset>
+ <objectgroup id="1" name="Object Layer 1">
+  <object id="40" name="Coin" type="Coin" x="639.921" y="288.007" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="41" name="Coin" type="Coin" x="543.92" y="288.003" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="42" name="Coin" type="Coin" x="703.967" y="288.052" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="43" name="Coin" type="Coin" x="479.956" y="288.01" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="44" name="Coin" type="Coin" x="575.956" y="288.014" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="45" name="Coin" type="Coin" x="607.894" y="288.014" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="46" name="Coin" type="Coin" x="511.983" y="288.003" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="48" name="Coin" type="Coin" x="448.018" y="288.01" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="49" name="Coin" type="Coin" x="671.858" y="288.007" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="50" name="Coin" type="Coin" x="639.897" y="352.042" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="51" name="Coin" type="Coin" x="543.896" y="352.038" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="52" name="Coin" type="Coin" x="703.943" y="352.087" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="53" name="Coin" type="Coin" x="479.932" y="352.045" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="54" name="Coin" type="Coin" x="575.932" y="352.049" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="55" name="Coin" type="Coin" x="607.87" y="352.049" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="56" name="Coin" type="Coin" x="511.959" y="352.038" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="58" name="Coin" type="Coin" x="447.995" y="352.045" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="59" name="Coin" type="Coin" x="671.834" y="352.042" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="62" name="Coin" type="Coin" x="287.793" y="352.145" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="63" name="Coin" type="Coin" x="255.757" y="352.134" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="65" name="Coin" type="Coin" x="415.804" y="352.183" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="66" name="Coin" type="Coin" x="223.844" y="288.099" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="73" name="Coin" type="Coin" x="319.731" y="352.145" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="74" name="Coin" type="Coin" x="351.758" y="352.138" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="77" name="Coin" type="Coin" x="223.82" y="352.134" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="78" name="Coin" type="Coin" x="287.817" y="288.11" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="79" name="Coin" type="Coin" x="383.719" y="288.103" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="82" name="Coin" type="Coin" x="383.695" y="352.138" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="84" name="Coin" type="Coin" x="319.755" y="288.11" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="85" name="Coin" type="Coin" x="351.782" y="288.103" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="86" name="Coin" type="Coin" x="255.781" y="288.099" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="87" name="Coin" type="Coin" x="415.828" y="288.148" width="32" height="32">
+   <properties>
+    <property name="Flying" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="94" name="CameBackPortal" type="LevelPortal" x="725.699" y="378.867" width="43.4773" height="70">
+   <properties>
+    <property name="Direction" value="Right"/>
+    <property name="Level" value=""/>
+   </properties>
+  </object>
+  <object id="95" name="Background" type="Background" x="17" y="7" width="32" height="32">
+   <properties>
+    <property name="NightViewFilter" type="bool" value="true"/>
+    <property name="Picture" value="Underground"/>
+   </properties>
+  </object>
+  <object id="96" name="Mario" type="Mario" x="139" y="17" width="32" height="32">
+   <properties>
+    <property name="InWater" type="bool" value="false"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <layer id="2" name="Tile Layer 1" width="27" height="16">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,23,
+2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,23,
+2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,23,
+2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,23,
+2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,23,
+2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,23,
+2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,23,
+2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,23,
+2,2,2,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,2,23,
+2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,23,
+2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,29,30,31,
+2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,37,38,39,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</data>
+ </layer>
+</map>
