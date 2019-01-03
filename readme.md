@@ -33,9 +33,9 @@ cmake --build . --config Release
 
 # Ubuntu
 ----
-**1. install git cmake and gcc**
+**1. install git cmake and g++**
 ```console
-sudo apt-get -y install cmake git gcc 
+sudo apt-get -y install cmake git g++ 
 ```
 
 **2. install additional packets (OpenGL, OpenAL etc)**
