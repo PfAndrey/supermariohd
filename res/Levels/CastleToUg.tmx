@@ -4,7 +4,7 @@
   <image source="../Textures/Tiles.png" width="256" height="512"/>
  </tileset>
  <objectgroup id="1" name="Object Layer 1">
-  <object id="126" name="Portal_to_Next_Level" type="LevelPortal" x="731.78" y="381.428" width="39.7614" height="68.375">
+  <object id="126" name="Portal_to_Next_Level" type="LevelPortal" x="729.235" y="378.701" width="43.7614" height="74.1932">
    <properties>
     <property name="ComebackPortal" value=""/>
     <property name="Direction" value="Right"/>
@@ -12,7 +12,7 @@
     <property name="SubLevel" value=""/>
    </properties>
   </object>
-  <object id="147" name="Mario" type="Mario" x="352.167" y="414.958" width="32" height="32">
+  <object id="147" name="Mario" type="Mario" x="512" y="416" width="32" height="32">
    <properties>
     <property name="SpawnDirection" value=""/>
     <property name="StartScript" value="GoToPortal"/>

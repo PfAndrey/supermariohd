@@ -502,7 +502,7 @@ Vector CBlocks::collsionResponse(const Rect& body_rect, const Vector& body_speed
 				{
 					new_pos.y = y * tile_size + tile_size;
 					collision_tag |= ECollisionTag::cell;
-				}
+                }
 			}
 	new_pos.x += body_speed.x*delta_time;
 
@@ -521,7 +521,7 @@ Vector CBlocks::collsionResponse(const Rect& body_rect, const Vector& body_speed
 				{
 					new_pos.x = x * tile_size + tile_size;
 					collision_tag |= ECollisionTag::right;
-				}
+                }
 			}
 	return new_pos;
 }

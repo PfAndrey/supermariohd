@@ -474,10 +474,10 @@ void CLevelPortal::cameBackFromSublevel()
 
 void CLevelPortal::update(int delta_time)  
 {	
-	 if (!m_used &&  getBounds().isContain(m_mario->getBounds()) && 
-		(m_direction == Vector::zero || m_mario->getInputDirection() == m_direction) && 
-		(m_mario->isGrounded() || m_direction == Vector::zero || m_mario->isClimbing()))
-		{
+     if (!m_used &&  getBounds().isContain(m_mario->getBounds()) &&
+        (m_direction == Vector::zero || m_mario->getInputDirection() == m_direction) &&
+        (m_mario->isGrounded() || m_direction == Vector::zero || m_mario->isClimbing()))
+        {
 			m_used = true;
 			if (m_direction != Vector::zero)
 			m_mario->setState(new CTransitionMarioState(m_direction*0.03f, TRANSITION_TIME));

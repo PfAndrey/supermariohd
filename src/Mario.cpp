@@ -676,11 +676,13 @@ void CMario::start()
 		}
 	}
 
-	if (getProperty("StartScript").isValid())
+    if (getProperty("StartScript").isValid())
 	{
-		auto script = getProperty("StartScript").asString();
-		if (script == "GoToPortal")
+        auto script = getProperty("StartScript").asString();
+        if (script == "GoToPortal")
+        {
 			setState(new CGoToPortalState());
+        }
 	}
 }
 
@@ -895,81 +897,89 @@ void CGoToCastleMarioState::onLeave()
 
 void CGoToCastleMarioState::update(int delta_time) 
 {
-		if (m_state == State::start)
-		{
-			mario()->m_animator->flipX(false);
-			auto anim_name = std::string("climb_") + (mario()->isSmall() ? "small" : "big");
-			mario()->playAnimation(anim_name);
-			mario()->m_animator->setSpeed(anim_name, 0.005f);
-
-			m_state = State::go_down;
-			MarioGame().playSound("flagpole");
-		}
-		else if (m_state == State::go_down)
-		{
-			if (mario()->getPosition().y < m_cell_y)
-				mario()->move(Vector::down*delta_time*0.25f);
-			else
-			{
-				m_state = State::overturn;
-				mario()->m_animator->flipX(true);
-				mario()->move(Vector::right * 32.f);
-				m_delay_timer = 500;
-			}
-		}
-		else if (m_state == State::overturn)
-		{
-			m_delay_timer -= delta_time;
-			if (m_delay_timer < 0)
-			{
-				m_state = State::walk;
-				auto anim_name = std::string("walk_") + (mario()->isSmall() ? "small" : "big");
-				mario()->playAnimation(anim_name);
-				mario()->m_animator->setSpeed(anim_name, 0.003f);
-				mario()->m_animator->flipX(false);
-			}
-		}
-		else if (m_state == State::walk)
-		{
-			mario()->addImpulse(Vector::right*10.f);
-			mario()->physicProcessing(delta_time);
-			mario()->collisionProcessing(delta_time);
-
-			auto portals = mario()->getParent()->findObjectsByType<CLevelPortal>();
-			for (auto& portal : portals)
-				if (portal->getBounds().isContainByX(mario()->getPosition()))
-				{
-					m_state = State::wait;
-					mario()->hide();
-					m_next_level = portal->getProperty("Level").asString();
-					if (portal->getProperty("SubLevel").isValid())
-						m_next_sub_level = portal->getProperty("SubLevel").asString();
-					auto flag = mario()->getParent()->findObjectByType<CCastleFlag>();
-					assert(flag); // there is no castle flag in level
-					flag->liftUp();
-					MarioGame().setEndLevelStatus();
-				}
-		}
-		else if (m_state == State::wait)
-		{
-			if (MarioGame().getGameTime() == 0)
-			{
-				m_delay_timer = 2000;
-				m_state = State::next_level;
-			}
-		}
-		else if (m_state == State::next_level)
-		{
-			m_delay_timer -= delta_time;
-			if (m_delay_timer < 0)
-			{
-				MarioGame().loadLevel(m_next_level);
-				if (!m_next_sub_level.empty())
-					MarioGame().loadSubLevel(m_next_sub_level);
-				MarioGame().showStatus();
-				return;
-			}
-		}
+    switch(m_state)
+    {
+        case(State::start):
+        {
+            mario()->m_animator->flipX(false);
+            auto anim_name = std::string("climb_") + (mario()->isSmall() ? "small" : "big");
+            mario()->playAnimation(anim_name);
+            mario()->m_animator->setSpeed(anim_name, 0.005f);
+            m_state = State::go_down;
+            MarioGame().playSound("flagpole");
+            break;
+        }
+        case(State::go_down):
+        {
+            if (mario()->getPosition().y < m_cell_y)
+                mario()->move(Vector::down*delta_time*0.25f);
+            else
+            {
+                m_state = State::overturn;
+                mario()->m_animator->flipX(true);
+                mario()->move(Vector::right * 32.f);
+                m_delay_timer = 500;
+            }
+            break;
+        }
+        case(State::overturn):
+        {
+            m_delay_timer -= delta_time;
+            if (m_delay_timer < 0)
+            {
+                m_state = State::walk;
+                auto anim_name = std::string("walk_") + (mario()->isSmall() ? "small" : "big");
+                mario()->playAnimation(anim_name);
+                mario()->m_animator->setSpeed(anim_name, 0.003f);
+                mario()->m_animator->flipX(false);
+                mario()->m_input_direcition = Vector::zero;
+            }
+            break;
+        }
+        case(State::walk):
+        {
+            mario()->addImpulse(Vector::right*10.f);
+            mario()->physicProcessing(delta_time);
+            mario()->collisionProcessing(delta_time);
+            auto portals = mario()->getParent()->findObjectsByType<CLevelPortal>();
+            for (auto& portal : portals)
+                if (portal->getBounds().isContainByX(mario()->getPosition()))
+                {
+                    m_state = State::wait;
+                    mario()->hide();
+                    m_next_level = portal->getProperty("Level").asString();
+                    if (portal->getProperty("SubLevel").isValid())
+                        m_next_sub_level = portal->getProperty("SubLevel").asString();
+                    auto flag = mario()->getParent()->findObjectByType<CCastleFlag>();
+                    assert(flag); // there is no castle flag in level
+                    flag->liftUp();
+                    MarioGame().setEndLevelStatus();
+                }
+            break;
+        }
+        case(State::wait):
+        {
+            if (MarioGame().getGameTime() == 0)
+            {
+                m_delay_timer = 2000;
+                m_state = State::next_level;
+            }
+            break;
+        }
+        case(State::next_level):
+        {
+            m_delay_timer -= delta_time;
+            if (m_delay_timer < 0)
+            {
+                MarioGame().loadLevel(m_next_level);
+                if (!m_next_sub_level.empty())
+                    MarioGame().loadSubLevel(m_next_sub_level);
+                MarioGame().showStatus();
+                return;
+            }
+            break;
+        }
+    };
 		mario()->m_animator->update(delta_time);
 }
 
@@ -985,6 +995,7 @@ void CGoToPortalState::onEnter()
 		auto anim_name = std::string("walk_") + (mario()->isSmall() ? "small" : "big");
 		mario()->playAnimation(anim_name);
 		mario()->m_animator->setSpeed(anim_name, 0.003f);
+
 }
 
 void CGoToPortalState::onLeave() 
@@ -995,11 +1006,13 @@ void CGoToPortalState::onLeave()
 
 void CGoToPortalState::update(int delta_time) 
 {
-	mario()->m_input_direcition = Vector::right;
-	mario()->move(Vector::right*0.08f*delta_time);
-	mario()->physicProcessing(delta_time);
-	mario()->collisionProcessing(delta_time);
-	mario()->m_animator->update(delta_time);
+    mario()->m_input_direcition = Vector::right;
+    mario()->m_speed.x = mario()->walk_speed*0.6f;
+    mario()->move(mario()->getSpeed()*delta_time);
+    //mario()->physicProcessing(delta_time);
+    mario()->collisionProcessing(delta_time);
+    mario()->m_collision_tag |= ECollisionTag::right;
+    mario()->setGrounded();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------

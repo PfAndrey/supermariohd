@@ -185,7 +185,7 @@ private:
 	const float jump_time = 300.f;
 	const float walk_speed = 0.2f;
 	const float run_speed = 0.3f;
-	const float acceleration = 0.001;
+    const float acceleration = 0.001f;
 	const float friction_force = 0.0005f;
 	const float gravity_force = 0.0015f;
 	const float climb_speed = 0.1f;
