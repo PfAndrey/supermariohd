@@ -7,6 +7,30 @@ Project was created in learning purposes only.
 ## Authors
 * Andriy Parfenyuk.
 
+# Windows
+----
+**1. Install a C++11 compiler:**  
+Visual Studio Community: https://visualstudio.microsoft.com/downloads/ or MinGW https://osdn.net/projects/mingw/releases/
+
+**2. Install Git:**  
+	https://git-scm.com/downloads
+
+**3. Install CMake:**  
+	https://cmake.org/download
+
+**4. Install OpenAL:**  
+	https://www.openal.org/downloads
+
+**5. Open git-bash and type:**  
+```console
+git clone https://bitbucket.org/AParfen/supermariohd.git --recursive
+cd supermariohd 
+mkdir build && cd build
+cmake ..
+cmake --build . --config Release
+./SuperMario
+```
+
 # Ubuntu
 ----
 **1. install git cmake and gcc**
@@ -30,28 +54,5 @@ cd supermariohd
 mkdir build && cd build
 cmake ..
 cmake --build . --config Release
-./SuperMario
-```
-
-# Windows
-----
-**1. Install a C++11 compiler:**  
-Visual Studio Community: https://visualstudio.microsoft.com/downloads/ or MinGW https://osdn.net/projects/mingw/releases/
-
-**2. Install Git:**  
-	https://git-scm.com/downloads
-
-**3. Install CMake:**  
-	https://cmake.org/download
-
-**4. Install OpenAL:**  
-	https://www.openal.org/downloads
-
-**5. Open git-bash and type:**  
-```console
-git clone https://bitbucket.org/AParfen/supermariohd.git --recursive
-cd supermariohd 
-./build.sh
-cd build
 ./SuperMario
 ```
