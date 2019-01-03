@@ -52,5 +52,6 @@ Visual Studio Community: https://visualstudio.microsoft.com/downloads/ or MinGW 
 git clone https://bitbucket.org/AParfen/supermariohd.git --recursive
 cd supermariohd 
 ./build.sh
+cd build
 ./SuperMario
 ```
