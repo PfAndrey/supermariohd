@@ -1,7 +1,7 @@
 ![MARIO logo](https://orig00.deviantart.net/8ed6/f/2014/134/2/9/classic_mario_bros__3d_by_cezkid-d78civ3.gif)
 # SuperMarioHD 
 ----
-Cross-platform HD remake of of super mario (NES, 1985).  
+Cross-platform HD remake of super mario (NES, 1985).  
 Project was created in learning purposes only.  
 
 ## Authors
