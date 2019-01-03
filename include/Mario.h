@@ -196,7 +196,7 @@ private:
 	const Vector seated_mario_size = {31,32};
 	float m_jumping_timer = 0;
 	void fire();
-	MarioRank m_rank = MarioRank::small;
+    MarioRank m_rank = MarioRank::fire;
 	MarioState m_state = MarioState::normal;
 	IMarioState* m_current_state = NULL;
 	ECollisionTag m_collision_tag;

@@ -383,7 +383,7 @@ void CLadder::start()
 //-------------------------------------------------------------------------------------------------------------------------------------
 CFireBar::CFireBar()
 {
-    m_animator.create("fly", *MarioGame().textureManager().get("Mario"), { { 0,160,16,16 },{ 16,160,16,16 },{ 16,160,-16,16 },{ 16,176,16,-16 } }, 0.01);
+    m_animator.create("fly", *MarioGame().textureManager().get("Mario"), { { 0,0,16,16 },{ 16,0,16,16 },{ 16,0,-16,16 },{ 16,16,16,-16 } }, 0.01f);
 }
 
 void CFireBar::CFireBar::draw(sf::RenderWindow* render_window)

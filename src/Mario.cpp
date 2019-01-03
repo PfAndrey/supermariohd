@@ -11,8 +11,7 @@ CMarioBullet::CMarioBullet(const Vector& pos, const Vector& direction)
 	m_direction = direction;
 	setPosition(pos);
 	m_speed = direction*bullet_speed;
-
-	m_animator.create("fly", *MarioGame().textureManager().get("Mario"), { { 0,0,16,16 }, { 16,0,16,16 }, { 16,0,-16,16 }, { 16,16,16,-16 } }, 0.01);
+    m_animator.create("fly", *MarioGame().textureManager().get("Mario"), { { 0,0,16,16 },{ 16,0,16,16 },{ 16,0,-16,16 },{ 16,16,16,-16 } }, 0.01f);
 	m_animator.create("splash", *MarioGame().textureManager().get("Mario"),  Vector(31,0), Vector(16,16), 3,1, 0.02, AnimType::forward_backward_cycle);
 }
 
