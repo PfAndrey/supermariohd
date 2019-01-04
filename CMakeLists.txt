@@ -75,7 +75,7 @@ TARGET_LINK_LIBRARIES(SuperMario
 					optimized tinyxml2			debug tinyxml2d)                
 
 # POST BUILD SCRIPTS
-set(PRE_LIB_DIR "lib")
+set(POST_LIB_DIR "lib")
 if (WIN32)
 	set(POST_LIB_DIR "bin")
 endif()
