@@ -23,7 +23,7 @@ Visual Studio Community: https://visualstudio.microsoft.com/downloads/ or MinGW 
 
 **5. Open git-bash and type:**  
 ```console
-git clone https://bitbucket.org/AParfen/supermariohd.git --recursive
+git clone https://github.com/PfAndrey/supermariohd.git --recursive
 cd supermariohd 
 mkdir build && cd build
 cmake ..
@@ -45,7 +45,7 @@ sudo apt-get -y install libx11-dev libudev-dev xorg-dev freeglut3-dev libalut-de
 
 **3. download mario repo**
 ```console
-git clone https://bitbucket.org/AParfen/supermariohd.git --recursive
+git clone https://github.com/PfAndrey/supermariohd.git --recursive
 ```
 
 **4. build project** 
