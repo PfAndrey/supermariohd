@@ -2,7 +2,7 @@
 # SuperMarioHD 
 ----
 Cross-platform HD remake of super mario (NES, 1985).  
-Project was created in learning purposes only.  
+Project was created for learning purposes only.  
 
 ## Authors
 * Andriy Parfenyuk.
