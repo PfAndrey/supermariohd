@@ -191,12 +191,14 @@ private:
 	const float climb_speed = 0.1f;
 	const int invincible_time = 11000;
 	const int fire_rate = 400; //bullet per ms
+	const int jump_rate = 250; //jump per ms
 	const Vector small_mario_size = {31,32};
 	const Vector big_mario_size = {31,64};
 	const Vector seated_mario_size = {31,32};
 	float m_jumping_timer = 0;
+	float m_jump_timer = jump_rate;
 	void fire();
-    MarioRank m_rank = MarioRank::fire;
+    MarioRank m_rank = MarioRank::small;
 	MarioState m_state = MarioState::normal;
 	IMarioState* m_current_state = NULL;
 	ECollisionTag m_collision_tag;

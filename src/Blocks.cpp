@@ -487,12 +487,19 @@ Vector CBlocks::collsionResponse(const Rect& body_rect, const Vector& body_speed
 	Vector  own_size = body_rect.size();
 	float tile_size = blocks->blockSize().x;
 	Vector new_pos = body_rect.leftTop();
+
 	// Y axis
 	new_pos.x -= body_speed.x*delta_time;
 	for (int x = new_pos.x / tile_size; x < (new_pos.x + own_size.x) / tile_size; ++x)
 		for (int y = new_pos.y / tile_size; y < (new_pos.y + own_size.y) / tile_size; ++y)
 			if (blocks->isBlockInBounds(x, y) && (blocks->isCollidableBlock(x, y) || (blocks->isInvizibleBlock({ x,y }) && body_speed.y < 0)))
 			{
+				if (body_speed.y == 0 && body_rect.bottom() > (y+1) * tile_size) //fix for "body in the restricted area" collision bug
+				{
+					collision_tag |= ECollisionTag::cell;
+					collision_tag |= ECollisionTag::floor;
+					return new_pos + Vector::right*2; //push avay body onto right side
+				}
 				if (body_speed.y >= 0)
 				{
 					new_pos.y = y * tile_size - own_size.y;
@@ -502,7 +509,8 @@ Vector CBlocks::collsionResponse(const Rect& body_rect, const Vector& body_speed
 				{
 					new_pos.y = y * tile_size + tile_size;
 					collision_tag |= ECollisionTag::cell;
-                }
+				}
+				break;
 			}
 	new_pos.x += body_speed.x*delta_time;
 
@@ -522,7 +530,10 @@ Vector CBlocks::collsionResponse(const Rect& body_rect, const Vector& body_speed
 					new_pos.x = x * tile_size + tile_size;
 					collision_tag |= ECollisionTag::right;
                 }
+				break;
 			}
+
+
 	return new_pos;
 }
 

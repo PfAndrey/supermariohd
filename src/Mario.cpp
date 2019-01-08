@@ -107,7 +107,7 @@ CMario::CMario()
 	m_animator->create("climb_small", texture, Vector(224, 96), Vector(32, 32), 2, 1, 0.01);
 	m_animator->create("shoot", texture, { 224,32,32,64 });
 	m_animator->create("died", texture, { 192,96,32,32 });
-	setRank(MarioRank::small);
+	setRank(MarioRank::big);
 	setState(MarioState::normal);
 	m_fire_pallete.create({ sf::Color(64,64,128), sf::Color(64,96,192), sf::Color(160,32,0), sf::Color(192,0,64), sf::Color(224,32,64)},
 	                      { sf::Color(64,128,0),sf::Color(96,160,0),sf::Color(192,192,128),sf::Color(224,224,128), sf::Color(255,251,240) });
@@ -187,7 +187,7 @@ void CMario::draw(sf::RenderWindow* render_window)
 
 void CMario::kickBlocksProcessing()
 {
-	if (m_collision_tag & ECollisionTag::cell)
+	if (m_collision_tag & ECollisionTag::cell && !(m_collision_tag & ECollisionTag::floor))
 	{
 		Vector block_left = m_blocks->toBlockCoordinates(getBounds().leftTop() + Vector::up * 16, false);
 		Vector block_right = m_blocks->toBlockCoordinates(getBounds().rightTop() + Vector::up * 16, false);
@@ -342,18 +342,26 @@ void CMario::inputProcessing(float delta_time)
 
 	m_jumping_timer += delta_time;
 
+	if (m_jump_timer)
+	{
+		m_jump_timer -= delta_time;
+		if (m_jump_timer < 0)
+			m_jump_timer = 0;
+	}
+
 	// jump
 	if (!m_in_water)
 	{
-		if (input_manager.isKeyPressed(sf::Keyboard::Space))
+		if (input_manager.isKeyPressed(sf::Keyboard::Space) && !(m_collision_tag & ECollisionTag::cell))
 		{
-			if (m_grounded)
+			if (m_grounded && !m_jump_timer)
 			{
 				MarioGame().playSound("jump_super");
 				m_grounded = m_climb = false;
 				m_jumped = true;
 				m_jumping_timer = 0.65*jump_time;
 				addImpulse(1.5*Vector::up*jump_force);
+				m_jump_timer = jump_rate;
 			}
 			else if (m_jumping_timer < jump_time)
 	    		addImpulse(Vector::up*jump_force* (1 - m_jumping_timer/jump_time));
@@ -643,8 +651,9 @@ void CMario::collisionProcessing(float delta_time)
 	 if ((m_collision_tag & ECollisionTag::right) && m_input_direcition != Vector::left) m_speed.x = 0;
      if ((m_collision_tag & ECollisionTag::left) && m_input_direcition != Vector::right) m_speed.x = 0;
 
+	 if (m_collision_tag & ECollisionTag::cell) m_speed.y = 0.1f;
 	 if (m_collision_tag & ECollisionTag::floor) m_speed.y = 0.f;
-	 if (m_collision_tag & ECollisionTag::cell) m_speed.y = 0.1f; 
+	 
 }
  
 void CMario::setSpeed(const Vector& _speed)
