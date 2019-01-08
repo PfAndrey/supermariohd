@@ -3,7 +3,7 @@
 ----
 Cross-platform HD remake of Super Mario Bros. (NES, 1985).  
 Project was created for learning purposes only.   
-YouTube demo link: https://youtu.be/RJ181cc_AMI
+The game demo on the YouTube: https://youtu.be/RJ181cc_AMI
 
 ## Authors
 * Andriy Parfenyuk.
