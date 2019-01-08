@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="192" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="109">
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="192" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="112">
  <tileset firstgid="1" source="Tiles.tsx"/>
  <layer id="5" name="Tile Layer 1" width="192" height="16">
   <data encoding="csv">
@@ -49,7 +49,7 @@
   <object id="48" name="PiranhaPlant" type="PiranhaPlant" x="3505" y="307.333" width="32" height="46"/>
   <object id="49" name="PiranhaPlant" type="PiranhaPlant" x="3313" y="338.667" width="32" height="46"/>
   <object id="50" name="PiranhaPlant" type="PiranhaPlant" x="3696" y="340" width="32" height="46"/>
-  <object id="51" name="MoveablePlatform" type="MoveablePlatform" x="4481" y="251" width="96" height="16">
+  <object id="51" name="MoveablePlatform" type="MoveablePlatform" x="4479" y="247.667" width="96" height="16">
    <properties>
     <property name="Amplitude" type="int" value="96"/>
     <property name="Orientation" type="int" value="2"/>
@@ -57,7 +57,7 @@
     <property name="Phase" type="int" value="0"/>
    </properties>
   </object>
-  <object id="52" name="MoveablePlatform" type="MoveablePlatform" x="4481" y="402" width="96" height="16">
+  <object id="52" name="MoveablePlatform" type="MoveablePlatform" x="4479.33" y="430.333" width="96" height="16">
    <properties>
     <property name="Amplitude" type="int" value="96"/>
     <property name="Orientation" type="int" value="2"/>
@@ -225,7 +225,7 @@
     <property name="Flying" type="int" value="0"/>
    </properties>
   </object>
-  <object id="89" name="MoveablePlatform" type="MoveablePlatform" x="4480" y="112" width="96" height="16">
+  <object id="89" name="MoveablePlatform" type="MoveablePlatform" x="4480.33" y="63.3333" width="96" height="16">
    <properties>
     <property name="Amplitude" type="int" value="96"/>
     <property name="Orientation" type="int" value="2"/>
@@ -233,7 +233,7 @@
     <property name="Phase" type="int" value="0"/>
    </properties>
   </object>
-  <object id="93" name="MoveablePlatform" type="MoveablePlatform" x="4962.5" y="250" width="96" height="16">
+  <object id="93" name="MoveablePlatform" type="MoveablePlatform" x="4960.5" y="248" width="96" height="16">
    <properties>
     <property name="Amplitude" type="int" value="96"/>
     <property name="Orientation" type="int" value="2"/>
@@ -241,7 +241,7 @@
     <property name="Phase" type="int" value="1"/>
    </properties>
   </object>
-  <object id="94" name="MoveablePlatform" type="MoveablePlatform" x="4962.5" y="401" width="96" height="16">
+  <object id="94" name="MoveablePlatform" type="MoveablePlatform" x="4960.5" y="430" width="96" height="16">
    <properties>
     <property name="Amplitude" type="int" value="96"/>
     <property name="Orientation" type="int" value="2"/>
@@ -249,7 +249,7 @@
     <property name="Phase" type="int" value="1"/>
    </properties>
   </object>
-  <object id="95" name="MoveablePlatform" type="MoveablePlatform" x="4961.5" y="111" width="96" height="16">
+  <object id="95" name="MoveablePlatform" type="MoveablePlatform" x="4959.75" y="64.25" width="96" height="16">
    <properties>
     <property name="Amplitude" type="int" value="96"/>
     <property name="Orientation" type="int" value="2"/>
@@ -257,7 +257,7 @@
     <property name="Phase" type="int" value="1"/>
    </properties>
   </object>
-  <object id="96" name="Portal_to_Underground" type="LevelPortal" x="3301.74" y="314.373" width="52.519" height="69.2535">
+  <object id="96" name="Portal_to_Underground" type="LevelPortal" x="3300.74" y="319.04" width="52.519" height="69.2535">
    <properties>
     <property name="ComebackPortal" value="ComeBackPort1"/>
     <property name="Direction" value="Down"/>
@@ -300,6 +300,6 @@
     <property name="SubLevel" value=""/>
    </properties>
   </object>
-  <object id="108" name="Mario" type="Mario" x="96" y="64" width="32" height="32"/>
+  <object id="111" name="Mario" type="Mario" x="96" y="64" width="32" height="32"/>
  </objectgroup>
 </map>
