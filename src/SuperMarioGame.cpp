@@ -709,6 +709,12 @@ Vector CMarioGameScene::screenToPoint(const Vector& vector)
     return vector / scale_factor + (Vector(m_view.getCenter()) - Vector(m_view.getSize()) / 2);
 }
 
+void CMarioGameScene::playSoundAtPoint(const std::string& name, Vector& pos)
+{
+	if (cameraRect().isContain(pos))
+		CMarioGame::instance()->playSound(name);
+}
+
 Rect CMarioGameScene::cameraRect() const
 {
     return Rect( Vector(m_view.getCenter()) - Vector(m_view.getSize())*0.5,m_view.getSize() );

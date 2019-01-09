@@ -421,7 +421,8 @@ void CKoopa::update(int delta_time)
 	}
 
 	if (m_state == State::Bullet && ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right)))
-		MarioGame().playSound("bump");
+		getParent()->castTo<CMarioGameScene>()->playSoundAtPoint("bump", getBounds().center());
+	
 
 	m_animator.flipX(m_speed.x > 0);
 	m_animator.update(delta_time);
@@ -597,7 +598,7 @@ void CBuzzyBeetle::update(int delta_time)
 		if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
 		{
 			m_speed.x = -m_speed.x;
-			MarioGame().playSound("bump");
+			getParent()->castTo<CMarioGameScene>()->playSoundAtPoint("bump", getBounds().center());
 		}
 		if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
 			m_speed.y = 0;
