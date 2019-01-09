@@ -155,6 +155,7 @@ void CMario::setRank(MarioRank rank)
 				move(small_mario_size - big_mario_size);
 			m_seated = false;
 			m_animator->setPallete(NULL);
+			m_animator->play("idle_small");
 			break;
 		}
 		case(MarioRank::big):
@@ -162,12 +163,14 @@ void CMario::setRank(MarioRank rank)
 			setSize(big_mario_size);
 			move(small_mario_size - big_mario_size);
 			m_animator->setPallete(NULL);
+			m_animator->play("idle_big");
 			break;
 		}
 		case(MarioRank::fire):
 		{
 			setSize(big_mario_size);
 			m_animator->setPallete(&m_fire_pallete);
+			m_animator->play("idle_big");
 			break;
 		}
 	}
