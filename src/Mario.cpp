@@ -107,7 +107,7 @@ CMario::CMario()
 	m_animator->create("climb_small", texture, Vector(224, 96), Vector(32, 32), 2, 1, 0.01);
 	m_animator->create("shoot", texture, { 224,32,32,64 });
 	m_animator->create("died", texture, { 192,96,32,32 });
-	setRank(MarioRank::big);
+	setRank(MarioRank::small);
 	setState(MarioState::normal);
 	m_fire_pallete.create({ sf::Color(64,64,128), sf::Color(64,96,192), sf::Color(160,32,0), sf::Color(192,0,64), sf::Color(224,32,64)},
 	                      { sf::Color(64,128,0),sf::Color(96,160,0),sf::Color(192,192,128),sf::Color(224,224,128), sf::Color(255,251,240) });
