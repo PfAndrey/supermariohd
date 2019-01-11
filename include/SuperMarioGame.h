@@ -99,7 +99,7 @@ public:
 	void setCameraOnTarget();
 	Vector pointToScreen(const Vector& vector);
 	Vector screenToPoint(const Vector& vector);
-	void playSoundAtPoint(const std::string& name, Vector& pos);
+    void playSoundAtPoint(const std::string& name, const Vector& pos);
 protected:
     virtual void update(int delta_time) override;
 	virtual void draw(sf::RenderWindow* render_window) override;

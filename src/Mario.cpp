@@ -1071,6 +1071,7 @@ void CGoToPrincessState::update(int delta_time)
 void CDiedMarioState::onEnter() 
 {
 	enableScene(false);
+    mario()->setRank(MarioRank::small);
 	mario()->m_animator->play("died");
 	mario()->m_speed = Vector::zero;
 	mario()->addImpulse(Vector::up * 0.8);
@@ -1078,7 +1079,6 @@ void CDiedMarioState::onEnter()
 	mario()->m_jumped = false;
 	CMarioGame::instance()->musicManager().stop();
 	CMarioGame::instance()->playSound("mario_die");
-	mario()->setRank(MarioRank::small);
 }
 
 void CDiedMarioState::onLeave()
