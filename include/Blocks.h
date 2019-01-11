@@ -101,6 +101,46 @@ private:
 	int kicked_dir = 0;
 };
 
+class CBlocks : public CGameObject
+{
+private:
+	Vector kicked_block;
+	Rect view_rect;
+	bool m_night_view_filter = false;
+	TileMap<AbstractBlock*>* m_map;
+	sf::RectangleShape m_shape;
+	float m_timer = 0;
+	int m_block_size = 32;
+	sf::Shader m_night_view_filter_shader;
+public:
+	CBlocks(int cols, int rows, int block_size);
+	~CBlocks();
+	Vector blockSize() const;
+	AbstractBlock* getBlock(int x, int y);
+	int rows() const;
+	int cols() const;
+	int width() const;
+	int height() const;
+	Vector toBlockCoordinates(const Vector& pixel, bool rounded = false) const;
+	Vector toPixelCoordinates(const Vector& block) const;
+	Rect getBlockBounds(int x, int y) const;
+	Rect getBlockBounds(const Vector& pos) const;
+	Vector traceLine(const Vector& start_cell, const Vector& direction);
+	bool isBlockInBounds(int x, int y) const;
+	bool isBlockInBounds(const Vector& block) const;
+	std::vector<Vector> getBridgeBlocks();
+	void draw(sf::RenderWindow* render_window) override;
+	void update(int delta_time) override;
+	void clearBlock(int x, int y);
+	void kickBlock(int x, int y, CMario* mario);
+	void enableNightViewFilter();
+	void loadFromString(const std::string& data, std::function<AbstractBlock*(char)> fabric);
+	bool isCollidableBlock(int x, int y) const;
+	bool isCollidableBlock(const Vector& block) const;
+	bool isInvizibleBlock(const Vector& block) const;
+	Vector collsionResponse(const Rect& body_rect, const Vector& body_speed, float delta_time, ECollisionTag& collision_tag);
+};
+
 template <typename T>
 class CQuestionBlock : public AbstractBlock
 {
@@ -177,46 +217,6 @@ private:
 	void start() override;
 	void onActivated() override;
 	sf::Sprite m_background;
-};
-
-class CBlocks : public CGameObject
-{
-private:
-	Vector kicked_block;
-	Rect view_rect;
-	bool m_night_view_filter = false;
-	TileMap<AbstractBlock*>* m_map;
-	sf::RectangleShape m_shape;
-	float m_timer = 0;
-	int m_block_size = 32;
-	sf::Shader m_night_view_filter_shader;
-public:
-	CBlocks(int cols, int rows, int block_size);
-	~CBlocks();
-	Vector blockSize() const;
-	AbstractBlock* getBlock(int x, int y);
-	int rows() const;
-	int cols() const;
-	int width() const;
-	int height() const;
-	Vector toBlockCoordinates(const Vector& pixel, bool rounded = false) const;
-	Vector toPixelCoordinates(const Vector& block) const;
-	Rect getBlockBounds(int x, int y) const;
-	Rect getBlockBounds(const Vector& pos) const;
-	Vector traceLine(const Vector& start_cell, const Vector& direction);
-	bool isBlockInBounds(int x, int y) const;
-	bool isBlockInBounds(const Vector& block) const;
-	std::vector<Vector> getBridgeBlocks();
-	void draw(sf::RenderWindow* render_window) override;
-	void update(int delta_time) override;
-	void clearBlock(int x, int y);
-	void kickBlock(int x, int y, CMario* mario);
-	void enableNightViewFilter();
-	void loadFromString(const std::string& data, std::function<AbstractBlock*(char)> fabric);
-	bool isCollidableBlock(int x, int y) const;
-	bool isCollidableBlock(const Vector& block) const;
-	bool isInvizibleBlock(const Vector& block) const;
-	Vector collsionResponse(const Rect& body_rect, const Vector& body_speed, float delta_time, ECollisionTag& collision_tag);
 };
 
 class COneBrick : public CGameObject
