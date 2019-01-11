@@ -11,17 +11,16 @@ include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 ExternalProject_Add(SFML 
 		#GIT_REPOSITORY https://github.com/SFML/SFML.git GIT_TAG 2.5.1 
 		SOURCE_DIR  ${CMAKE_SOURCE_DIR}/ext/SFML 
-    	CMAKE_ARGS 
+    		CMAKE_ARGS 
 			-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-			-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-			)
+			-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 ExternalProject_Get_Property(SFML INSTALL_DIR)
 set(SFML_LIB ${INSTALL_DIR})
 
 ExternalProject_Add(TinyXml2 
 		#GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
 		SOURCE_DIR  ${CMAKE_SOURCE_DIR}/ext/tinyxml2
-    	CMAKE_ARGS 
+    		CMAKE_ARGS 
 			-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 			-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>)
 ExternalProject_Get_Property(TinyXml2 INSTALL_DIR)
@@ -72,7 +71,7 @@ TARGET_LINK_LIBRARIES(SuperMario
 					optimized sfml-window		debug sfml-window-d 
 					optimized sfml-graphics		debug sfml-graphics-d 
 					optimized sfml-audio		debug sfml-audio-d 
-					optimized tinyxml2			debug tinyxml2d)                
+					optimized tinyxml2		debug tinyxml2d)                
 
 # POST BUILD SCRIPTS
 set(POST_LIB_DIR "lib")
@@ -81,7 +80,7 @@ if (WIN32)
 endif()
 
 ADD_CUSTOM_COMMAND(TARGET SuperMario POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${SFML_LIB}/${POST_LIB_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${TINY_XML_LIB}/${POST_LIB_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
-		COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/res" "${CMAKE_CURRENT_BINARY_DIR}/res")
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${SFML_LIB}/${POST_LIB_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${TINY_XML_LIB}/${POST_LIB_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/res" "${CMAKE_CURRENT_BINARY_DIR}/res")
 

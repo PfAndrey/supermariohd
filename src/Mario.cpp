@@ -1,4 +1,3 @@
-#pragma once
 #include "Mario.h"
 #include "Blocks.h"
 #include "Items.h"
