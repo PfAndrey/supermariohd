@@ -672,7 +672,6 @@ CMarioGameScene::CMarioGameScene(const std::string& filepath)
 void CMarioGameScene::update(int delta_time)
 {
     CGameObject::update(delta_time);
-
     Vector camera_pos = m_view.getCenter();
     const Vector delta = (m_mario->getBounds().center() - camera_pos)*delta_time;
     camera_pos.x += delta.x *0.0075f;

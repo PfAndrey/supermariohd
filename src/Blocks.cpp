@@ -273,7 +273,6 @@ CBlocks::CBlocks(int cols, int rows, int block_size): m_block_size(block_size)
 	m_map = new TileMap<AbstractBlock*>(cols, rows);
 	m_map->clear(NULL);
 	auto texture = MarioGame().textureManager().get("AnimTiles");
-
 	AbstractBlock::m_question_block_sprite.load(*texture, { 0,0 }, { 32,32 }, 4, 1);
 	AbstractBlock::m_question_block_sprite.setAnimType(AnimType::manual);
 	AbstractBlock::m_water_sprite.load(*texture, { 0,32 }, { 32,32 }, 4, 1);
@@ -283,7 +282,6 @@ CBlocks::CBlocks(int cols, int rows, int block_size): m_block_size(block_size)
 	AbstractBlock::m_kicked_sprite.load(*MarioGame().textureManager().get("Tiles"), { { 0,32,32,32 } });
 	AbstractBlock::m_bricket_sprite.load(*MarioGame().textureManager().get("Tiles"), { { 32,0,32,32 } });
 
- 
 	static const sf::String frag_shader =
 			"uniform sampler2D texture;"\
 			"void main()"\
@@ -339,9 +337,7 @@ void CBlocks::draw(sf::RenderWindow* render_window)
 
 			if (skip_fiter)
 				sf::Shader::bind(NULL);
-
 			block->draw(render_window); 
-
 			if (skip_fiter)
 				sf::Shader::bind(&m_night_view_filter_shader);
 		}
@@ -510,8 +506,9 @@ Vector CBlocks::collsionResponse(const Rect& body_rect, const Vector& body_speed
 					new_pos.y = y * tile_size + tile_size;
 					collision_tag |= ECollisionTag::cell;
 				}
-				break;
+				goto stopYLoop;
 			}
+	stopYLoop:;
 	new_pos.x += body_speed.x*delta_time;
 
 	// X axis
@@ -530,10 +527,9 @@ Vector CBlocks::collsionResponse(const Rect& body_rect, const Vector& body_speed
 					new_pos.x = x * tile_size + tile_size;
 					collision_tag |= ECollisionTag::right;
                 }
-				break;
+				goto stopXLoop;
 			}
-
-
+	stopXLoop:;
 	return new_pos;
 }
 
