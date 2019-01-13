@@ -69,7 +69,7 @@ cmake --build . --config Release
 **3. Install CMake:**  
     https://cmake.org/download
 
-**4. build project** 
+**4. build project**   
 Go to terminal and type:
 ```console
 git clone https://github.com/PfAndrey/supermariohd.git --recursive
