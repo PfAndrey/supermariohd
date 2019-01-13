@@ -933,6 +933,7 @@ void Pallete::create(const std::initializer_list<sf::Color>& original_colors, co
     assert(original_colors.size() == swaped_colors.size());
     int arr_size = original_colors.size();
     const sf::String frag_shader =
+			"#version 120\n"\
             "const int arr_size = " + toString(arr_size) + ";"\
                                                            "uniform vec3 color1[arr_size];"\
                                                            "uniform vec3 color2[arr_size];"\

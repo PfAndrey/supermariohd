@@ -283,7 +283,8 @@ CBlocks::CBlocks(int cols, int rows, int block_size): m_block_size(block_size)
 	AbstractBlock::m_bricket_sprite.load(*MarioGame().textureManager().get("Tiles"), { { 32,0,32,32 } });
 
 	static const sf::String frag_shader =
-			"uniform sampler2D texture;"\
+			"#version 120\n"\
+			"uniform sampler2D texture;\n"\
 			"void main()"\
 			"{"\
 			"vec4 color = texture2D(texture, gl_TexCoord[0].xy);"\
