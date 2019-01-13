@@ -169,7 +169,10 @@ void CMario::setRank(MarioRank rank)
 		{
 			m_animator->setPallete(&m_fire_pallete);
 			if (!m_seated)
+			{
+				setSize(big_mario_size);
 				m_animator->play("idle_big");
+			}
 			break;
 		}
 	}
