@@ -151,7 +151,7 @@ void CMario::setRank(MarioRank rank)
 		{
 			setSize(small_mario_size);
 			if (m_rank != MarioRank::small)
-				move(small_mario_size - big_mario_size);
+			move(small_mario_size - big_mario_size);
 			m_seated = false;
 			m_animator->setPallete(NULL);
 			m_animator->play("idle_small");
@@ -167,9 +167,9 @@ void CMario::setRank(MarioRank rank)
 		}
 		case(MarioRank::fire):
 		{
-			setSize(big_mario_size);
 			m_animator->setPallete(&m_fire_pallete);
-			m_animator->play("idle_big");
+			if (!m_seated)
+				m_animator->play("idle_big");
 			break;
 		}
 	}
@@ -837,7 +837,7 @@ void CNormalMarioState::update(int delta_time)
 		_mario->m_animator->setPallete((int(_mario->m_invincible_timer / 100) % 2) ? &(_mario->m_black_pallete) : &(_mario->m_fire_pallete));
 		if (_mario->m_invincible_timer < 0)
 		{
-			_mario->m_animator->setPallete(NULL);
+			_mario->m_animator->setPallete((_mario->getRank() == MarioRank::fire)?&_mario->m_fire_pallete:nullptr);
 			_mario->m_invincible_mode = false;
 			CMarioGame::instance()->invincibleMode(false);
 		}
