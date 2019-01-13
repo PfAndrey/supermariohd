@@ -11,7 +11,7 @@ float AbstractBlock::timer = 0;
  
 void AbstractBlock::killEnemiesAbove(CMario* mario)
 {
-	Rect block_rect = m_blocks->getBlockBounds(position.x, position.y - 1).bordered(-4);
+	Rect block_rect = m_blocks->getBlockBounds((int)position.x, (int)position.y - 1).bordered(-4);
 
 	auto func = [block_rect,mario](CGameObject* obj)
 	 {
@@ -159,8 +159,8 @@ void CBricksBlock::update(int delta_time)
 
 void CBricksBlock::kick(CMario* mario)
 {
-	int x = position.x;
-	int y = position.y;
+	int x = (int)position.x;
+	int y = (int)position.y;
 	
 	if (!mario->isSmall()) // crash box
 	{
@@ -566,7 +566,7 @@ COneBrick::COneBrick(const Vector& pos, const Vector& speed_vector)
 	m_sprite_sheet.load(*MarioGame().textureManager().get("Items"), { { 96,0,16,16 }, { 96,16,16,-16 } });
 
 	m_sprite_sheet.setAnimType(AnimType::forward_cycle);
-	m_sprite_sheet.setSpeed(0.005);
+	m_sprite_sheet.setSpeed(0.005f);
 }
 
 void COneBrick::draw(sf::RenderWindow* render_window)
@@ -592,8 +592,8 @@ CTwistedCoin::CTwistedCoin(const Vector& pos, CMario* mario)
 	setPosition(pos);
 	m_speed = Vector::up*0.05f;
 	m_speed.y = -0.20f;
-	m_animator.create("twist", *MarioGame().textureManager().get("Items"), Vector(0, 84), Vector(32, 32), 4, 1, 0.01);
-	m_animator.create("shine", *MarioGame().textureManager().get("Items"), Vector(0, 116), Vector(40, 32), 5, 1, 0.01, AnimType::forward);
+	m_animator.create("twist", *MarioGame().textureManager().get("Items"), Vector(0, 84), Vector(32, 32), 4, 1, 0.01f);
+	m_animator.create("shine", *MarioGame().textureManager().get("Items"), Vector(0, 116), Vector(40, 32), 5, 1, 0.01f, AnimType::forward);
 	m_animator.get("shine")->setOrigin(Vector(4, 0));
 	MarioGame().addScore(100, pos);
 	MarioGame().addCoin();

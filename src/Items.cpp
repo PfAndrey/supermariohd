@@ -105,23 +105,33 @@ void CMoveablePlatform::start()
 
 void CMoveablePlatform::collsionResponse(CMario* mario, ECollisionTag& collision_tag, int delta_time)
 {
- 
  	if (m_platform_type == PlatformType::elevator)
     {
-	 	if (mario->getSpeed().y >= 0 && (getBounds().top() - mario->getBounds().bottom()) < 8)
+	 	if (mario->getSpeed().y >= 0 && getBounds().top() > abs(getBounds().top() - mario->getBounds().bottom()) < 8)
 	 		CPlatform::collsionResponse(mario, collision_tag, delta_time);
  	}
-	 else
-		CPlatform::collsionResponse( mario,  collision_tag,   delta_time);
+	else
+			CPlatform::collsionResponse(mario, collision_tag, delta_time);
 
 	if (collision_tag & ECollisionTag::floor)
 	{
-		if (m_speed.y < 0)
-			mario->move({ 0.f,-getPosition().y + mario->getBounds().bottom() - 2 });
-
-		if (m_platform_type == PlatformType::skate)
+		if (m_platform_type == PlatformType::elevator)
+		{
+			auto mario_pos = mario->getPosition();
+			mario->setPosition(Vector(mario_pos.x, getPosition().y - mario->getBounds().size().y) +
+				delta_time * getSpeedVector() +
+				(m_speed.y < 0 ? 2 * Vector::down : 3 * Vector::up));
+		}
+		else if (m_platform_type == PlatformType::skate)
+		{
 			if (m_speed == Vector::zero)
 				m_speed = Vector::right*SKATE_SPEED;
+		}
+		else
+		{
+			if (m_speed.y < 0)
+				mario->move({ 0.f,-getPosition().y + mario->getBounds().bottom() - 2 });
+		}
 	}
  
 }
@@ -148,14 +158,14 @@ void CFallingPlatform::update(int delta_time)
 { 
 	if (m_stayed)
 	{
-		m_speed += Vector::down * delta_time*0.008;
+		m_speed += Vector::down * delta_time*0.008f;
 		m_stayed = false;
 		if (m_moving_callback)
 			m_moving_callback();
 	}
 	else
 	{
-			m_speed += Vector::up*math::sign(m_speed.y)*0.001*delta_time;
+			m_speed += Vector::up*math::sign(m_speed.y)*0.001f*delta_time;
             if (std::abs(m_speed.y < 0.05)) m_speed = Vector::zero;
 	}
 	move(m_speed*delta_time);
@@ -363,7 +373,7 @@ void CLadder::update(int delta_time)
 {
 	CGameObject::update(delta_time);
 	m_timer += delta_time;
-	float cur_height = m_timer*0.04;
+	float cur_height = m_timer*0.04f;
 	if (cur_height < m_height)
 		setBounds({ getPosition().x, m_bottom - cur_height,  m_width, cur_height });
 }

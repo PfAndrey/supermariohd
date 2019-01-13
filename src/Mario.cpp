@@ -10,8 +10,8 @@ CMarioBullet::CMarioBullet(const Vector& pos, const Vector& direction)
 	m_direction = direction;
 	setPosition(pos);
 	m_speed = direction*bullet_speed;
-    m_animator.create("fly", *MarioGame().textureManager().get("Mario"), { { 0,0,16,16 },{ 16,0,16,16 },{ 16,0,-16,16 },{ 16,16,16,-16 } }, 0.01f);
-	m_animator.create("splash", *MarioGame().textureManager().get("Mario"),  Vector(31,0), Vector(16,16), 3,1, 0.02, AnimType::forward_backward_cycle);
+	m_animator.create("fly", *MarioGame().textureManager().get("Mario"), { { 0,0,16,16 },{ 16,0,16,16 },{ 16,0,-16,16 },{ 16,16,16,-16 } }, 0.01f);
+	m_animator.create("splash", *MarioGame().textureManager().get("Mario"),  Vector(31,0), Vector(16,16), 3,1, 0.02f, AnimType::forward_backward_cycle);
 }
 
 void CMarioBullet::draw(sf::RenderWindow* render_window) 
@@ -86,24 +86,24 @@ CMario::CMario()
 	const sf::Texture& texture = *MarioGame().textureManager().get("Mario");
 	addObject(m_animator = new Animator());
 	m_animator->create("idle_big", texture, { 0,32,32,64 });
-	m_animator->create("walk_big", texture, { 32, 32 }, { 32, 64 }, 3, 1, 0.01);
-	m_animator->create("swim_big", texture, { 321, 32 }, { 40, 64 }, 3, 1, 0.01);
+	m_animator->create("walk_big", texture, { 32, 32 }, { 32, 64 }, 3, 1, 0.01f);
+	m_animator->create("swim_big", texture, { 321, 32 }, { 40, 64 }, 3, 1, 0.01f);
 	m_animator->create("jump_big", texture, { 160,32,32,64 });
 	m_animator->create("slip_big", texture, { 128,32,32,64 });
 	m_animator->create("seat_big", texture, { 192,52,32,44 });
-	m_animator->create("climb_big", texture, Vector(256, 32), Vector(32, 64), 2, 1, 0.01);
-	m_animator->create("growing", texture, { { 0,32,32,64 }, { 0,96,32,32 } }, 0.01 );
+	m_animator->create("climb_big", texture, Vector(256, 32), Vector(32, 64), 2, 1, 0.01f);
+	m_animator->create("growing", texture, { { 0,32,32,64 }, { 0,96,32,32 } }, 0.01f );
 	m_animator->setSpriteOffset("growing", 1, { 0, 32 });
-	m_animator->create("demoting", texture, { { 401,32,40,64 },{ 288,96,32,32 } }, 0.01);
+	m_animator->create("demoting", texture, { { 401,32,40,64 },{ 288,96,32,32 } }, 0.01f);
 	m_animator->setSpriteOffset("demoting", 1, { 4, 32 });
-	m_animator->create("firing", texture, { { 0,32,32,64 },{ 224,32,32,64 } }, 0.01);
+	m_animator->create("firing", texture, { { 0,32,32,64 },{ 224,32,32,64 } }, 0.01f);
 	m_animator->create("idle_small", texture, { 0,96,32,32 });
-	m_animator->create("walk_small", texture, { 32, 96 }, { 32, 32 }, 3, 1, 0.01);
-	m_animator->create("swim_small", texture,   { 288, 96 }, { 32, 32 }, 3, 1, 0.01);
+	m_animator->create("walk_small", texture, { 32, 96 }, { 32, 32 }, 3, 1, 0.01f);
+	m_animator->create("swim_small", texture,   { 288, 96 }, { 32, 32 }, 3, 1, 0.01f);
 	m_animator->create("jump_small", texture, { 160,96,32,32 });
 	m_animator->create("slip_small", texture, { 128,96,32,32 });
 	m_animator->create("seat_small", texture, { 192,96,32,32 });
-	m_animator->create("climb_small", texture, Vector(224, 96), Vector(32, 32), 2, 1, 0.01);
+	m_animator->create("climb_small", texture, Vector(224, 96), Vector(32, 32), 2, 1, 0.01f);
 	m_animator->create("shoot", texture, { 224,32,32,64 });
 	m_animator->create("died", texture, { 192,96,32,32 });
 	setRank(MarioRank::small);
@@ -364,7 +364,7 @@ void CMario::inputProcessing(float delta_time)
 				MarioGame().playSound("jump_super");
 				m_grounded = m_climb = false;
 				m_jumped = true;
-				m_jumping_timer = 0.65*jump_time;
+				m_jumping_timer = 0.65f*jump_time;
 				addImpulse(1.5*Vector::up*jump_force);
 				m_jump_timer = jump_rate;
 			}
@@ -391,7 +391,7 @@ void CMario::inputProcessing(float delta_time)
 	//jump off from ladder
 	if (input_manager.isKeyPressed(sf::Keyboard::Space) && m_climb && !m_input_direcition.y)
 	{
-		addImpulse(0.4*Vector::up*jump_force);
+		addImpulse(0.4f*Vector::up*jump_force);
 		m_grounded = m_climb = false;
 		m_jumped = true;
 	}
@@ -751,6 +751,7 @@ void IMarioState::setMarioSpawnProtection()
 void CPromotingMarioState::onEnter()
 {
 	m_promoting_timer = 1500;
+	mario()->m_animator->setColor(sf::Color::White);
 	enableScene(false);
 	if (mario()->getRank() ==  MarioRank::small)
 	{
@@ -1076,7 +1077,7 @@ void CDiedMarioState::onEnter()
     mario()->setRank(MarioRank::small);
 	mario()->m_animator->play("died");
 	mario()->m_speed = Vector::zero;
-	mario()->addImpulse(Vector::up * 0.8);
+	mario()->addImpulse(Vector::up * 0.8f);
 	mario()->setGrounded(false);
 	mario()->m_jumped = false;
 	CMarioGame::instance()->musicManager().stop();

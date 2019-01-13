@@ -27,12 +27,12 @@ protected:
 	void updateCollision(float delta_time);
 	void updatePhysics(float delta_time, float gravity);
 	ECollisionTag m_collision_tag;
-	const float gravity_force = 0.0015;
+	const float gravity_force = 0.0015f;
 	Vector m_speed;
 	Vector m_direction = Vector::left;
 	CMario* m_mario = NULL;
 	CBlocks* m_blocks = NULL;
-	const float m_run_speed = -0.05;
+	const float m_run_speed = -0.05f;
 };
 
 class CGoomba : public CEnemy

@@ -75,7 +75,7 @@ void CEnemy::update(int delta_time)
 CGoomba::CGoomba()
 {
 	setSize({ 32,32 });
-	m_animator.create("walk", *MarioGame().textureManager().get("Enemies"), { { 0,0,32,32 },{ 32,0,32,32 } }, 0.005);
+	m_animator.create("walk", *MarioGame().textureManager().get("Enemies"), { { 0,0,32,32 },{ 32,0,32,32 } }, 0.005f);
 	m_animator.create("cramped", *MarioGame().textureManager().get("Enemies"), { 64,0,32,32 });
 	m_animator.create("fall", *MarioGame().textureManager().get("Enemies"), { 0,32,32,-32 });
 	m_animator.setSpriteOffset("cramped", 0, { 0,8 });
@@ -148,7 +148,7 @@ void CGoomba::kickFromBottom(CMario* mario)
 	if (m_state != Died)
 	{
 		setState(State::Died);
-		m_speed += 0.4*Vector::up;
+		m_speed += 0.4f*Vector::up;
 	}
 }
 
@@ -197,11 +197,11 @@ CKoopa::CKoopa()
 {
 	setSize({ 32, 48 });
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("walk", texture, { { 0,32,32,48 },{ 32,32,32,48 } }, 0.005);
-	m_animator.create("flying", texture, { 224,32 }, { 32, 48 }, 2, 1, 0.005);
-	m_animator.create("climb", texture, { { 64,48,32,32 },{ 192,48,32,32 } }, 0.005);
+	m_animator.create("walk", texture, { { 0,32,32,48 },{ 32,32,32,48 } }, 0.005f);
+	m_animator.create("flying", texture, { 224,32 }, { 32, 48 }, 2, 1, 0.005f);
+	m_animator.create("climb", texture, { { 64,48,32,32 },{ 192,48,32,32 } }, 0.005f);
 	m_animator.create("hidden", texture, { 64,48,32,32 });
-	m_animator.create("bullet", texture, { 64, 48 }, { 32, 32 }, 4, 1, 0.01);
+	m_animator.create("bullet", texture, { 64, 48 }, { 32, 32 }, 4, 1, 0.01f);
 	m_animator.create("fall", texture, { 0,80, 32, -48 });
 }
 
@@ -439,9 +439,9 @@ CBuzzyBeetle::CBuzzyBeetle()
 {
 	setSize({ 32, 32 });
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("walk", texture, { { 96,0,32,32 },{ 128,0,32,32 } }, 0.005);
+	m_animator.create("walk", texture, { { 96,0,32,32 },{ 128,0,32,32 } }, 0.005f);
 	m_animator.create("hidden", texture, { 160,0,32,32 });
-	m_animator.create("bullet", texture, { 160, 0 }, { 32, 32 }, 4, 1, 0.01);
+	m_animator.create("bullet", texture, { 160, 0 }, { 32, 32 }, 4, 1, 0.01f);
 	m_animator.create("fall", texture, { 96,32, 32, -32 });
 	setState(State::Normal);
 }
@@ -621,7 +621,7 @@ void CBuzzyBeetle::update(int delta_time)
 
 CHammer::CHammer(CMario* target)
 {
-	m_animator.create("fly", *MarioGame().textureManager().get("Enemies"), Vector(96, 112), Vector(32, 32), 4, 1, 0.01);
+	m_animator.create("fly", *MarioGame().textureManager().get("Enemies"), Vector(96, 112), Vector(32, 32), 4, 1, 0.01f);
 	m_animator.create("in_hand", *MarioGame().textureManager().get("Enemies"), { 96,112,32,32 });
 	m_animator.play("in_hand");
 	m_target = target;
@@ -665,8 +665,8 @@ CHammerBro::CHammerBro()
 	setSize({ 32, 44 });
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
 	m_animator.create("died", texture, { 96,160 + 48,32,-48 });
-	m_animator.create("walk", texture, Vector(96, 160), Vector(32, 48), 2, 1, 0.005);
-	m_animator.create("walk_with_hammer", texture, Vector(160, 160), Vector(32, 48), 2, 1, 0.005);
+	m_animator.create("walk", texture, Vector(96, 160), Vector(32, 48), 2, 1, 0.005f);
+	m_animator.create("walk_with_hammer", texture, Vector(160, 160), Vector(32, 48), 2, 1, 0.005f);
 	m_animator.play("walk_with_hammer");
 	m_speed.x = m_run_speed;
 }
@@ -848,8 +848,8 @@ CSpinny::CSpinny(const Vector& position, const Vector& speed, const Vector& walk
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
 
 
-	m_animator.create("walk", texture, Vector(64, 80), Vector(32, 32), 2, 1, 0.005);
-	m_animator.create("egg", texture, Vector(128, 80), Vector(32, 32), 2, 1, 0.005);
+	m_animator.create("walk", texture, Vector(64, 80), Vector(32, 32), 2, 1, 0.005f);
+	m_animator.create("egg", texture, Vector(128, 80), Vector(32, 32), 2, 1, 0.005f);
 	m_animator.create("died", texture, { 64,80 + 32,32,-32 });
 
 	setState(State::Egg);
@@ -1062,7 +1062,7 @@ CCheepCheep::CCheepCheep(const Vector& initial_pos, const Vector& initial_speed)
 	m_speed = initial_speed;
 	setPosition(initial_pos);
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("fly", texture, Vector(0, 176), Vector(32, 32), 2, 1, 0.005);
+	m_animator.create("fly", texture, Vector(0, 176), Vector(32, 32), 2, 1, 0.005f);
 	m_animator.create("died", texture, { 0,176 + 32,32,-32 });
 	setState(State::Normal);
 }
@@ -1072,7 +1072,7 @@ CCheepCheep::CCheepCheep()
 	setSize({ 32, 32 });
 	m_speed = Vector::left*0.05f;
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("fly", texture, Vector(0, 176), Vector(32, 32), 2, 1, 0.005);
+	m_animator.create("fly", texture, Vector(0, 176), Vector(32, 32), 2, 1, 0.005f);
 	m_animator.create("died", texture, { 0,176 + 32,32,-32 });
 	setState(State::Underwater);
 }
@@ -1249,7 +1249,7 @@ CBulletBill::CBulletBill(const Vector& initial_pos, const Vector& initial_speed)
 	m_speed = initial_speed;
 	setPosition(initial_pos);
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("fly", texture, Vector(64, 112), Vector(32, 32), 1, 3, 0.005);
+	m_animator.create("fly", texture, Vector(64, 112), Vector(32, 32), 1, 3, 0.005f);
 	m_animator.create("died", texture, { 64,176 + 32,32,-32 });
 
 	setState(State::Normal);
@@ -1435,8 +1435,8 @@ CPodoboo::CPodoboo()
 	m_shape.setFillColor(sf::Color::Red);
 	setSize({ 32,32 });
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("up", texture, Vector(192, 80), Vector(32, 32), 3, 1, 0.005);
-	m_animator.create("down", texture, Vector(192, 112), Vector(32, -32), 3, 1, 0.005);
+	m_animator.create("up", texture, Vector(192, 80), Vector(32, 32), 3, 1, 0.005f);
+	m_animator.create("down", texture, Vector(192, 112), Vector(32, -32), 3, 1, 0.005f);
 }
 
 void CPodoboo::kickFromTop(CMario* mario)

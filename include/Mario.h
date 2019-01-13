@@ -17,8 +17,8 @@ private:
 	enum class State { fly, splash } m_state = State::fly;
 	void setState(State state);
 	void start() override;
-	const float bullet_speed = 0.33;
-	const float gravity_force = 0.0015;
+	const float bullet_speed = 0.33f;
+	const float gravity_force = 0.0015f;
 	Vector m_direction;
 	float m_timer = 0;    
 	Vector m_speed;
@@ -191,7 +191,7 @@ private:
 	const float climb_speed = 0.1f;
 	const int invincible_time = 11000;
 	const int fire_rate = 400; //bullet per ms
-	const int jump_rate = 250; //jump per ms
+	const float jump_rate = 250.f; //jump per ms
 	const Vector small_mario_size = {31,32};
 	const Vector big_mario_size = {31,64};
 	const Vector seated_mario_size = {31,32};

@@ -5,8 +5,8 @@
 
 CCoin::CCoin()
 {
-	m_animator.create("twist", *MarioGame().textureManager().get("Items"), Vector(0, 84), Vector(32, 32), 4, 1, 0.01);
-	m_animator.create("shine", *MarioGame().textureManager().get("Items"), Vector(0, 116), Vector(40, 32), 5, 1, 0.01, AnimType::forward);
+	m_animator.create("twist", *MarioGame().textureManager().get("Items"), Vector(0, 84), Vector(32, 32), 4, 1, 0.01f);
+	m_animator.create("shine", *MarioGame().textureManager().get("Items"), Vector(0, 116), Vector(40, 32), 5, 1, 0.01f, AnimType::forward);
 	m_animator.get("shine")->setOrigin(Vector(4, 0));
 	static float rot_offset = 0;
 	rot_offset += 0.4f;

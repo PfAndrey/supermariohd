@@ -39,8 +39,8 @@ private:
 	Vector m_speed;
 	enum State { wait, borning, normal } m_state = State::wait;
 	float m_timer = 0;
-	float run_speed = 0.1;
-	const float gravity_force = 0.0015;
+	float run_speed = 0.1f;
+	const float gravity_force = 0.0015f;
 };
 
 class COneUpMushroom : public CMushroom
@@ -59,9 +59,9 @@ private:
 	float m_timer = 0;
 	CMario* m_mario = nullptr;
 	Vector m_speed;
-	const float gravity_force = 0.0015;
-	const float jump_power = 0.6;
-	const float horizontal_speed = 0.1;
+	const float gravity_force = 0.0015f;
+	const float jump_power = 0.6f;
+	const float horizontal_speed = 0.1f;
 	void start() override;
 	CBlocks* m_blocks;
 public:

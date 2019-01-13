@@ -805,7 +805,7 @@ CMarioGUI::CMarioGUI()
     m_one_player_lab->setFontColor({ 0,0,0 });
 
     m_coin = new Animator();
-    m_coin->create("twist", *MarioGame().textureManager().get("Items"), Vector(0, 84), Vector(32, 32), 4, 1, 0.01);
+    m_coin->create("twist", *MarioGame().textureManager().get("Items"), Vector(0, 84), Vector(32, 32), 4, 1, 0.01f);
     m_coin->play("twist");
     m_coin->setPosition(458, 15);
     addObject(m_coin);
@@ -839,7 +839,7 @@ void CMarioGUI::update(int delta_time)
     if (m_state == GUIState::menu)
     {
         m_tmr += delta_time;
-        float x = 0.85 + 0.15*cos(m_tmr*0.01);
+        float x = 0.85f + 0.15*cos(m_tmr*0.01f);
         m_menu_selector->setPosition(450 + 16*(1-x), 435 + 16 *(1-x));
         m_menu_selector->getSprite().setScale(x,x);
     }
