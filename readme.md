@@ -57,3 +57,25 @@ cmake ..
 cmake --build . --config Release
 ./SuperMario
 ```
+
+# Mac OS
+----
+**1. install xcode:**    
+    https://developer.apple.com/xcode/
+
+**2. Install Git:**  
+    https://git-scm.com/downloads
+
+**3. Install CMake:**  
+    https://cmake.org/download
+
+**4. build project**   
+Go to terminal and type:
+```console
+git clone https://github.com/PfAndrey/supermariohd.git --recursive
+cd supermariohd
+mkdir build && cd build
+cmake ..
+sudo cmake --build . --config Release
+./SuperMario
+```
