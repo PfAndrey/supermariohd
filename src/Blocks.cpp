@@ -355,7 +355,6 @@ void CBlocks::update(int delta_time)
     {
         for (auto object : m_remove_later_list)
             delete object;
-        std::cout << "yes" << std::endl;
         m_remove_later_list.clear();
     }
 
