@@ -164,12 +164,12 @@ void CBricksBlock::kick(CMario* mario)
 	
 	if (!mario->isSmall()) // crash box
 	{
-			m_blocks->addObject(new COneBrick(Vector(x, y)*block_size, Vector(-0.05f, -0.2f)));
-			m_blocks->addObject(new COneBrick(Vector(x + 0.5f, (float)y)*block_size, Vector(0.05f, -0.2f)));
-			m_blocks->addObject(new COneBrick(Vector((float)x, y + 0.5f)*block_size, Vector(-0.05f, -0.1f)));
-			m_blocks->addObject(new COneBrick(Vector(x + 0.5f, y + 0.5f)*block_size, Vector(0.05f, -0.1f)));
+            m_blocks->addObject(new COneBrick(Vector(x, y)*block_size, Vector(-0.05f, -0.2f)));
+            m_blocks->addObject(new COneBrick(Vector(x + 0.5f, (float)y)*block_size, Vector(0.05f, -0.2f)));
+            m_blocks->addObject(new COneBrick(Vector((float)x, y + 0.5f)*block_size, Vector(-0.05f, -0.1f)));
+            m_blocks->addObject(new COneBrick(Vector(x + 0.5f, y + 0.5f)*block_size, Vector(0.05f, -0.1f)));
 			killEnemiesAbove(mario);
-			m_blocks->clearBlock(x, y);
+            m_blocks->clearBlock(x, y);
 			MarioGame().addScore(50);
 			MarioGame().playSound("breakblock");
 	}
@@ -332,7 +332,7 @@ void CBlocks::draw(sf::RenderWindow* render_window)
 		for (int y = view_rect.top(); y < view_rect.bottom(); ++y)
 		{
 			AbstractBlock* block = m_map->getCell(x, y);
-			if (!block)
+            if (block == nullptr)
 				continue;
 			bool skip_fiter = m_night_view_filter && filter_except.count(block->m_id);
 
@@ -351,6 +351,14 @@ void CBlocks::draw(sf::RenderWindow* render_window)
 
 void CBlocks::update(int delta_time)
 {
+    if (!m_remove_later_list.empty())
+    {
+        for (auto object : m_remove_later_list)
+            delete object;
+        std::cout << "yes" << std::endl;
+        m_remove_later_list.clear();
+    }
+
 	CGameObject::update(delta_time);
 
 	m_timer += delta_time / 200.f;
@@ -395,8 +403,8 @@ AbstractBlock* CBlocks::getBlock(int x, int y)
 
 void CBlocks::clearBlock(int x, int y)
 {
-	delete m_map->getCell(x, y);
-	m_map->setCell(x, y, NULL);
+    m_remove_later_list.push_back(m_map->getCell(x, y));
+    m_map->setCell(x, y, nullptr);
 }
 
 void CBlocks::kickBlock(int x, int y, CMario* mario)

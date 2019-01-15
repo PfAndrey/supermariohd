@@ -112,6 +112,7 @@ private:
 	float m_timer = 0;
 	int m_block_size = 32;
 	sf::Shader m_night_view_filter_shader;
+    std::vector<AbstractBlock*> m_remove_later_list;
 public:
 	CBlocks(int cols, int rows, int block_size);
 	~CBlocks();
