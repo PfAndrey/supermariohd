@@ -51,7 +51,8 @@ CMarioGame::CMarioGame() : CGame("SuperMario", {1280,720})
     //Load sounds
     const std::string sounds_dir = MARIO_RES_PATH + "Sounds/";
     for (auto sound : { "breakblock", "bump", "coin", "fireball", "jump_super", "kick", "stomp","powerup_appears",
-         "powerup", "pipe","flagpole", "bowser_falls", "bowser_fire", "mario_die","stage_clear", "game_over","1-up","warning", "world_clear"})
+         "powerup", "pipe","flagpole", "bowser_falls", "bowser_fire", "mario_die","stage_clear", 
+		 "game_over","1-up","warning", "world_clear","pause"})
         soundManager().loadFromFile(sound, sounds_dir + sound + ".wav");
 
     //Load music
@@ -61,7 +62,7 @@ CMarioGame::CMarioGame() : CGame("SuperMario", {1280,720})
 
     //Configure input
     for (auto key : {sf::Keyboard::Left, sf::Keyboard::Right,sf::Keyboard::Up, sf::Keyboard::Down,
-         sf::Keyboard::Space, sf::Keyboard::LShift })
+         sf::Keyboard::Space, sf::Keyboard::LShift, sf::Keyboard::Enter})
         inputManager().registerKey(key);
 }
 
@@ -299,6 +300,28 @@ void CMarioGame::update(int delta_time)
     }
     case (GameState::playing):
     {
+		if (m_game_state != GameState::main_menu)
+			if (inputManager().isKeyJustPressed(sf::Keyboard::Enter))
+			{
+				playSound("pause");
+				if (m_current_scene->isEnabled())
+				{
+					m_current_scene->disable();
+					musicManager().pause();
+					m_gui_object->pause(true);
+					break;
+				}
+				else
+				{
+					m_current_scene->enable();
+					musicManager().play();
+					m_gui_object->pause(false);
+				}
+			}
+
+		if (!m_current_scene->isEnabled())
+			break;
+
         m_game_time -= delta_time;
 
         switch (m_time_out_state)
@@ -335,6 +358,7 @@ void CMarioGame::update(int delta_time)
         }
 
         m_gui_object->setGameTime(m_game_time / 1000);
+
         break;
     }
     case (GameState::level_over):
@@ -676,7 +700,7 @@ void CMarioGameScene::update(int delta_time)
     const Vector delta = (m_mario->getBounds().center() - camera_pos)*delta_time;
     camera_pos.x += delta.x *0.0075f;
     camera_pos.y += delta.y *0.0005f;
-    camera_pos = m_mario->getBounds().center();
+	camera_pos = m_mario->getBounds().center();
     camera_pos.x = math::clamp(camera_pos.x, screen_size.x / 2.f, m_blocks->width() - screen_size.x / 2.f);
     camera_pos.y = math::clamp(camera_pos.x, screen_size.y / 2.f, m_blocks->height() - screen_size.y / 2.f);
     m_view.setCenter(camera_pos);
@@ -815,6 +839,13 @@ CMarioGUI::CMarioGUI()
     m_game_over_lab->setTextAlign(CLabel::center);
     m_game_over_lab->setString("GAME OVER");
     addObject(m_game_over_lab);
+
+	m_paused_label = createLabel();
+	m_paused_label->setPosition(MarioGame().screenSize() / 2.f);
+	m_paused_label->setTextAlign(CLabel::center);
+	m_paused_label->setString("PAUSED");
+	addObject(m_paused_label);
+	m_paused_label->hide();
 }
 
 void CMarioGUI::setMarioRank(MarioRank rank)
@@ -918,6 +949,14 @@ void CMarioGUI::setLevelName(const std::string& string)
 void CMarioGUI::setLives(int value)
 {
     m_lives->setString("  x  " + toString(value));
+}
+
+void CMarioGUI::pause(bool ispaused)
+{
+	if (ispaused)
+		m_paused_label->show();
+	else
+		m_paused_label->hide();
 }
 
 

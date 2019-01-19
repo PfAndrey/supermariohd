@@ -670,47 +670,6 @@ Vector  CGame::screenSize() const
     return Vector((int)m_window->getSize().x, (int)m_window->getSize().y);
 }
 
-//---------------------------------------------------------------------------------------------------------
-CTimer::CTimer()
-{
-    setName("Timer");
-}
-
-void CTimer::update(int miliseconds)
-{
-    if (!isEnabled())
-        return;
-
-    for (auto it = m_call_back_list.begin(); it != m_call_back_list.end(); )
-    {
-        auto& pair = *it;
-        pair.first -= sf::milliseconds(miliseconds);
-
-        if (pair.first <= sf::Time() || !pair.second)
-        {
-            if (pair.second)
-                pair.second.operator()();
-            it = m_call_back_list.erase(it);
-        }
-        else
-            ++it;
-    }
-}
-
-
-
-void CTimer::clear()
-{
-    for (auto it = m_call_back_list.begin(); it != m_call_back_list.end(); ++it)
-        (*it).second = NULL;
-}
-
-
-CTimer::~CTimer()
-{
-    clear();
-}
-
 
 //---------------------------------------------------------------------------------------------------------
 
@@ -1107,15 +1066,26 @@ CSpriteSheet* Animator::get(const std::string& str)
 //---------------------------------------------------------------------------------------------------------
 void CMusicManager::play(const std::string& name)
 {
-    m_current_music = name;
-    assert(m_resources[name]); //unknown resource
-    m_resources[name]->play();
+	if (name != "")
+		m_current_music = name;
+    assert(m_resources[m_current_music]); //unknown resource
+	if (!m_current_music.empty())
+		m_resources[m_current_music]->play();
 }
 
 void CMusicManager::stop()
 {
-    for (auto music : m_resources)
-        music.second->stop();
+	for (auto music : m_resources)
+	{
+		music.second->stop();
+	}
+	m_current_music.clear();
+}
+
+void CMusicManager::pause()
+{
+	for (auto music : m_resources)
+		music.second->pause();
 }
 
 void CMusicManager::setPitch(float value)

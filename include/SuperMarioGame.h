@@ -125,25 +125,28 @@ public:
 	CFlowText* createFlowText();
 	CLabel* createLabel();
 	void update(int delta_time) override;
+	void pause(bool ispaused);
 protected:
 	void postDraw(sf::RenderWindow* render_window) override;
 	void draw(sf::RenderWindow* render_window) override;
 	GUIState m_state;
 private:
 	int m_tmr = 0;
-	Animator* m_mario_pix = NULL, *m_coin = NULL;
+	Animator* m_mario_pix = nullptr, *m_coin = nullptr;
 	Pallete m_fire_pallete;
-	CLabel* m_score_lab = NULL;
-	CLabel* m_coin_counter_lab = NULL;
-	CLabel* m_world_lab = NULL;
-	CLabel* m_timer = NULL;
-	CLabel* m_level_name = NULL;
-	CLabel* m_lives = NULL;
-	CLabel* m_game_logo = NULL;
-	CLabel* m_one_player_lab = NULL, *m_two_player_lab = NULL;
-	CLabel* m_menu_selector = NULL;
-	CLabel* m_game_over_lab = NULL;
-	CFlowText* m_flow_text = NULL;
+	CLabel *m_score_lab,
+		*m_coin_counter_lab,
+		*m_world_lab,
+		*m_timer,
+		*m_level_name,
+		*m_lives,
+		*m_game_logo,
+		*m_one_player_lab,
+		*m_two_player_lab,
+		*m_menu_selector,		
+		*m_game_over_lab,
+		*m_paused_label;
+	CFlowText* m_flow_text = nullptr;
 };
 
 #endif

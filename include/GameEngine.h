@@ -276,8 +276,9 @@ using CSoundManager = ResourceManager<sf::SoundBuffer>;
 class CMusicManager : public ResourceManager<sf::Music>
 {
 	public:
-		void play(const std::string& name);
+		void play(const std::string& name = "");
 		void stop();
+		void pause();
 		void setPitch(float value);
 	private:
 		std::string m_current_music;
@@ -321,23 +322,6 @@ public:
 	void playMusic(const std::string& name);
 	void stopMusic();
 	Vector screenSize() const;
-};
-
-class CTimer : public CGameObject
-{
-public:
-	CTimer();
-	void update(int delta_time) override;
-	void clear();
-	template <typename T>
-	void add(sf::Time time, T callable)
-	{
-		m_call_back_list.push_back(std::pair<sf::Time, std::function<void()>>(time, std::bind(callable)));
-	}
-	~CTimer();
-
-private:
-	std::list< std::pair<sf::Time, std::function<void()>>> m_call_back_list;
 };
 
 enum class AnimType { manual, forward, forward_stop, forward_cycle, forward_backward_cycle };
