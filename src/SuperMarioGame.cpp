@@ -14,17 +14,30 @@ void Timer::invoke(const std::function <void()>& func, int delay)
 
 void Timer::update(int delta_time)
 {
-    m_time += delta_time;
-    for (auto it = m_invoke_list.begin(); it != m_invoke_list.end(); )
-    {
-        if (m_time > it->first)
-        {
-            it->second();
-            it = m_invoke_list.erase(it);
-        }
-        else
-            ++it;
-    }
+	if (!m_paused)
+	{
+		m_time += delta_time;
+		for (auto it = m_invoke_list.begin(); it != m_invoke_list.end(); )
+		{
+			if (m_time > it->first)
+			{
+				it->second();
+				it = m_invoke_list.erase(it);
+			}
+			else
+				++it;
+		}
+	}
+}
+
+void Timer::pause()
+{
+	m_paused = true;
+}
+
+void Timer::play()
+{
+	m_paused = false;
 }
 
 //--------------------------------------------------------------------------------
@@ -309,6 +322,7 @@ void CMarioGame::update(int delta_time)
 					m_current_scene->disable();
 					musicManager().pause();
 					m_gui_object->pause(true);
+					timer().pause();
 					break;
 				}
 				else
@@ -316,6 +330,7 @@ void CMarioGame::update(int delta_time)
 					m_current_scene->enable();
 					musicManager().play();
 					m_gui_object->pause(false);
+					timer().play();
 				}
 			}
 

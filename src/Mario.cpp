@@ -871,7 +871,7 @@ void CTransitionMarioState::onEnter()
 
 void CTransitionMarioState::onLeave() 
 {
-		 mario()->moveToFront();
+		mario()->moveToFront();
 		mario()->setSpeed(Vector::zero);
 }
 
