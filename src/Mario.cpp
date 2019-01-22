@@ -264,6 +264,31 @@ Vector CMario::getInputDirection()
 	return m_input_direcition;
 }
 
+void CMario::standUp()
+{
+	if (m_seated)
+	{
+		setSize(big_mario_size);
+		move(seated_mario_size - big_mario_size);
+		m_seated = false;
+	}
+}
+
+void CMario::seatDown()
+{
+	if (!m_seated)
+	{
+		setSize(seated_mario_size);
+		move(big_mario_size - seated_mario_size);
+		m_seated = true;
+	}
+}
+
+bool CMario::isSeated() const
+{
+	return m_seated;
+}
+
 void CMario::inputProcessing(float delta_time)
 {
 	auto& input_manager = MarioGame().inputManager();
@@ -297,16 +322,10 @@ void CMario::inputProcessing(float delta_time)
 		if (m_grounded && m_rank != MarioRank::small)
 		{
 			if (m_input_direcition.y > 0 && !m_seated)
-			{
-					setSize(seated_mario_size);
-					move(big_mario_size - seated_mario_size);
-			}
+				seatDown();
 			else if (m_input_direcition.y <= 0 && m_seated)
-			{
-					setSize(big_mario_size);
-					move(seated_mario_size - big_mario_size);	
-			}
-			m_seated = m_input_direcition.y > 0;
+				standUp();
+			
 		}
 
 		if (m_grounded)
@@ -897,11 +916,11 @@ CGoToCastleMarioState::CGoToCastleMarioState()
 void CGoToCastleMarioState::onEnter()
 {
 	CMarioGame::instance()->musicManager().stop();
-		auto m_block = mario()->getParent()->findObjectByType<CBlocks>();
-		m_cell_y = m_block->height() - m_block->blockSize().y * 4;
-		if (!mario()->isSmall())
-			m_cell_y -= 32;
-		 mario()->m_input_direcition = Vector::zero;
+	auto m_block = mario()->getParent()->findObjectByType<CBlocks>();
+	m_cell_y = m_block->height() - m_block->blockSize().y * 4 - (mario()->isSmall()?2:34);
+	mario()->m_input_direcition = Vector::zero;
+	if (mario()->isSeated())
+		mario()->standUp();
 }
 
 void CGoToCastleMarioState::onLeave() 
@@ -942,6 +961,7 @@ void CGoToCastleMarioState::update(int delta_time)
             if (m_delay_timer < 0)
             {
                 m_state = State::walk;
+				CMarioGame::instance()->playSound("stage_clear");
                 auto anim_name = std::string("walk_") + (mario()->isSmall() ? "small" : "big");
                 mario()->playAnimation(anim_name);
                 mario()->m_animator->setSpeed(anim_name, 0.003f);
@@ -964,9 +984,6 @@ void CGoToCastleMarioState::update(int delta_time)
                     m_next_level = portal->getProperty("Level").asString();
                     if (portal->getProperty("SubLevel").isValid())
                         m_next_sub_level = portal->getProperty("SubLevel").asString();
-                    auto flag = mario()->getParent()->findObjectByType<CCastleFlag>();
-                    assert(flag); // there is no castle flag in level
-                    flag->liftUp();
                     MarioGame().setEndLevelStatus();
                 }
             break;
@@ -975,8 +992,11 @@ void CGoToCastleMarioState::update(int delta_time)
         {
             if (MarioGame().getGameTime() == 0)
             {
-                m_delay_timer = 2000;
+                m_delay_timer = 3500;
                 m_state = State::next_level;
+				auto flag = mario()->getParent()->findObjectByType<CCastleFlag>();
+				assert(flag); // there is no castle flag in level
+				flag->liftUp();
             }
             break;
         }
@@ -1045,6 +1065,8 @@ void CGoToPrincessState::onEnter()
 	mario()->playAnimation(anim_name);
 	mario()->m_animator->setSpeed(anim_name, 0.003f);
 	mario()->m_animator->flipX(false);
+	if (mario()->isSeated())
+		mario()->standUp();
 }
 
 void CGoToPrincessState::onLeave()

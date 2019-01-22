@@ -168,6 +168,9 @@ public:
 	void setState(MarioState state);
 	void setState(IMarioState* state);
 	void setInvincibleMode(bool value = true);
+	void standUp();
+	void seatDown();
+	bool isSeated() const;
 private:
 	void draw(sf::RenderWindow* render_window) override;
 	void update(int delta_time) override;

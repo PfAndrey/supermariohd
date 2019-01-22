@@ -649,7 +649,7 @@ void CGame::stopMusic()
 
 void  CGame::playSound(const std::string& name)
 {
-    const int SOUND_BUFFER_SIZE = 32;
+    const int SOUND_BUFFER_SIZE = 40;
     int i = 0;
     while (m_sounds_buf[i].getStatus() == sf::Sound::Playing)
     {
@@ -658,7 +658,8 @@ void  CGame::playSound(const std::string& name)
         ++i;
     }
 
-    assert(i < SOUND_BUFFER_SIZE); //sound buffer overflow
+    if (i >= SOUND_BUFFER_SIZE)
+		throw std::runtime_error("sound buffer overflow");
     m_sounds_buf[i].setBuffer(*soundManager().get(name));
     m_sounds_buf[i].play();
 }

@@ -1749,6 +1749,7 @@ void CBowser::enterState(State state)
 	case(State::died):
 	{
 		m_animator.play("died");
+		MarioGame().playSound("bowser_falls");
 		m_speed = Vector::zero;
 		break;
 	}

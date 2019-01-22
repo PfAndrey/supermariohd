@@ -656,10 +656,15 @@ void CEndLevelKey::update(int delta_time)
 		  {
 			  if (m_mario->getBounds().isIntersect(getBounds()))
 			  {
-			     if (getParent()->findObjectByName("Bowser"))
-				  enterState(State::bridge_hiding);
-				 else
-				  enterState(State::mario_go_to_princes);
+				  if (getParent()->findObjectByName("Bowser"))
+					  enterState(State::bridge_hiding);
+				  else
+				  {
+					  CMarioGame::instance()->stopMusic();
+					  this->hide();
+					  CMarioGame::instance()->playSound("world_clear");
+					  enterState(State::mario_go_to_princes);
+				  }
 			  }
 			  break;
 		  }
@@ -675,6 +680,7 @@ void CEndLevelKey::update(int delta_time)
 				  m_bridge_blocks.pop_back();
 				  if (m_bridge_blocks.empty())
 					  enterState(State::bowser_run);
+				  MarioGame().playSound("breakblock");
 			  }
 			  break;
 		  }
@@ -746,7 +752,6 @@ void CCastleFlag::liftUp()
 {
 	enable();
 	m_pos_y -= 64;
-	CMarioGame::instance()->playSound("stage_clear");
 }
 
 void CCastleFlag::draw(sf::RenderWindow* render_window)

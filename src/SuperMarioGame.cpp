@@ -65,7 +65,7 @@ CMarioGame::CMarioGame() : CGame("SuperMario", {1280,720})
     const std::string sounds_dir = MARIO_RES_PATH + "Sounds/";
     for (auto sound : { "breakblock", "bump", "coin", "fireball", "jump_super", "kick", "stomp","powerup_appears",
          "powerup", "pipe","flagpole", "bowser_falls", "bowser_fire", "mario_die","stage_clear", 
-		 "game_over","1-up","warning", "world_clear","pause"})
+		 "game_over","1-up","warning", "world_clear","pause","beep"})
         soundManager().loadFromFile(sound, sounds_dir + sound + ".wav");
 
     //Load music
@@ -383,9 +383,12 @@ void CMarioGame::update(int delta_time)
             m_delay_timer -= delta_time;
             if (m_delay_timer < 0)
             {
-                m_delay_timer = 20;
+                m_delay_timer = 12;
                 m_game_time -= 1000;
                 addScore(50);
+				static int i = 0; ++i;
+				if (!(i%4))
+					playSound("beep");
                 if (m_game_time < 0)
                     m_game_time = 0;
 
@@ -586,7 +589,8 @@ CGameObject* parseGameObject(tinyxml2::XMLElement* element)
     { "EndLevelFlag",      goFabric<CEndLevelFlag> },
     { "EndLevelKey",       goFabric<CEndLevelKey> },
     { "CastleFlag",        goFabric<CCastleFlag> },
-    { "Princess",          goFabric<CPrincess> }
+    { "Princess",          goFabric<CPrincess> },
+	{ "Text",              goFabric<CLabel>}
 };
 
     auto object_fabric = fabrics[obj_type];
@@ -651,12 +655,9 @@ void CMarioGameScene::loadFromFile(const std::string& filepath)
     setName("MarioGameScene");
     m_level_name = filepath;
     auto it1 = --m_level_name.end();
-
-    while (*it1 != '.')
-        it1--;
+    while (*it1 != '.') it1--;
     auto it2 = it1;
-    while (*it2 != '/' || it2 == m_level_name.begin())
-        it2--;
+    while (*it2 != '/' || it2 == m_level_name.begin()) it2--;
     m_level_name = std::string(++it2, it1);
 
     clear();
@@ -682,7 +683,6 @@ void CMarioGameScene::loadFromFile(const std::string& filepath)
     m_mario->moveToFront();
     assert(m_mario); // no mario object in scene
     setCameraOnTarget();
-
 }
 
 const std::string& CMarioGameScene::getLevelName() const

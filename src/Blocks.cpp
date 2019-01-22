@@ -561,7 +561,7 @@ std::vector<Vector> CBlocks::getBridgeBlocks()
 					                         m_map->getCell(x, y)->code() == AbstractBlock::CHAIN_TILE_CODE))
 					bridge_cells.emplace_back(x, y);
 
-		std::reverse(bridge_cells.begin(), bridge_cells.end());
+		//std::reverse(bridge_cells.begin(), bridge_cells.end());
 		return bridge_cells;
 }
 

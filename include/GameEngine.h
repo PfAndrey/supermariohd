@@ -295,7 +295,7 @@ private:
 	CMusicManager m_music_manager;
 	CEventManager m_event_manager;
 	CInputManager m_input_manager;
-	sf::Sound m_sounds_buf[32];
+	sf::Sound m_sounds_buf[40];
 	sf::RenderWindow* m_window = NULL; 
 	Vector m_screen_size;
 	sf::Color m_clear_color = sf::Color::Black;
