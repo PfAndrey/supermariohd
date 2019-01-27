@@ -135,7 +135,10 @@ public:
 	Vector traceLine(const Vector& start_cell, const Vector& direction, const std::function<bool(T)>& allowed_cell)
 	{
 		Vector curr_cell = floor(start_cell);
-		assert(allowed_cell(getCell(curr_cell)));
+		if (!allowed_cell(getCell(curr_cell)))
+			return curr_cell;
+		
+		//assert(allowed_cell(getCell(curr_cell)));
 
 		if (direction == Vector::zero)
 			return curr_cell;

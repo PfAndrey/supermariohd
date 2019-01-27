@@ -822,6 +822,8 @@ bool CHammerBro::isCanJumpUp() const
 {
 	Vector begin_point = m_blocks->toBlockCoordinates(getBounds().center(), true);
 	Vector end_point = m_blocks->traceLine(begin_point, Vector::up);
+	if (end_point == begin_point)
+		return false;
 	if (end_point.y == 0) return false;
     if (std::abs(end_point.y - begin_point.y) == 2 && !m_blocks->isCollidableBlock(end_point + Vector::up * 2))
 		return true;
