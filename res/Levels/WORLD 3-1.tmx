@@ -66,7 +66,7 @@
   </object>
   <object id="319" name="Goomba" type="Goomba" x="5144.33" y="416" width="32" height="32"/>
   <object id="320" name="Goomba" type="Goomba" x="5187" y="416" width="32" height="32"/>
-  <object id="322" name="Portal_to_sky" type="LevelPortal" x="4332.74" y="-8.6268" width="71.519" height="83.2535">
+  <object id="322" name="Portal_to_sky" type="LevelPortal" x="4331.41" y="-6.6268" width="71.519" height="83.2535">
    <properties>
     <property name="ComebackPortal" value="ComeBackPort2"/>
     <property name="Direction" value="None"/>
