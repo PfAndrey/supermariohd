@@ -2,6 +2,16 @@
 #include "GameEngine.h"
 #include <assert.h>
 
+std::vector<std::string> split(const std::string &s, char delim)
+{
+	std::stringstream ss(s);
+	std::string item;
+	std::vector<std::string> elems;
+	while (std::getline(ss, item, delim))
+		elems.push_back(item);
+	return elems;
+}
+
 float toFloat(const std::string& str)
 {
     return std::stof(str);
@@ -73,6 +83,132 @@ Property::Property()
     m_type = Type::NoInit;
 }
 
+Property::~Property()
+{
+	if (m_type == Type::String)
+		delete string_data;
+}
+
+Property::Property(const Property& property)
+{
+	m_type = property.m_type;
+	switch (m_type)
+	{
+		case(Type::Float):
+		{
+			float_data = property.float_data;
+			break;
+		}
+		case(Type::Int):
+		{
+			int_data = property.int_data;
+			break;
+		}
+		case(Type::Bool):
+		{
+			bool_data = property.bool_data;
+			break;
+		}
+		case(Type::String):
+		{
+			string_data = new std::string(*property.string_data);
+			break;
+		}
+		default:break;
+	}
+}
+
+Property& Property::operator=(const Property& property)
+{
+	m_type = property.m_type;
+	switch (m_type)
+	{
+		case(Type::Float):
+		{
+			float_data = property.float_data;
+			break;
+		}
+		case(Type::Int):
+		{
+			int_data = property.int_data;
+			break;
+		}
+		case(Type::Bool):
+		{
+			bool_data = property.bool_data;
+			break;
+		}
+		case(Type::String):
+		{
+			string_data = new std::string(*property.string_data);
+			break;
+		}
+		default:break;
+	}
+	return *this;
+}
+
+Property::Property(Property&& property)
+{
+	m_type = property.m_type;
+	switch (m_type)
+	{
+	case(Type::Float):
+	{
+		float_data = property.float_data;
+		break;
+	}
+	case(Type::Int):
+	{
+		int_data = property.int_data;
+		break;
+	}
+	case(Type::Bool):
+	{
+		bool_data = property.bool_data;
+		break;
+	}
+	case(Type::String):
+	{
+		string_data = property.string_data;
+		property.string_data = nullptr;
+		break;
+	}
+	default:break;
+	}
+}
+
+Property& Property::operator=(Property&& property)
+{
+	m_type = property.m_type;
+	switch (m_type)
+	{
+	case(Type::Float):
+	{
+		float_data = property.float_data;
+		break;
+	}
+	case(Type::Int):
+	{
+		int_data = property.int_data;
+		break;
+	}
+	case(Type::Bool):
+	{
+		bool_data = property.bool_data;
+		break;
+	}
+	case(Type::String):
+	{
+		string_data = property.string_data;
+		property.string_data = nullptr;
+		break;
+	}
+	default:break;
+	}
+	return *this;
+}
+
 Property::Property(bool bool_value)
 {
     m_type = Type::Bool;
@@ -88,7 +224,7 @@ Property::Property(int int_value)
 Property::Property(const std::string& string_value)
 {
     m_type = Type::String;
-    string_data = string_value;
+    string_data = new std::string(string_value);
 }
 
 Property::Property(float float_value)
@@ -115,7 +251,7 @@ float Property::asFloat() const
 const std::string& Property::asString() const
 {
     assert(m_type == Type::String);
-    return string_data;
+    return *string_data;
 }
 bool Property::isValid() const
 {
@@ -504,6 +640,41 @@ void CGameObject::invokePreupdateActions()
     for (auto& action : m_preupdate_actions)
         action();
     m_preupdate_actions.clear();
+}
+
+
+//---------------------------------------------------------------------------------------------------------
+void Timer::invoke(const std::function <void()>& func, int delay)
+{
+	m_invoke_list.push_back(std::make_pair<>(m_time + delay, func));
+}
+
+void Timer::update(int delta_time)
+{
+	if (!m_paused)
+	{
+		m_time += delta_time;
+		for (auto it = m_invoke_list.begin(); it != m_invoke_list.end(); )
+		{
+			if (m_time > it->first)
+			{
+				it->second();
+				it = m_invoke_list.erase(it);
+			}
+			else
+				++it;
+		}
+	}
+}
+
+void Timer::pause()
+{
+	m_paused = true;
+}
+
+void Timer::play()
+{
+	m_paused = false;
 }
 
 //---------------------------------------------------------------------------------------------------------
@@ -1187,6 +1358,7 @@ void CLabel::init()
 {
     setName("Label");
     setFontColor(sf::Color::Black);
+	m_sprite.setColor({ 255,255,255,50 });
 }
 void CLabel::setBounds(int x, int y, int w, int h)
 {
@@ -1268,6 +1440,29 @@ void CLabel::draw(sf::RenderWindow* window)
         window->draw(m_text);
     }
 }
+
+void CLabel::onPropertySet(const std::string& name)
+{
+	CGameObject::onPropertySet(name);
+	if (name == "text")
+		setString(getProperty("text").asString());
+}
+
+void CLabel::onActivated()
+{
+	if (getProperty("x").isValid())
+	{
+		setBounds(
+			getProperty("x").asFloat(),
+			getProperty("y").asFloat(),
+			getProperty("width").asFloat(),
+			getProperty("height").asFloat());
+			setString(getProperty("text").asString());
+	}
+	if (getProperty("hided").isValid() && getProperty("hided").asBool())
+			hide();
+}
+
 Rect CLabel::getBounds() const
 {
     return m_rect;

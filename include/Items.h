@@ -219,4 +219,14 @@ private:
 	Animator m_animator;
 };
 
+class CTrigger : public CGameObject
+{
+private:
+	void update(int delta_time) override;
+	void start() override;
+	void onActivated() override;
+	bool m_trigered = false;
+	CMario* m_mario = nullptr;
+};
+
 #endif

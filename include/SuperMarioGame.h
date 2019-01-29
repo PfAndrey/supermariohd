@@ -12,19 +12,6 @@ class CMario;
 class CMarioGameScene;
 class CMarioGUI;
 
-class Timer
-{
- private:
-	 int m_time = 0;
-	 bool m_paused = false;
-	 std::list<std::pair<int, std::function<void()>>> m_invoke_list; 
-public:
-	 void invoke(const std::function <void()>& func, int delay);
-	 void update(int delta_time);
-	 void pause();
-	 void play();
-};
-
 class CMarioGame : public CGame
 {
 private:

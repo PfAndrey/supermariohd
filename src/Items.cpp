@@ -782,3 +782,33 @@ void CPrincess::draw(sf::RenderWindow* render_window)
 	m_animator.draw(render_window);
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------------------
+
+void CTrigger::start()
+{
+	m_mario = getParent()->findObjectByName<CMario>("Mario");
+}
+
+void CTrigger::onActivated()
+{
+	setSize({ getProperty("width").asFloat(),getProperty("height").asFloat() });
+}
+
+void CTrigger::update(int delta_time)
+{
+	if (!m_trigered && getBounds().isContain(m_mario->getBounds()))
+	{
+		if (getProperty("EnableAction").isValid())
+		{
+			auto object_names = split(getProperty("EnableAction").asString(), ';');
+			for (auto object_name : object_names)
+			{
+				auto object = getParent()->findObjectByName(object_name);
+				if (object)
+					object->show();
+			}
+		}
+		m_trigered = true;
+	}
+}
+

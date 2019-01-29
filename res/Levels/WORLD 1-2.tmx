@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="192" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="114">
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="192" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="122">
  <tileset firstgid="1" source="Tiles.tsx"/>
  <layer id="5" name="Tile Layer 1" width="192" height="16">
   <data encoding="csv">
@@ -300,6 +300,35 @@
     <property name="SubLevel" value=""/>
    </properties>
   </object>
-  <object id="113" name="Mario" type="Mario" x="96" y="64" width="32" height="32"/>
+  <object id="114" name="tx1" type="Text" x="5714" y="165" width="313" height="75">
+   <properties>
+    <property name="hided" type="bool" value="true"/>
+   </properties>
+   <text bold="1" halign="center" valign="center">Welcome to warp zone!</text>
+  </object>
+  <object id="116" name="tx3" type="Text" x="5824" y="272" width="64" height="64.5">
+   <properties>
+    <property name="hided" type="bool" value="true"/>
+   </properties>
+   <text bold="1" halign="center" valign="center">3</text>
+  </object>
+  <object id="117" name="tx2" type="Text" x="5696" y="272.25" width="64" height="64.5">
+   <properties>
+    <property name="hided" type="bool" value="true"/>
+   </properties>
+   <text bold="1" halign="center" valign="center">4</text>
+  </object>
+  <object id="118" name="tx4" type="Text" x="5952.5" y="272.25" width="64" height="64.5">
+   <properties>
+    <property name="hided" type="bool" value="true"/>
+   </properties>
+   <text bold="1" halign="center" valign="center">2</text>
+  </object>
+  <object id="120" name="Trigger" type="Trigger" x="5787.5" y="-26" width="362" height="144">
+   <properties>
+    <property name="EnableAction" value="tx1;tx2;tx3;tx4"/>
+   </properties>
+  </object>
+  <object id="121" name="Mario" type="Mario" x="96" y="64" width="32" height="32"/>
  </objectgroup>
 </map>

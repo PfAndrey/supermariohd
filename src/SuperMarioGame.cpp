@@ -7,40 +7,6 @@
 #include "Enemies.h"
 #include <cmath>
 
-void Timer::invoke(const std::function <void()>& func, int delay)
-{
-    m_invoke_list.push_back(std::make_pair<>(m_time + delay, func));
-}
-
-void Timer::update(int delta_time)
-{
-	if (!m_paused)
-	{
-		m_time += delta_time;
-		for (auto it = m_invoke_list.begin(); it != m_invoke_list.end(); )
-		{
-			if (m_time > it->first)
-			{
-				it->second();
-				it = m_invoke_list.erase(it);
-			}
-			else
-				++it;
-		}
-	}
-}
-
-void Timer::pause()
-{
-	m_paused = true;
-}
-
-void Timer::play()
-{
-	m_paused = false;
-}
-
-//--------------------------------------------------------------------------------
 CMarioGame* CMarioGame::s_instance = NULL;
 
 CMarioGame::CMarioGame() : CGame("SuperMario", {1280,720})
@@ -522,32 +488,39 @@ std::map<std::string, Property> parseProperties(tinyxml2::XMLElement* object)
     std::map<std::string, Property> parsed;
 
     //common properties
-    parsed["x"] = Property(toFloat(object->Attribute("x")));
-    parsed["y"] = Property(toFloat(object->Attribute("y")));
-    parsed["width"] = Property(toFloat(object->Attribute("width")));
-    parsed["height"] = Property(toFloat(object->Attribute("height")));
-    parsed["name"] = Property(toString(object->Attribute("name")));
-
+    parsed["x"] = toFloat(object->Attribute("x"));
+    parsed["y"] = toFloat(object->Attribute("y"));
+    parsed["width"] = toFloat(object->Attribute("width"));
+    parsed["height"] = toFloat(object->Attribute("height"));
+	parsed["name"] = toString(object->Attribute("name"));
+ 
     //specific properties
     tinyxml2::XMLElement* properties = object->FirstChildElement("properties");
-    if (properties)
-        for (auto property = properties->FirstChildElement("property"); property != NULL; property = property->NextSiblingElement())
-        {
+	if (properties)
+	{
+		for (auto property = properties->FirstChildElement("property"); property != NULL; property = property->NextSiblingElement())
+		{
 
-            std::string type("string");
-            if (property->Attribute("type")) type = property->Attribute("type");
-            std::string name = property->Attribute("name");
-            std::string value = property->Attribute("value");
+			std::string type("string");
+			if (property->Attribute("type")) type = property->Attribute("type");
+			std::string name = property->Attribute("name");
+			std::string value = property->Attribute("value");
 
-            if (type == "int")
-                parsed[name] = toInt(value);
-            else if (type == "float")
-                parsed[name] = toFloat(value);
-            else if (type == "bool")
-                parsed[name] = toBool(value);
-            else
-                parsed[name] = toString(value);
-        }
+			if (type == "int")
+				parsed[name] = toInt(value);
+			else if (type == "float")
+				parsed[name] = toFloat(value);
+			else if (type == "bool")
+				parsed[name] = toBool(value);
+			else
+				parsed[name] = toString(value);
+		}
+	}
+
+		//parse text element 
+	tinyxml2::XMLElement* text_properties = object->FirstChildElement("text");
+	if (text_properties)
+		parsed["text"] = std::string(text_properties->FirstChild()->Value());
 
     return parsed;
 }
@@ -557,6 +530,20 @@ CGameObject* goFabric()
 {
     return new T;
 }
+
+
+CGameObject* textFabric()
+{
+	CLabel* lab = new CLabel();
+	lab->setFontName(*MarioGame().fontManager().get("some_font"));
+	lab->setFontStyle(sf::Text::Bold);
+	lab->setFontColor({ 255,255,220 });
+	lab->setFontSize(36);
+	lab->setTextAlign(CLabel::center);
+	lab->setFillColor(sf::Color::Transparent);
+	return lab;
+}
+
 
 CGameObject* parseGameObject(tinyxml2::XMLElement* element)
 {
@@ -590,7 +577,8 @@ CGameObject* parseGameObject(tinyxml2::XMLElement* element)
     { "EndLevelKey",       goFabric<CEndLevelKey> },
     { "CastleFlag",        goFabric<CCastleFlag> },
     { "Princess",          goFabric<CPrincess> },
-	{ "Text",              goFabric<CLabel>}
+	{ "Trigger",           goFabric<CTrigger> },
+	{ "Text",              textFabric }
 };
 
     auto object_fabric = fabrics[obj_type];

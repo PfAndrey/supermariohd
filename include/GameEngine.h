@@ -23,6 +23,8 @@ std::string toString(const T& param)
 	return sstream.str();
 }
 
+std::vector<std::string> split(const std::string &s, char delim);
+
 float toFloat(const std::string& str);
 int toInt(const std::string& str);
 bool toBool(const std::string& str);
@@ -53,16 +55,24 @@ public:
 	Property(int int_value);
 	Property(const std::string& string_value);
 	Property(float float_value);
+	Property(const Property& property);
+	Property& operator=(const Property& property);
+	Property(Property&& property);
+	Property& operator=(Property&& property);
+	~Property();
 	bool asBool() const;
 	int asInt() const;
 	float asFloat() const;
 	const std::string& asString() const;
 	bool isValid() const;
 private:
-	int int_data;
-	float float_data;
-	std::string string_data;
-	bool bool_data;
+	union
+	{
+		int int_data;
+		float float_data;
+		std::string* string_data;
+		bool bool_data;
+	};
 	enum class Type { NoInit, Bool, Int, Float, String } m_type;
 };
 
@@ -171,6 +181,19 @@ private:
 };
 
 void destroyObject(CGameObject* gameObject);
+
+class Timer
+{
+private:
+	int m_time = 0;
+	bool m_paused = false;
+	std::list<std::pair<int, std::function<void()>>> m_invoke_list;
+public:
+	void invoke(const std::function <void()>& func, int delay);
+	void update(int delta_time);
+	void pause();
+	void play();
+};
 
 class CEventManager
 {
@@ -447,8 +470,9 @@ public:
 	sf::Sprite& getSprite();
 	virtual void draw(sf::RenderWindow* window) override;
 protected:
+	virtual void onPropertySet(const std::string& name) override;
+	virtual void onActivated() override;
 	sf::RectangleShape m_shape;
-
 private:
 	void init();
 	int m_text_align = center;

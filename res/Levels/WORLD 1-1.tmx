@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="230" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="293">
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="230" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="295">
  <tileset firstgid="1" name="Blocks" tilewidth="32" tileheight="32" tilecount="128" columns="8">
   <image source="../Textures/Tiles.png" width="256" height="512"/>
  </tileset>
