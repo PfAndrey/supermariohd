@@ -372,6 +372,8 @@ void CLadder::draw(sf::RenderWindow* render_window)
 void CLadder::update(int delta_time)
 {
 	CGameObject::update(delta_time);
+	if (m_timer == 0)
+		MarioGame().playSound("powerup_appears");
 	m_timer += delta_time;
 	float cur_height = m_timer*0.04f;
 	if (cur_height < m_height)

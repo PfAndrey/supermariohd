@@ -98,7 +98,6 @@ public:
 		auto it = std::find_if(m_objects.begin(), m_objects.end(), [this, &name](const CGameObject* obj) -> bool { return obj->getName() == name;  });
 		if (it != m_objects.end())
 			return dynamic_cast<T*>(*it);
-
 		return nullptr;
 	}
 	template <typename T>
@@ -157,8 +156,6 @@ public:
 	void setPosition(const Vector& point);
 	void setPosition(float x, float y);
 	void move(const Vector& point);
-	void setDirection(const Vector& direction);
-	Vector getDirection();
 	virtual Rect getBounds() const;
 	virtual void setBounds(const Rect& rect);
 	void setSize(const Vector& size);
@@ -174,13 +171,10 @@ private:
 	std::map<std::string, Property> m_properties;
 	CGameObject* m_parent;
 	std::list<CGameObject*> m_objects;
-	Vector m_direction;
 	bool m_enable;
 	bool m_visible;
 	Vector m_pos, m_size;
 };
-
-void destroyObject(CGameObject* gameObject);
 
 class Timer
 {
@@ -274,7 +268,6 @@ ResourceManager<T>::~ResourceManager()
 		}
 }
 
-
 class CInputManager
 {
 private:
@@ -290,11 +283,9 @@ public:
 	void update(int delta_time);
 };
 
-
 using CTextureManager = ResourceManager<sf::Texture>;
 using CFontManager = ResourceManager<sf::Font>;
 using CSoundManager = ResourceManager<sf::SoundBuffer>;
-
 
 class CMusicManager : public ResourceManager<sf::Music>
 {

@@ -12,12 +12,11 @@ void CEnemy::fired(CMario* mario)
 
 void CEnemy::checkNextTileUnderFoots()
 {
-	auto blocks = getParent()->findObjectByName<CBlocks>("Blocks");
 	if (m_speed.y == 0)
 	{
-		Vector next_under_foot = blocks->toBlockCoordinates(getBounds().center() + Vector::down * 30 + math::sign(m_speed.x)*Vector::right * 20);
-		Vector prev_back = blocks->toBlockCoordinates(getBounds().center() - math::sign(m_speed.x)*Vector::right * 50);
-		if (!blocks->isCollidableBlock(next_under_foot.x, next_under_foot.y) && !blocks->isCollidableBlock(prev_back.x, prev_back.y))
+		Vector next_under_foot = m_blocks->toBlockCoordinates(getBounds().center() + Vector::down * 30 + math::sign(m_speed.x)*Vector::right * 20);
+		Vector prev_back = m_blocks->toBlockCoordinates(getBounds().center() - math::sign(m_speed.x)*Vector::right * 50);
+		if (!m_blocks->isCollidableBlock(next_under_foot.x, next_under_foot.y) && !m_blocks->isCollidableBlock(prev_back.x, prev_back.y))
 			m_speed.x = -m_speed.x;
 	}
 }
@@ -27,7 +26,15 @@ void CEnemy::checkCollideOtherCharasters()
 	auto enemies = getParent()->findObjectsByType<CEnemy>();
 	for (auto enemy : enemies)
 		if (enemy != this && enemy->isAlive() && enemy->getBounds().isIntersect(getBounds()))
-			enemy->kickFromBottom(NULL);
+		{
+			bool is_enemy_in_bullet_state_also = enemy->isInBulletState();
+			enemy->kickFromBottom(nullptr);
+			if (is_enemy_in_bullet_state_also)
+			{
+				kickFromBottom(nullptr);
+				break;
+			}
+		}
 }
 
 void CEnemy::updateCollision(float delta_time)
@@ -93,48 +100,48 @@ void CGoomba::update(int delta_time)
 
 	switch (m_state)
 	{
-	case (State::Deactivated):
-	{
-		auto scene = getParent()->castTo<CMarioGameScene>();
-		Rect camera_rect = scene->cameraRect();
-        if (std::abs(getPosition().x - camera_rect.center().x) < camera_rect.width() / 2)
-			setState(State::Normal);
-		break;
-	}
-	case (State::Normal):
-	{
-		updatePhysics(delta_time, gravity_force);
-		updateCollision(delta_time);
-		if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-			m_speed.y = 0;
-		if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-			m_speed.x = -m_speed.x;
-		break;
-	}
-	case (State::Died):
-	{
-		updatePhysics(delta_time, gravity_force);
-		break;
-	}
-	case(State::Cramped):
-	{
-		m_timer += delta_time;
-		if (m_timer > 3000)
-			getParent()->removeObject(this);
-		break;
-	}
+		case (State::Deactivated):
+		{
+			auto scene = getParent()->castTo<CMarioGameScene>();
+			Rect camera_rect = scene->cameraRect();
+			if (std::abs(getPosition().x - camera_rect.center().x) < camera_rect.width() / 2)
+				setState(State::Normal);
+			break;
+		}
+		case (State::Normal):
+		{
+			updatePhysics(delta_time, gravity_force);
+			updateCollision(delta_time);
+			if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
+				m_speed.y = 0;
+			if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
+				m_speed.x = -m_speed.x;
+			break;
+		}
+		case (State::Died):
+		{
+			updatePhysics(delta_time, gravity_force);
+			break;
+		}
+		case(State::Cramped):
+		{
+			m_timer += delta_time;
+			if (m_timer > 3000)
+				getParent()->removeObject(this);
+			break;
+		}
 	}
 
 	switch (m_state)
 	{
-	case(State::Normal):
-	{
-		m_animator.play("walk");
-		m_animator.update(delta_time);
-		break;
-	};
-	case(State::Cramped): { m_animator.play("cramped"); break; };
-	case(State::Died): { m_animator.play("fall"); break; };
+		case(State::Normal):
+		{
+			m_animator.play("walk");
+			m_animator.update(delta_time);
+			break;
+		};
+		case(State::Cramped): { m_animator.play("cramped"); break; };
+		case(State::Died): { m_animator.play("fall"); break; };
 	}
 }
 
@@ -168,25 +175,25 @@ void CGoomba::setState(State state)
 	m_state = state;
 	switch (m_state)
 	{
-	case State::Normal:
-	{
-		m_speed.x = m_run_speed;
-		break;
-	}
-	case State::Cramped:
-	{
-		m_speed.x = 0;
-		addScoreToPlayer(100);
-		MarioGame().playSound("stomp");
-		break;
-	}
-	case State::Died:
-	{
-		m_speed.x = 0;
-		addScoreToPlayer(100);
-		MarioGame().playSound("kick");
-		break;
-	}
+		case State::Normal:
+		{
+			m_speed.x = m_run_speed;
+			break;
+		}
+		case State::Cramped:
+		{
+			m_speed.x = 0;
+			addScoreToPlayer(100);
+			MarioGame().playSound("stomp");
+			break;
+		}
+		case State::Died:
+		{
+			m_speed.x = 0;
+			addScoreToPlayer(100);
+			MarioGame().playSound("kick");
+			break;
+		}
 	}
 	m_timer = 0;
 }
@@ -209,39 +216,39 @@ void  CKoopa::kickFromTop(CMario* mario)
 {
 	switch (m_state)
 	{
-	case CKoopa::Levitating:
-	case CKoopa::Jumping:
-	{
-		m_speed.y = 0;
-		setState(State::Normal);
-		addScoreToPlayer(100);
-		MarioGame().playSound("stomp");
-		break;
-	}
-	case CKoopa::Normal:
-	{
-		if (m_speed.y == 0)
+		case CKoopa::Levitating:
+		case CKoopa::Jumping:
 		{
-			setState(State::Hidden);
+			m_speed.y = 0;
+			setState(State::Normal);
 			addScoreToPlayer(100);
 			MarioGame().playSound("stomp");
+			break;
 		}
-		break;
-	}
-	case CKoopa::Hidden:
-	case CKoopa::Climb:
-	{
-		setState(State::Bullet);
-        m_speed.x = (mario->getBounds().center().x > this->getBounds().center().x) ? -std::abs(m_run_speed) * 6 : std::abs(m_run_speed) * 6;
-		addScoreToPlayer(400);
-		MarioGame().playSound("kick");
-		break;
-	}
-	case CKoopa::Bullet:
-	{
-		setState(Hidden);
-		break;
-	}
+		case CKoopa::Normal:
+		{
+			if (m_speed.y == 0)
+			{
+				setState(State::Hidden);
+				addScoreToPlayer(100);
+				MarioGame().playSound("stomp");
+			}
+			break;
+		}
+		case CKoopa::Hidden:
+		case CKoopa::Climb:
+		{
+			setState(State::Bullet);
+			m_speed.x = (mario->getBounds().center().x > this->getBounds().center().x) ? -std::abs(m_run_speed) * 6 : std::abs(m_run_speed) * 6;
+			addScoreToPlayer(400);
+			MarioGame().playSound("kick");
+			break;
+		}
+		case CKoopa::Bullet:
+		{
+			setState(Hidden);
+			break;
+		}
 	}
 }
 
@@ -382,41 +389,41 @@ void CKoopa::update(int delta_time)
 
 		switch (m_state)
 		{
-		case(State::Normal):
-		{
-			checkNextTileUnderFoots();
-			break;
-		}
-		case(State::Jumping):
-		{
-			m_speed += Vector::up*delta_time*gravity_force / 2; //anti-grav force
-			break;
-		}
-		case(State::Levitating):
-		{
-			m_timer += delta_time;
-			setPosition(m_initial_pos + Vector::up*sin(m_timer / 800.f) * 50);
-			break;
-		}
-		case(State::Hidden):
-		{
-			m_timer += delta_time;
-			if (m_timer > 3000)
-				setState(State::Climb);
-			break;
-		}
-		case(State::Climb):
-		{
-			m_timer += delta_time;
-			if (m_timer > 5000)
-				setState(State::Normal);
-			break;
-		}
-		case(State::Bullet):
-		{
-			checkCollideOtherCharasters();
-			break;
-		}
+			case(State::Normal):
+			{
+				checkNextTileUnderFoots();
+				break;
+			}
+			case(State::Jumping):
+			{
+				m_speed += Vector::up*delta_time*gravity_force / 2; //anti-grav force
+				break;
+			}
+			case(State::Levitating):
+			{
+				m_timer += delta_time;
+				setPosition(m_initial_pos + Vector::up*sin(m_timer / 800.f) * 50);
+				break;
+			}
+			case(State::Hidden):
+			{
+				m_timer += delta_time;
+				if (m_timer > 3000)
+					setState(State::Climb);
+				break;
+			}
+			case(State::Climb):
+			{
+				m_timer += delta_time;
+				if (m_timer > 5000)
+					setState(State::Normal);
+				break;
+			}
+			case(State::Bullet):
+			{
+				checkCollideOtherCharasters();
+				break;
+			}
 		}
 	}
 
@@ -426,6 +433,11 @@ void CKoopa::update(int delta_time)
 
 	m_animator.flipX(m_speed.x > 0);
 	m_animator.update(delta_time);
+}
+
+bool CKoopa::isInBulletState() const
+{
+	return m_state == State::Bullet;
 }
 
 void CKoopa::onActivated()
@@ -615,6 +627,11 @@ void CBuzzyBeetle::update(int delta_time)
 	m_animator.flipX(m_speed.x > 0);
 	m_animator.update(delta_time);
 
+}
+
+bool CBuzzyBeetle::isInBulletState() const
+{
+	return m_state == State::Bullet;
 }
 
 //---------------------------------------------------------------------------------------------------------------

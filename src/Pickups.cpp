@@ -83,63 +83,69 @@ void CMushroom::draw(sf::RenderWindow* render_window)
 void CMushroom::update(int delta_time)
 {
 	m_timer += delta_time;
-	if (getPosition().y > 1000)
+	if (getPosition().y > 1000) //falled underground
 		getParent()->removeObject(this);
 
-	if (m_state == wait)
+	switch (m_state)
 	{
-		if (m_timer > 400)
+		case(wait):
 		{
-			m_state = borning;
-			MarioGame().playSound("powerup_appears");
-			m_timer = 0;
-		}
-	}
-	else if (m_state == borning)
-	{
-		int height = m_timer * 0.02;
-		if (height <= 32)
-		{
-			m_sprite.setTextureRect({ m_sprite.getTextureRect().left, m_sprite.getTextureRect().top,32,height });
-			auto old_bounds = getBounds();
-			old_bounds.setTop(old_bounds.bottom() - height);
-			setBounds(old_bounds);
-		}
-		else
-		{
-			m_state = State::normal;
-			m_speed = Vector::zero;
-		}
-	}
-	else if (m_state == normal)
-	{
-		if (!m_as_flower)
-		{
-
-			if (m_state == normal)
+			if (m_timer > 400)
 			{
-				m_speed.x = run_speed;
-				m_speed += Vector::down*gravity_force * delta_time;   // Gravity force
-				move(delta_time*m_speed);
-				ECollisionTag collision_tag = ECollisionTag::none;
-				setPosition(m_blocks->collsionResponse(getBounds(), m_speed, delta_time, collision_tag));
-				if ((collision_tag & ECollisionTag::left) || (collision_tag & ECollisionTag::right))
-					run_speed = -run_speed;
-				if ((collision_tag & ECollisionTag::floor) || (collision_tag & ECollisionTag::cell))
-					m_speed.y = 0;
+				m_state = borning;
+				MarioGame().playSound("powerup_appears");
+				m_timer = 0;
 			}
+			break;
 		}
-		else
+		case(borning):
 		{
-			int sprite_index = int(m_timer *0.01) % 5;
-			if (sprite_index > 2)
-				sprite_index = 5 - sprite_index;
-			m_sprite.setTextureRect({ 32 + sprite_index * 32 ,212,32,32 });
+			int height = m_timer * 0.02;
+			if (height <= 32)
+			{
+				m_sprite.setTextureRect({ m_sprite.getTextureRect().left, m_sprite.getTextureRect().top,32,height });
+				auto old_bounds = getBounds();
+				old_bounds.setTop(old_bounds.bottom() - height);
+				setBounds(old_bounds);
+			}
+			else
+			{
+				m_state = State::normal;
+				m_speed = Vector::zero;
+			}
+			break;
 		}
-		if (m_mario && m_mario->getBounds().isIntersect(getBounds()))
+		case(normal):
 		{
-			getParent()->removeObject(this);
-			action();
+			if (!m_as_flower)
+			{
+
+				if (m_state == normal)
+				{
+					m_speed.x = run_speed;
+					m_speed += Vector::down*gravity_force * delta_time;   // Gravity force
+					move(delta_time*m_speed);
+					ECollisionTag collision_tag = ECollisionTag::none;
+					setPosition(m_blocks->collsionResponse(getBounds(), m_speed, delta_time, collision_tag));
+					if ((collision_tag & ECollisionTag::left) || (collision_tag & ECollisionTag::right))
+						run_speed = -run_speed;
+					if ((collision_tag & ECollisionTag::floor) || (collision_tag & ECollisionTag::cell))
+						m_speed.y = 0;
+				}
+			}
+			else
+			{
+				int sprite_index = int(m_timer *0.01) % 5;
+				if (sprite_index > 2)
+					sprite_index = 5 - sprite_index;
+				m_sprite.setTextureRect({ 32 + sprite_index * 32 ,212,32,32 });
+			}
+			if (m_mario && m_mario->getBounds().isIntersect(getBounds()))
+			{
+				action();
+				getParent()->removeObject(this);
+			}
+			break;
 		}
 	}
 }
@@ -206,9 +212,6 @@ void CStar::update(int delta_time)
 	int sprite_index = int(m_timer *0.01) % 5;
 	if (sprite_index > 2)
 		sprite_index = 5 - sprite_index;
-
-	if (getPosition().y > 1000)
-		getParent()->removeObject(this);
 
 	switch (m_state)
 	{

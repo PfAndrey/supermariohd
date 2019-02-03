@@ -15,6 +15,7 @@ public:
 	virtual void kickFromBottom(CMario* mario) = 0;
 	virtual bool isAlive() const = 0;
 	virtual void touchSide(CMario* mario) = 0;
+	virtual bool isInBulletState() const {return false;};
 	virtual void fired(CMario* mario);
 	void update(int delta_time);
 protected:
@@ -62,7 +63,7 @@ public:
 	virtual void touchSide(CMario* mario) override;
 	virtual void draw(sf::RenderWindow* render_window) override;
 	virtual void update(int delta_time) override;
-
+	virtual bool isInBulletState() const override;
 private:
 	const Vector full_size = { 32,48 };
 	const Vector hidden_size = { 32,32 };
@@ -86,7 +87,7 @@ public:
 	virtual void touchSide(CMario* mario) override;
 	virtual void draw(sf::RenderWindow* render_window) override;
 	virtual void update(int delta_time) override;
-
+	virtual bool isInBulletState() const override;
 private:
 	enum State { Deactivated, Normal, Hidden, Bullet, Died } m_state = Deactivated;
 	void setState(State state);

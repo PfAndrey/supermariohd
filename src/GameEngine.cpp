@@ -349,7 +349,6 @@ void CGameObject::move(const Vector& point)
 void CGameObject::setSize(const Vector& size)
 {
     m_size = size;
-    setBounds({ getPosition(), m_size });
 }
 
 Rect CGameObject::getBounds() const
@@ -361,16 +360,6 @@ void CGameObject::setBounds(const Rect& rect)
 {
     m_pos = rect.leftTop();
     m_size = rect.size();
-}
-
-Vector CGameObject::getDirection()
-{
-    return m_direction;
-}
-
-void CGameObject::setDirection(const Vector& direction)
-{
-    m_direction = direction;
 }
 
 CGameObject::CGameObject()
@@ -536,8 +525,7 @@ void CGameObject::foreachObject(std::function<void(CGameObject*, bool& )> predic
 
 void CGameObject::removeObject(CGameObject* object)
 {
-
-    auto action = [this, object]()
+    auto action = [this, object]() //remove object later
     {
         auto it = std::find(m_objects.begin(), m_objects.end(), object);
         assert(it != m_objects.end());
@@ -551,9 +539,9 @@ void CGameObject::onPropertySet(const std::string& name)
 {
     if (name == "x")
         setPosition(m_properties["x"].asFloat(),getPosition().y);
-    if (name == "y")
+    else if (name == "y")
         setPosition(getPosition().x, m_properties["y"].asFloat());
-    if (name == "name")
+    else if (name == "name")
         setName(m_properties["name"].asString());
 
 }
@@ -608,7 +596,6 @@ void CGameObject::moveUnderTo(CGameObject* obj)
             auto this_obj = std::find(list->begin(), list->end(), this);
             auto other_obj = std::find(list->begin(), list->end(), obj);
             assert(this_obj != list->end() && other_obj != list->end());
-
             list->erase(this_obj);
             list->insert(other_obj,this);
         };
@@ -624,15 +611,6 @@ void CGameObject::clear()
     m_objects.clear();
 }
 
-
-void destroyObject(CGameObject* gameObject)
-{
-    if (gameObject->getParent())
-        gameObject->getParent()->removeObject(gameObject);
-    else
-        delete gameObject;
-}
-
 std::vector<std::function<void()>> CGameObject::m_preupdate_actions = std::vector<std::function<void()>>();
 
 void CGameObject::invokePreupdateActions()
@@ -642,8 +620,8 @@ void CGameObject::invokePreupdateActions()
     m_preupdate_actions.clear();
 }
 
-
 //---------------------------------------------------------------------------------------------------------
+
 void Timer::invoke(const std::function <void()>& func, int delay)
 {
 	m_invoke_list.push_back(std::make_pair<>(m_time + delay, func));
@@ -835,16 +813,12 @@ void  CGame::playSound(const std::string& name)
     m_sounds_buf[i].play();
 }
 
-
-
 Vector  CGame::screenSize() const
 {
     return Vector((int)m_window->getSize().x, (int)m_window->getSize().y);
 }
 
-
 //---------------------------------------------------------------------------------------------------------
-
 
 CSpriteSheet::CSpriteSheet()
 {
@@ -860,7 +834,6 @@ void CSpriteSheet::load(const sf::Texture& texture, const std::vector<sf::IntRec
     m_sprites.clear();
     for (auto& rect : rects)
         m_sprites.emplace_back(texture, rect);
-
     setSpriteIndex(0);
 }
 
@@ -870,7 +843,6 @@ void CSpriteSheet::load(const sf::Texture& texture, const Vector& off_set, const
     for (int y = 0; y < rows; ++y)
         for (int x = 0; x < cols; ++x)
             m_sprites.emplace_back(texture, sf::IntRect(x*std::abs(size.x) + off_set.x, y*std::abs(size.y) + off_set.y,size.x,size.y));
-
     setSpriteIndex(0);
     setAnimType(AnimType::forward);
 }
@@ -904,48 +876,44 @@ void  CSpriteSheet::setAnimType(AnimType type)
 
 void CSpriteSheet::draw(sf::RenderWindow* wnd)
 {
-
     switch (m_anim_type)
     {
-    case(AnimType::manual):
-    {
-        break;
+		case(AnimType::manual):
+		{
+			break;
+		}
+		case(AnimType::forward_backward_cycle):
+		{
+			int size = m_sprites.size();
+			int current_slide = int(m_index) % (size * 2);
+			if (current_slide > size - 1)
+				current_slide = 2 * size - 1 - current_slide;
+			setSpriteIndex(current_slide);
+			break;
+		}
+		case(AnimType::forward_cycle):
+		{
+			int current_slide = int(m_index) % m_sprites.size();
+			setSpriteIndex(current_slide);
+			break;
+		}
+		case(AnimType::forward_stop):
+		{
+			int current_slide = int(m_index);
+			if (current_slide < m_sprites.size())
+				setSpriteIndex(current_slide);
+			break;
+		}
+		case(AnimType::forward):
+		{
+			int current_slide = int(m_index);
+			if (current_slide < m_sprites.size())
+				setSpriteIndex(current_slide);
+			else
+				return;
+			break;
+		}
     }
-    case(AnimType::forward_backward_cycle):
-    {
-        int size = m_sprites.size();
-        int current_slide = int(m_index) % (size * 2);
-        if (current_slide > size - 1)
-            current_slide = 2 * size - 1 - current_slide;
-        setSpriteIndex(current_slide);
-        break;
-    }
-    case(AnimType::forward_cycle):
-    {
-        int current_slide = int(m_index) % m_sprites.size();
-        setSpriteIndex(current_slide);
-        break;
-    }
-    case(AnimType::forward_stop):
-    {
-        int current_slide = int(m_index);
-        if (current_slide < m_sprites.size())
-            setSpriteIndex(current_slide);
-        break;
-    }
-    case(AnimType::forward):
-    {
-        int current_slide = int(m_index);
-        if (current_slide < m_sprites.size())
-            setSpriteIndex(current_slide);
-        else
-            return;
-        break;
-    }
-
-    }
-
-
     wnd->draw(*m_current_sprite);
 }
 
@@ -989,11 +957,14 @@ void CSpriteSheet::setSpeed(float speed)
 {
     m_speed = speed;
 }
+
 void CSpriteSheet::setColor(const sf::Color& color)
 {
     for (auto& sprite : m_sprites)
         sprite.setColor(color);
 }
+
+
 void CSpriteSheet::setRotation(float angle)
 {
     if (angle == m_sprites[0].getRotation())
@@ -1005,8 +976,10 @@ void CSpriteSheet::setRotation(float angle)
         float w = sprite.getLocalBounds().width;
         float h = sprite.getLocalBounds().height;
 
-        if (angle < 0) angle += 360;
-        if (angle > 360) angle -= 360;
+        if (angle < 0) 
+			angle += 360;
+        if (angle > 360) 
+			angle -= 360;
 
         if (angle == 0)
             sprite.setOrigin(0, 0);
@@ -1019,7 +992,6 @@ void CSpriteSheet::setRotation(float angle)
 
         sprite.setRotation(angle);
     }
-
 }
 
 void CSpriteSheet::invert_h()
@@ -1211,8 +1183,6 @@ void Animator::setAnimOffset(float index)
         animation.second->setAnimOffset(index);
 }
 
-
-
 void Animator::setSpeed(const std::string& anim, float speed)
 {
     m_animations[anim]->setSpeed(speed);
@@ -1235,7 +1205,9 @@ CSpriteSheet* Animator::get(const std::string& str)
 {
     return m_animations[str];
 }
+
 //---------------------------------------------------------------------------------------------------------
+
 void CMusicManager::play(const std::string& name)
 {
 	if (name != "")
@@ -1265,7 +1237,9 @@ void CMusicManager::setPitch(float value)
     for (auto music : m_resources)
         music.second->setPitch(value);
 }
+
 //---------------------------------------------------------------------------------------------------------
+
 CFlowText::CFlowText(const sf::Font& font, bool self_remove)
 {
     m_text.setFont(font);
@@ -1301,6 +1275,7 @@ void CFlowText::setSplashVector(const Vector& vector)
 {
     m_splash_vector = vector;
 }
+
 void CFlowText::update(int delta_time)
 {
     if (m_flashing)
@@ -1318,9 +1293,15 @@ void CFlowText::update(int delta_time)
 
         m_text.setFillColor(sf::Color(color.r, color.g, color.b, 255 - m_color));
     }
-    else if (m_self_remove)
-        destroyObject(this);
+	else if (m_self_remove)
+	{
+		if (getParent())
+			getParent()->removeObject(this);
+		else
+			delete this;
+	}
 }
+
 void CFlowText::draw(sf::RenderWindow* window)
 {
     if (m_flashing)
@@ -1334,32 +1315,38 @@ void CFlowText::setTextColor(const sf::Color& color)
 {
     m_text.setFillColor(color);
 }
+
 void CFlowText::setTextSize(int size)
 {
     m_text.setCharacterSize(size);
 }
 
 //---------------------------------------------------------------------------------------------------------
+
 CLabel::CLabel()
 {
     init();
 }
+
 CLabel::CLabel(const std::string& str)
 {
     init();
     setString(str);
 }
+
 CLabel::CLabel(const sf::Sprite& sprite)
 {
     init();
     setSprite(sprite);
 }
+
 void CLabel::init()
 {
     setName("Label");
     setFontColor(sf::Color::Black);
 	m_sprite.setColor({ 255,255,255,50 });
 }
+
 void CLabel::setBounds(int x, int y, int w, int h)
 {
     setPosition(x, y);
@@ -1375,50 +1362,62 @@ void CLabel::setBounds(int x, int y, int w, int h)
         m_sprite.setScale((float)w / m_sprite.getTextureRect().width, (float)h / m_sprite.getTextureRect().height);
     }
 }
+
 void CLabel::setSprite(const sf::Sprite& sprite)
 {
     m_sprite = sprite;
 }
+
 void CLabel::setFontColor(const sf::Color& color)
 {
     m_text.setFillColor(color);
 }
+
 void CLabel::setFontSize(int size)
 {
     m_text.setCharacterSize(size);
 }
+
 void CLabel::setFontName(const sf::Font& font)
 {
     m_text.setFont(font);
 }
+
 void CLabel::setFontStyle(sf::Uint32 style)
 {
     m_text.setStyle(style);
 }
+
 void CLabel::setTextAlign(int value)
 {
     m_text_align = value;
 }
+
 void CLabel::setString(const std::string& str)
 {
     m_text.setString(str);
 }
+
 void CLabel::setOutlineColor(const sf::Color& color)
 {
     m_shape.setOutlineColor(color);
 }
+
 void CLabel::setFillColor(const sf::Color& color)
 {
     m_shape.setFillColor(color);
 }
+
 void CLabel::setOutlineThickness(int value)
 {
     m_shape.setOutlineThickness(value);
 }
+
 bool CLabel::contains(const Vector& point) const
 {
     return m_rect.isContain(point);
 }
+
 void CLabel::draw(sf::RenderWindow* window)
 {
     window->draw(m_shape);
@@ -1525,13 +1524,6 @@ Vector  collsionResponse(const Rect& own_rect, const Vector& own_speed, const Re
 
     new_pos -=  dt*delta_speed;
 
-    //	if (delta_time)
-    //	{
-    //		new_pos.x -= math::sign(delta_speed.x)*0.1;
-    //		new_pos.y -= math::sign(delta_speed.y)*0.1;
-    //	}
-
-
     if (axis == vertical)
     {
         if (intersection.top() == other_rect.top())
@@ -1548,7 +1540,6 @@ Vector  collsionResponse(const Rect& own_rect, const Vector& own_speed, const Re
             collision_tag |= ECollisionTag::left;
     }
 
-    //assert((new_pos - own_rect.leftTop()).length() < 100.f);
     return new_pos;
 }
 

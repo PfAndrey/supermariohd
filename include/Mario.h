@@ -223,6 +223,7 @@ private:
 	Vector m_input_direcition;
 	friend class IMarioState;
 	friend class CPromotingMarioState;
+	friend class CDemotingMarioState;
 	friend class CNormalMarioState;
 	friend class CTransitionMarioState;
 	friend class CGoToCastleMarioState;

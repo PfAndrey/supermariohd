@@ -577,8 +577,8 @@ CGameObject* parseGameObject(tinyxml2::XMLElement* element)
     { "EndLevelKey",       goFabric<CEndLevelKey> },
     { "CastleFlag",        goFabric<CCastleFlag> },
     { "Princess",          goFabric<CPrincess> },
-	{ "Trigger",           goFabric<CTrigger> },
-	{ "Text",              textFabric }
+    { "Trigger",           goFabric<CTrigger> },
+    { "Text",              textFabric }
 };
 
     auto object_fabric = fabrics[obj_type];
@@ -612,22 +612,23 @@ CBlocks* parseBlocks(tinyxml2::XMLElement* element)
 
     static auto blocks_fabric = [](char c) -> AbstractBlock*
     {
+		static const bool INVIZ_STYLE = true, NOT_INVIZ_STYLE = false, BRICK_STYLE = true;
         switch (c)
         {
-        case(0): return NULL;
-        case(AbstractBlock::BRICK_TILE_CODE): return new CBricksBlock();
-        case(AbstractBlock::MONEY_TILE_CODE): return new CMoneyBox();
-        case(AbstractBlock::COIN_TILE_CODE): return new CQuestionBlock<CTwistedCoin>(AbstractBlock::COIN_TILE_CODE);
-        case(AbstractBlock::MUSHROOM_TILE_CODE): return new CQuestionBlock<CMushroom>(AbstractBlock::MUSHROOM_TILE_CODE);
-        case(AbstractBlock::BRICK_MUSHROOM_TILE_CODE): return new CQuestionBlock<CMushroom>(AbstractBlock::BRICK_MUSHROOM_TILE_CODE,false,true);
-        case(AbstractBlock::LADDER_TILE_CODE): return new CQuestionBlock<CLadder>(AbstractBlock::LADDER_TILE_CODE);
-        case(AbstractBlock::INVIZ_LADDER_TILE_CODE): return new CQuestionBlock<CLadder>(AbstractBlock::INVIZ_LADDER_TILE_CODE, true);
-        case(AbstractBlock::BRICK_LADDER_TILE_CODE): return new CQuestionBlock<CLadder>(AbstractBlock::BRICK_LADDER_TILE_CODE, false,true);
-        case(AbstractBlock::INIZ_UP_TILE_CODE): return new CQuestionBlock<COneUpMushroom>(AbstractBlock::INIZ_UP_TILE_CODE, true);
-        case(AbstractBlock::INIZ_COIN_CODE): return new CQuestionBlock<CTwistedCoin>(AbstractBlock::INIZ_COIN_CODE, true);
-        case(AbstractBlock::LIVE_UP_CODE): return new CQuestionBlock<COneUpMushroom>(AbstractBlock::LIVE_UP_CODE, false, true);
-        case(AbstractBlock::STAR_CODE): return new CQuestionBlock<CStar>(AbstractBlock::STAR_CODE, false, true);
-        default: return new CStaticBlock(c);
+			case(0): return NULL;
+			case(AbstractBlock::BRICK_TILE_CODE): return new CBricksBlock();
+			case(AbstractBlock::MONEY_TILE_CODE): return new CMoneyBox();
+			case(AbstractBlock::COIN_TILE_CODE): return new CQuestionBlock<CTwistedCoin>(AbstractBlock::COIN_TILE_CODE);
+			case(AbstractBlock::MUSHROOM_TILE_CODE): return new CQuestionBlock<CMushroom>(AbstractBlock::MUSHROOM_TILE_CODE);
+			case(AbstractBlock::BRICK_MUSHROOM_TILE_CODE): return new CQuestionBlock<CMushroom>(AbstractBlock::BRICK_MUSHROOM_TILE_CODE, NOT_INVIZ_STYLE, BRICK_STYLE);
+			case(AbstractBlock::LADDER_TILE_CODE): return new CQuestionBlock<CLadder>(AbstractBlock::LADDER_TILE_CODE);
+			case(AbstractBlock::INVIZ_LADDER_TILE_CODE): return new CQuestionBlock<CLadder>(AbstractBlock::INVIZ_LADDER_TILE_CODE, INVIZ_STYLE);
+			case(AbstractBlock::BRICK_LADDER_TILE_CODE): return new CQuestionBlock<CLadder>(AbstractBlock::BRICK_LADDER_TILE_CODE, NOT_INVIZ_STYLE, BRICK_STYLE);
+			case(AbstractBlock::INIZ_UP_TILE_CODE): return new CQuestionBlock<COneUpMushroom>(AbstractBlock::INIZ_UP_TILE_CODE, INVIZ_STYLE);
+			case(AbstractBlock::INIZ_COIN_CODE): return new CQuestionBlock<CTwistedCoin>(AbstractBlock::INIZ_COIN_CODE, INVIZ_STYLE);
+			case(AbstractBlock::LIVE_UP_CODE): return new CQuestionBlock<COneUpMushroom>(AbstractBlock::LIVE_UP_CODE, NOT_INVIZ_STYLE, BRICK_STYLE);
+			case(AbstractBlock::STAR_CODE): return new CQuestionBlock<CStar>(AbstractBlock::STAR_CODE, NOT_INVIZ_STYLE, BRICK_STYLE);
+			default: return new CStaticBlock(c);
         }
     };
 
