@@ -323,8 +323,38 @@ bool CInputManager::isKeyPressed(const sf::Keyboard::Key& key)
 void CInputManager::update(int delta_time)
 {
     std::swap(m_keys_now_ptr, m_keys_prev_ptr);
-    for (auto& key : *m_keys_now_ptr)
-        key.second = sf::Keyboard::isKeyPressed(key.first);
+	for (auto& key : *m_keys_now_ptr)
+	{
+		key.second = sf::Keyboard::isKeyPressed(key.first);
+		// Gamepad support draft
+		if (sf::Joystick::isConnected(0))
+		{
+			const float sens = 0.5;
+			if (key.first == sf::Keyboard::Right)
+				if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX) > sens)
+					key.second = true;
+			if (key.first == sf::Keyboard::Left)
+				if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX) < -sens)
+					key.second = true;
+			if (key.first == sf::Keyboard::Down)
+				if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY) < -sens)
+					key.second = true;
+			if (key.first == sf::Keyboard::Up)
+				if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY) > sens)
+					key.second = true;
+			if (key.first == sf::Keyboard::Space)
+				if (sf::Joystick::isButtonPressed(0, 1))
+					key.second = true;
+			if (key.first == sf::Keyboard::LShift)
+				if (sf::Joystick::isButtonPressed(0, 0))
+					key.second = true;
+			if (key.first == sf::Keyboard::Enter)
+				if (sf::Joystick::isButtonPressed(0, 7))
+					key.second = true;
+			//---------------------------------
+		}
+	}
+
 }
 //-----------------------------------------------------------------------------------------------
 const Vector& CGameObject::getPosition() const
