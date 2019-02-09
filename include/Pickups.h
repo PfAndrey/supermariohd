@@ -1,4 +1,6 @@
-#pragma once
+#ifndef PICKUPS_H
+#define PICKUPS_H
+
 #include "GameEngine.h"
 
 class CMario;
@@ -69,3 +71,5 @@ public:
 	void draw(sf::RenderWindow* render_window) override;
 	void update(int delta_time) override;
 };
+
+#endif

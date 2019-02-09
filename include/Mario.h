@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef MARIO_H
 #define MARIO_H
 
@@ -172,6 +170,7 @@ public:
 	void seatDown();
 	bool isSeated() const;
 private:
+	void fire();
 	void draw(sf::RenderWindow* render_window) override;
 	void update(int delta_time) override;
 	void setGrounded(bool val = true);
@@ -200,7 +199,6 @@ private:
 	const Vector seated_mario_size = {31,32};
 	float m_jumping_timer = 0;
 	float m_jump_timer = jump_rate;
-	void fire();
     MarioRank m_rank = MarioRank::small;
 	MarioState m_state = MarioState::normal;
 	IMarioState* m_current_state = NULL;

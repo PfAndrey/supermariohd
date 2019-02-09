@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef  SUPERMARIOGAME_H
 #define SUPERMARIOGAME_H
 

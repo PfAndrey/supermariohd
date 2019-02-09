@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef BLOCKS_H
 #define BLOCKS_H
 
@@ -243,7 +241,5 @@ private:
 	Animator m_animator;
 	int m_timer = 0;
 };
-
-
 
 #endif
