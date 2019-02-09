@@ -109,6 +109,13 @@ Vector Vector::normalized() const
     return Vector(x / l, y / l);
 }
 
+void Vector::normalize()
+{
+	auto l = length();
+	x /= l;
+	y /= l;
+}
+
 Vector::Vector(const sf::Vector2f& vector)
 {
     x = vector.x;

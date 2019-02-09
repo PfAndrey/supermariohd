@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
@@ -30,6 +28,7 @@ public:
 	float length() const;
 	float angle() const;
 	Vector normalized() const;
+	void normalize();
 	static Vector moveTowards(const Vector& current, const Vector& target, float distance);
 	bool operator < (const Vector& other) const;
 	const static Vector right;

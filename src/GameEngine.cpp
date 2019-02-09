@@ -2,6 +2,10 @@
 #include "GameEngine.h"
 #include <assert.h>
 
+
+#define SWITCH_STR(A) switch(hash_str((A)))
+#define CASE_STR(A) case(hash_str((A)))
+
 std::vector<std::string> split(const std::string &s, char delim)
 {
 	std::stringstream ss(s);
@@ -284,7 +288,11 @@ CInputManager::CInputManager()
 {
     m_keys_prev_ptr = &m_keys_prev;
     m_keys_now_ptr = &m_keys_now;
+	m_joystick_btns_prev_ptr = &m_joystick_btns_prev;
+	m_joystick_btns_now_ptr = &m_joystick_btns_now;
 
+	for (auto& ax : m_axis_keys)
+		ax = sf::Keyboard::Key::Unknown;
 }
 
 void CInputManager::registerKey(const sf::Keyboard::Key& key)
@@ -292,20 +300,28 @@ void CInputManager::registerKey(const sf::Keyboard::Key& key)
     m_keys_prev.insert(std::make_pair(key, false));
     m_keys_now.insert(std::make_pair(key, false));
 }
+
 void CInputManager::unregisterKey(const sf::Keyboard::Key& key)
 {
     m_keys_prev.erase(m_keys_prev.find(key));
     m_keys_now.erase(m_keys_now.find(key));
 }
 
-bool CInputManager::isKeyJustPressed(const sf::Keyboard::Key& key)
+void CInputManager::registerJoysticButton(int index)
+{
+	m_joystick_btns_prev.insert(std::make_pair(index, false));
+	m_joystick_btns_now.insert(std::make_pair(index, false));
+}
+
+bool CInputManager::isKeyJustPressed(const sf::Keyboard::Key& key) const
 {
     if (m_keys_prev_ptr->count(key))
         if (!(*m_keys_prev_ptr)[key] && (*m_keys_now_ptr)[key])
             return true;
     return false;
 }
-bool CInputManager::isKeyJustReleased(const sf::Keyboard::Key& key)
+
+bool CInputManager::isKeyJustReleased(const sf::Keyboard::Key& key) const
 {
     if (m_keys_prev_ptr->count(key))
         if ((*m_keys_prev_ptr)[key] && !(*m_keys_now_ptr)[key])
@@ -313,59 +329,163 @@ bool CInputManager::isKeyJustReleased(const sf::Keyboard::Key& key)
     return false;
 }
 
-bool CInputManager::isKeyPressed(const sf::Keyboard::Key& key)
+bool CInputManager::isKeyPressed(const sf::Keyboard::Key& key) const
 {
-    if (m_keys_prev_ptr->count(key))
+    if (m_keys_now_ptr->count(key))
         return (*m_keys_now_ptr)[key];
     return false;
+}
+
+Vector CInputManager::getXYAxis() const
+{
+	Vector value;
+	if (sf::Joystick::isConnected(0))
+	{
+		value.x = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX) / 100.f;
+		value.y = -sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY) / 100.f;
+		value.x = math::sens(value.x, 0.5f);
+		value.y = math::sens(value.y, 0.5f);
+	}
+ 
+	if (m_axis_keys[0] != -1)
+		if (sf::Keyboard::isKeyPressed(m_axis_keys[0])) value.y = -1;
+	if (m_axis_keys[1] != -1)
+		if (sf::Keyboard::isKeyPressed(m_axis_keys[1])) value.x = 1;
+	if (m_axis_keys[2] != -1)
+		if (sf::Keyboard::isKeyPressed(m_axis_keys[2])) value.y = 1;
+	if (m_axis_keys[3] != -1)
+		if (sf::Keyboard::isKeyPressed(m_axis_keys[3])) value.x = -1;
+ 
+	return value;
+}
+
+bool CInputManager::isButtonPressed(const std::string& button) const
+{
+	if (m_btn_to_key.count(button) && isKeyPressed(m_btn_to_key.at(button)))
+		return true;
+	if (m_jsk_btn_to_key.count(button) && isJoystickButtonPressed(m_jsk_btn_to_key.at(button)))
+		return true;
+	return false;
+}
+
+bool CInputManager::isButtonDown(const std::string& button) const
+{
+	if (m_btn_to_key.count(button) && isKeyJustPressed(m_btn_to_key.at(button)))
+		return true;
+	if (m_jsk_btn_to_key.count(button) && isJoystickButtonJustPressed(m_jsk_btn_to_key.at(button)))
+		return true;
+	return false;
+}
+
+bool CInputManager::isButtonUp(const std::string& button) const
+{
+	if (m_btn_to_key.count(button) && isKeyJustReleased(m_btn_to_key.at(button)))
+		return true;
+	if (m_jsk_btn_to_key.count(button) && isJoystickButtonJustPressed(m_jsk_btn_to_key.at(button)))
+		return true;
+	return false;
+}
+
+sf::Keyboard::Key CInputManager::toKey(const std::string& str)
+{
+	if (str.length() == 1 && str[0] >= 'A' && str[0] <= 'Z')
+		return static_cast<sf::Keyboard::Key>(str[0] - 65);
+
+		static const std::map<std::string, sf::Keyboard::Key> key_map =
+		{
+		{ "Left", sf::Keyboard::Left },
+		{ "Right", sf::Keyboard::Right },
+		{ "Up", sf::Keyboard::Up },
+		{ "Down", sf::Keyboard::Down },
+		{ "Space", sf::Keyboard::Space },
+		{ "LShift", sf::Keyboard::LShift },
+		{ "Enter", sf::Keyboard::Enter },
+		{ "Return", sf::Keyboard::Return },
+		};
+
+		if (key_map.find(str) != key_map.end())
+			return key_map.at(str);
+}
+
+void CInputManager::setupButton(const std::string& button, const std::vector<std::string>& keys)
+{
+	static const std::unordered_map<std::string, int> special_keys = 
+	{
+		{ "Vertical-",0},
+		{ "Horizontal+",1 },
+		{ "Vertical+",2 },
+		{ "Horizontal-",3 }
+	};
+
+	if (special_keys.count(button))
+	{
+		m_axis_keys[special_keys.at(button)] = toKey(keys[0]);
+		return;
+	}
+
+	for (auto key : keys)
+	{
+		if (key.front() == '[' && key.back() == ']') //joystick btn
+		{
+			int index = toInt(key.substr(1, key.length() - 2));
+			registerJoysticButton(index);
+			m_jsk_btn_to_key[button] = index;
+		}
+		else 
+		{
+			sf::Keyboard::Key pkey = toKey(key);
+			registerKey(pkey);
+			m_btn_to_key[button] = pkey;
+		}
+	}
 }
 
 void CInputManager::update(int delta_time)
 {
     std::swap(m_keys_now_ptr, m_keys_prev_ptr);
 	for (auto& key : *m_keys_now_ptr)
-	{
 		key.second = sf::Keyboard::isKeyPressed(key.first);
-		// Gamepad support draft
-		if (sf::Joystick::isConnected(0))
-		{
-			const float sens = 0.5;
-			if (key.first == sf::Keyboard::Right)
-				if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX) > sens)
-					key.second = true;
-			if (key.first == sf::Keyboard::Left)
-				if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX) < -sens)
-					key.second = true;
-			if (key.first == sf::Keyboard::Down)
-				if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY) < -sens)
-					key.second = true;
-			if (key.first == sf::Keyboard::Up)
-				if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY) > sens)
-					key.second = true;
-			if (key.first == sf::Keyboard::Space)
-				if (sf::Joystick::isButtonPressed(0, 1))
-					key.second = true;
-			if (key.first == sf::Keyboard::LShift)
-				if (sf::Joystick::isButtonPressed(0, 0))
-					key.second = true;
-			if (key.first == sf::Keyboard::Enter)
-				if (sf::Joystick::isButtonPressed(0, 7))
-					key.second = true;
-			//---------------------------------
-		}
-	}
 
+	std::swap(m_joystick_btns_now, m_joystick_btns_prev);
+	for (auto& btn : *m_joystick_btns_now_ptr)
+		btn.second = sf::Joystick::isButtonPressed(0, btn.first);
 }
+
+bool CInputManager::isJoystickButtonPressed(int index) const
+{
+	if (m_joystick_btns_now_ptr->count(index))
+		return (*m_joystick_btns_now_ptr)[index];
+	return false;
+}
+
+bool CInputManager::isJoystickButtonJustPressed(int index) const
+{
+	if (m_joystick_btns_prev_ptr->count(index))
+		if (!(*m_joystick_btns_prev_ptr)[index] && (*m_joystick_btns_now_ptr)[index])
+			return true;
+	return false;
+}
+
+bool CInputManager::isJoystickButtonJustReleased(int index) const
+{
+	if (m_joystick_btns_prev_ptr->count(index))
+		if ((*m_joystick_btns_prev_ptr)[index] && !(*m_joystick_btns_now_ptr)[index])
+			return true;
+	return false;
+}
+
 //-----------------------------------------------------------------------------------------------
 const Vector& CGameObject::getPosition() const
 {
     return m_pos;
 }
+
 void CGameObject::setPosition(const Vector& point)
 {
     onPositionChanged(point, m_pos);
     m_pos = point;
 }
+
 void CGameObject::setPosition(float x, float y)
 {
     setPosition(Vector(x, y));

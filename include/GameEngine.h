@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef  GAMEENGINE_H
 #define GAMEENGINE_H
 
@@ -40,6 +38,14 @@ namespace math
 			return min; 
 		if (value > max)
 			return max;
+		return value;
+	}
+
+	template <typename T>
+	T sens(const T& value, const T& lim)
+	{
+		if (value < lim && value > -lim)
+			return 0;
 		return value;
 	}
 }
@@ -271,15 +277,30 @@ ResourceManager<T>::~ResourceManager()
 class CInputManager
 {
 private:
-	std::map<sf::Keyboard::Key, bool> m_keys_prev, *m_keys_prev_ptr;
-	std::map<sf::Keyboard::Key, bool> m_keys_now, *m_keys_now_ptr;
-public:
-	CInputManager();
+	using KeysState = std::unordered_map<sf::Keyboard::Key, bool>;
+	using JskState = std::unordered_map<int, bool>;
+	KeysState m_keys_prev, *m_keys_prev_ptr, m_keys_now, *m_keys_now_ptr;
+	JskState m_joystick_btns_prev, *m_joystick_btns_prev_ptr, m_joystick_btns_now, *m_joystick_btns_now_ptr;
+	sf::Keyboard::Key m_axis_keys[4];
+	std::unordered_map<std::string, sf::Keyboard::Key> m_btn_to_key;
+	std::unordered_map<std::string, int> m_jsk_btn_to_key;
+	bool isKeyJustPressed(const sf::Keyboard::Key& key) const;
+	bool isKeyJustReleased(const sf::Keyboard::Key& key) const;
+	bool isKeyPressed(const sf::Keyboard::Key& key) const;
+	bool isJoystickButtonPressed(int index) const;
+	bool isJoystickButtonJustPressed(int index) const;
+	bool isJoystickButtonJustReleased(int index) const;
 	void registerKey(const sf::Keyboard::Key& key);
 	void unregisterKey(const sf::Keyboard::Key& key);
-	bool isKeyJustPressed(const sf::Keyboard::Key& key);
-	bool isKeyJustReleased(const sf::Keyboard::Key& key);
-	bool isKeyPressed(const sf::Keyboard::Key& key);
+	void registerJoysticButton(int index);
+	sf::Keyboard::Key toKey(const std::string& str);
+public:
+	CInputManager();
+	Vector getXYAxis() const;
+	bool isButtonPressed(const std::string& button) const;
+	bool isButtonDown(const std::string& button) const;
+	bool isButtonUp(const std::string& button) const;
+	void setupButton(const std::string& button, const std::vector<std::string>& keys);
 	void update(int delta_time);
 };
 

@@ -9,40 +9,50 @@
 
 CMarioGame* CMarioGame::s_instance = NULL;
 
-CMarioGame::CMarioGame() : CGame("SuperMario", {1280,720})
+CMarioGame::CMarioGame() : CGame("SuperMario", { 1280,720 })
 {
-    //Load textures
-    const std::string textures_dir = MARIO_RES_PATH + "Textures/";
-    for (auto texture : { "Mario", "Tiles", "AnimTiles", "Enemies", "Bowser", "Items", "Logo" })
-        textureManager().loadFromFile(texture, textures_dir + texture + ".png");
+	//Load textures
+	const std::string textures_dir = MARIO_RES_PATH + "Textures/";
+	for (auto texture : { "Mario", "Tiles", "AnimTiles", "Enemies", "Bowser", "Items", "Logo" })
+		textureManager().loadFromFile(texture, textures_dir + texture + ".png");
 
-    for (auto texture : { "Sky", "Night", "Underground", "Castle", "Water" })
-    {
-        textureManager().loadFromFile(texture, textures_dir + "Backgrounds/" + texture + ".png");
-        textureManager().get(texture)->setRepeated(true);
-    }
+	for (auto texture : { "Sky", "Night", "Underground", "Castle", "Water" })
+	{
+		textureManager().loadFromFile(texture, textures_dir + "Backgrounds/" + texture + ".png");
+		textureManager().get(texture)->setRepeated(true);
+	}
 
-    //Load fonts
-    const std::string fonts_dir = MARIO_RES_PATH + "Fonts/";
-    for (auto font : { "arial", "menu_font", "main_font", "score_font", "some_font"})
-        fontManager().loadFromFile(font, fonts_dir + font + ".ttf");
+	//Load fonts
+	const std::string fonts_dir = MARIO_RES_PATH + "Fonts/";
+	for (auto font : { "arial", "menu_font", "main_font", "score_font", "some_font" })
+		fontManager().loadFromFile(font, fonts_dir + font + ".ttf");
 
-    //Load sounds
-    const std::string sounds_dir = MARIO_RES_PATH + "Sounds/";
-    for (auto sound : { "breakblock", "bump", "coin", "fireball", "jump_super", "kick", "stomp","powerup_appears",
-         "powerup", "pipe","flagpole", "bowser_falls", "bowser_fire", "mario_die","stage_clear", 
-		 "game_over","1-up","warning", "world_clear","pause","beep"})
-        soundManager().loadFromFile(sound, sounds_dir + sound + ".wav");
+	//Load sounds
+	const std::string sounds_dir = MARIO_RES_PATH + "Sounds/";
+	for (auto sound : { "breakblock", "bump", "coin", "fireball", "jump_super", "kick", "stomp","powerup_appears",
+		 "powerup", "pipe","flagpole", "bowser_falls", "bowser_fire", "mario_die","stage_clear",
+		 "game_over","1-up","warning", "world_clear","pause","beep" })
+		soundManager().loadFromFile(sound, sounds_dir + sound + ".wav");
 
-    //Load music
-    const std::string music_dir = MARIO_RES_PATH + "Music/";
-    for (auto music : { "overworld", "underworld", "bowsercastle", "underwater", "invincibility"})
-        musicManager().loadFromFile(music, music_dir + music + ".ogg");
+	//Load music
+	const std::string music_dir = MARIO_RES_PATH + "Music/";
+	for (auto music : { "overworld", "underworld", "bowsercastle", "underwater", "invincibility" })
+		musicManager().loadFromFile(music, music_dir + music + ".ogg");
 
-    //Configure input
-    for (auto key : {sf::Keyboard::Left, sf::Keyboard::Right,sf::Keyboard::Up, sf::Keyboard::Down,
-         sf::Keyboard::Space, sf::Keyboard::LShift, sf::Keyboard::Enter})
-        inputManager().registerKey(key);
+	//Configure input
+	std::vector<std::pair<std::string, std::vector<std::string>>> inputs =
+	{
+		{ "Fire",{ "LShift", "[0]" } },
+		{ "Jump",{ "Space",  "[1]" } },
+		{ "Pause",{ "Enter", "[7]" } },
+		{ "Horizontal+",{ "Right" } },
+		{ "Horizontal-",{ "Left" } },
+		{ "Vertical-",{ "Up" } },
+		{ "Vertical+",{ "Down" } }
+	};
+	
+	for (auto input : inputs)
+		inputManager().setupButton(input.first, input.second);
 }
 
 CMarioGame::~CMarioGame()
@@ -266,7 +276,7 @@ void CMarioGame::update(int delta_time)
     {
     case (GameState::main_menu):
     {
-        if (inputManager().isKeyPressed(sf::Keyboard::Space))
+        if (inputManager().isButtonDown("Pause"))
             setState(GameState::status);
         break;
     }
@@ -280,7 +290,7 @@ void CMarioGame::update(int delta_time)
     case (GameState::playing):
     {
 		if (m_game_state != GameState::main_menu)
-			if (inputManager().isKeyJustPressed(sf::Keyboard::Enter))
+			if (inputManager().isButtonDown("Pause"))
 			{
 				playSound("pause");
 				if (m_current_scene->isEnabled())

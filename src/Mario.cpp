@@ -292,16 +292,13 @@ bool CMario::isSeated() const
 void CMario::inputProcessing(float delta_time)
 {
 	auto& input_manager = MarioGame().inputManager();
-	m_input_direcition = Vector::zero;
-	if (input_manager.isKeyPressed(sf::Keyboard::Left)) m_input_direcition += Vector::left;
-	if (input_manager.isKeyPressed(sf::Keyboard::Right)) m_input_direcition += Vector::right;
-	if (input_manager.isKeyPressed(sf::Keyboard::Up)) m_input_direcition += Vector::up;
-	if (input_manager.isKeyPressed(sf::Keyboard::Down)) m_input_direcition += Vector::down;
+
+	m_input_direcition = input_manager.getXYAxis();
  
 	if (!m_climb) //normal
 	{
 		// walk-run
-		m_x_max_speed = (input_manager.isKeyPressed(sf::Keyboard::LShift) && !m_jumped && !m_speed.y) ? run_speed : walk_speed;
+		m_x_max_speed = (input_manager.isButtonPressed("Fire") && !m_jumped && !m_speed.y) ? run_speed : walk_speed;
 
 		// left-right
 		if (!m_seated || m_jumped)
@@ -332,7 +329,7 @@ void CMario::inputProcessing(float delta_time)
 			m_jumped = false;
 
 		//fire 
-		if (input_manager.isKeyJustPressed(sf::Keyboard::LShift) && !m_seated && m_fire_timer > fire_rate && m_rank == MarioRank::fire)
+		if (input_manager.isButtonDown("Fire") && !m_seated && m_fire_timer > fire_rate && m_rank == MarioRank::fire)
 		{
 			fire();
 			m_fire_timer = 0;
@@ -376,7 +373,7 @@ void CMario::inputProcessing(float delta_time)
 	// jump
 	if (!m_in_water)
 	{
-		if (input_manager.isKeyPressed(sf::Keyboard::Space) && !(m_collision_tag & ECollisionTag::cell))
+		if (input_manager.isButtonPressed("Jump") && !(m_collision_tag & ECollisionTag::cell))
 		{
 			if (m_grounded && !m_jump_timer)
 			{
@@ -395,7 +392,7 @@ void CMario::inputProcessing(float delta_time)
 	}
 	else
 	{
-		if (input_manager.isKeyPressed(sf::Keyboard::Space))
+		if (input_manager.isButtonPressed("Jump"))
 		{
 			if (m_grounded)
 				m_jumped = true;
@@ -408,7 +405,7 @@ void CMario::inputProcessing(float delta_time)
 	}
 
 	//jump off from ladder
-	if (input_manager.isKeyPressed(sf::Keyboard::Space) && m_climb && !m_input_direcition.y)
+	if (input_manager.isButtonPressed("Jump") && m_climb && !m_input_direcition.y)
 	{
 		addImpulse(0.4f*Vector::up*jump_force);
 		m_grounded = m_climb = false;
@@ -672,11 +669,11 @@ void CMario::collisionProcessing(float delta_time)
 
 	m_grounded = m_collision_tag & ECollisionTag::floor;
 
-	 if ((m_collision_tag & ECollisionTag::right) && m_input_direcition != Vector::left) m_speed.x = 0;
-     if ((m_collision_tag & ECollisionTag::left) && m_input_direcition != Vector::right) m_speed.x = 0;
+	if ((m_collision_tag & ECollisionTag::right) && m_input_direcition != Vector::left) m_speed.x = 0;
+    if ((m_collision_tag & ECollisionTag::left) && m_input_direcition != Vector::right) m_speed.x = 0;
 
-	 if (m_collision_tag & ECollisionTag::cell) m_speed.y = 0.1f;
-	 if (m_collision_tag & ECollisionTag::floor) m_speed.y = 0.f;
+	if (m_collision_tag & ECollisionTag::cell) m_speed.y = 0.1f;
+	if (m_collision_tag & ECollisionTag::floor) m_speed.y = 0.f;
 	 
 }
  
