@@ -64,7 +64,7 @@ class CStaticBlock : public AbstractBlock
 {
 public:
 	CStaticBlock(int id);
-	virtual void draw(sf::RenderWindow* render_window);
+	virtual void draw(sf::RenderWindow* render_window) override;
 	virtual void kick(CMario* mario) override;
 private:
 	friend class CBlocks;

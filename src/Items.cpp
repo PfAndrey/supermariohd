@@ -415,7 +415,7 @@ void CFireBar::CFireBar::update(int delta_time)
 	m_timer += delta_time;
 	float angle = -m_speed* m_timer / 400;
 	Vector rot((float)cos(angle), (float)sin(angle));
-	for (int i=0; i < m_fire_pos.size(); ++i)
+	for (size_t i=0; i < m_fire_pos.size(); ++i)
 	 m_fire_pos[i] = getPosition() + rot * 16*i - Vector(4,4);
 
     //check collision with mario processing

@@ -31,7 +31,7 @@ private:
 	bool m_invincible_mode = false;
 	void updateGUI();
 	void clearScenes();
-	void init();
+	virtual void init() override;
 	void update(int delta_time) override;
 	CMarioGUI* GUI();
 	void setScene(CGameObject* game_object);

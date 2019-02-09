@@ -277,10 +277,8 @@ ResourceManager<T>::~ResourceManager()
 class CInputManager
 {
 private:
-	using KeysState = std::unordered_map<sf::Keyboard::Key, bool>;
-	using JskState = std::unordered_map<int, bool>;
-	KeysState m_keys_prev, *m_keys_prev_ptr, m_keys_now, *m_keys_now_ptr;
-	JskState m_joystick_btns_prev, *m_joystick_btns_prev_ptr, m_joystick_btns_now, *m_joystick_btns_now_ptr;
+	std::unordered_map<sf::Keyboard::Key, bool> m_keys_prev, *m_keys_prev_ptr, m_keys_now, *m_keys_now_ptr;
+	std::unordered_map<int, bool> m_jsk_btns_prev, *m_jsk_btns_prev_ptr, m_jsk_btns_now, *m_jsk_btns_now_ptr;
 	sf::Keyboard::Key m_axis_keys[4];
 	std::unordered_map<std::string, sf::Keyboard::Key> m_btn_to_key;
 	std::unordered_map<std::string, int> m_jsk_btn_to_key;

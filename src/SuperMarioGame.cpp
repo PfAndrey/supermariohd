@@ -884,7 +884,7 @@ void CMarioGUI::update(int delta_time)
     if (m_state == GUIState::menu)
     {
         m_tmr += delta_time;
-        float x = 0.85f + 0.15*cos(m_tmr*0.01f);
+        float x = 0.85f + 0.15f*cos(m_tmr*0.01f);
         m_menu_selector->setPosition(450 + 16*(1-x), 435 + 16 *(1-x));
         m_menu_selector->getSprite().setScale(x,x);
     }

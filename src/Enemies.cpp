@@ -1109,7 +1109,7 @@ void CCheepCheep::update(int delta_time)
 	{
 	case (State::Normal):
 	{
-		updatePhysics(delta_time, gravity_force*0.4);
+		updatePhysics(delta_time, gravity_force*0.4f);
 		m_animator.update(delta_time);
 		break;
 	}
@@ -1754,7 +1754,7 @@ void CBowser::enterState(State state)
 	case(State::no_bridge):
 	{
 		m_animator.play("walk");
-		m_animator.get("walk")->setSpeed(anim_speed * 2.5);
+		m_animator.get("walk")->setSpeed(anim_speed * 2.5f);
 		m_delay_timer = 1000;
 		break;
 	}

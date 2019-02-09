@@ -50,13 +50,13 @@ void drawLinearSprite_v(sf::Sprite sprite, const sf::Rect<int>& draw_area, sf::R
 
     for (int i = 0; i < k; ++i)
     {
-        sprite.setPosition(draw_area.left, i * 32 + draw_area.top);
+        sprite.setPosition(draw_area.left, i * 32.f + draw_area.top);
         render_window->draw(sprite);
     }
     auto new_rect = sprite.getTextureRect();
     new_rect.height = off_set;
     sprite.setTextureRect(new_rect);
-    sprite.setPosition(draw_area.left, k * 32 + draw_area.top);
+    sprite.setPosition(draw_area.left, k * 32.f + draw_area.top);
     render_window->draw(sprite);
 }
 
@@ -70,13 +70,13 @@ void drawLinearSprite_h(sf::Sprite sprite, const sf::Rect<int>& draw_area, sf::R
 
     for (int i = 0; i < k; ++i)
     {
-        sprite.setPosition(i * 32 + draw_area.left, draw_area.top);
+        sprite.setPosition(i * 32.f + draw_area.left, draw_area.top);
         render_window->draw(sprite);
     }
     auto new_rect = sprite.getTextureRect();
     new_rect.width = off_set;
     sprite.setTextureRect(new_rect);
-    sprite.setPosition(k * 32 + draw_area.left, draw_area.top);
+    sprite.setPosition(k * 32.f + draw_area.left, draw_area.top);
     render_window->draw(sprite);
 }
 
@@ -288,8 +288,8 @@ CInputManager::CInputManager()
 {
     m_keys_prev_ptr = &m_keys_prev;
     m_keys_now_ptr = &m_keys_now;
-	m_joystick_btns_prev_ptr = &m_joystick_btns_prev;
-	m_joystick_btns_now_ptr = &m_joystick_btns_now;
+	m_jsk_btns_prev_ptr = &m_jsk_btns_prev;
+	m_jsk_btns_now_ptr = &m_jsk_btns_now;
 
 	for (auto& ax : m_axis_keys)
 		ax = sf::Keyboard::Key::Unknown;
@@ -309,8 +309,8 @@ void CInputManager::unregisterKey(const sf::Keyboard::Key& key)
 
 void CInputManager::registerJoysticButton(int index)
 {
-	m_joystick_btns_prev.insert(std::make_pair(index, false));
-	m_joystick_btns_now.insert(std::make_pair(index, false));
+	m_jsk_btns_prev.insert(std::make_pair(index, false));
+	m_jsk_btns_now.insert(std::make_pair(index, false));
 }
 
 bool CInputManager::isKeyJustPressed(const sf::Keyboard::Key& key) const
@@ -347,14 +347,10 @@ Vector CInputManager::getXYAxis() const
 		value.y = math::sens(value.y, 0.5f);
 	}
  
-	if (m_axis_keys[0] != -1)
-		if (sf::Keyboard::isKeyPressed(m_axis_keys[0])) value.y = -1;
-	if (m_axis_keys[1] != -1)
-		if (sf::Keyboard::isKeyPressed(m_axis_keys[1])) value.x = 1;
-	if (m_axis_keys[2] != -1)
-		if (sf::Keyboard::isKeyPressed(m_axis_keys[2])) value.y = 1;
-	if (m_axis_keys[3] != -1)
-		if (sf::Keyboard::isKeyPressed(m_axis_keys[3])) value.x = -1;
+	if (m_axis_keys[0] != -1 && sf::Keyboard::isKeyPressed(m_axis_keys[0])) value.y = -1;
+	if (m_axis_keys[1] != -1 && sf::Keyboard::isKeyPressed(m_axis_keys[1])) value.x = 1;
+	if (m_axis_keys[2] != -1 && sf::Keyboard::isKeyPressed(m_axis_keys[2])) value.y = 1;
+	if (m_axis_keys[3] != -1 && sf::Keyboard::isKeyPressed(m_axis_keys[3])) value.x = -1;
  
 	return value;
 }
@@ -446,30 +442,30 @@ void CInputManager::update(int delta_time)
 	for (auto& key : *m_keys_now_ptr)
 		key.second = sf::Keyboard::isKeyPressed(key.first);
 
-	std::swap(m_joystick_btns_now, m_joystick_btns_prev);
-	for (auto& btn : *m_joystick_btns_now_ptr)
+	std::swap(m_jsk_btns_now, m_jsk_btns_prev);
+	for (auto& btn : *m_jsk_btns_now_ptr)
 		btn.second = sf::Joystick::isButtonPressed(0, btn.first);
 }
 
 bool CInputManager::isJoystickButtonPressed(int index) const
 {
-	if (m_joystick_btns_now_ptr->count(index))
-		return (*m_joystick_btns_now_ptr)[index];
+	if (m_jsk_btns_now_ptr->count(index))
+		return (*m_jsk_btns_now_ptr)[index];
 	return false;
 }
 
 bool CInputManager::isJoystickButtonJustPressed(int index) const
 {
-	if (m_joystick_btns_prev_ptr->count(index))
-		if (!(*m_joystick_btns_prev_ptr)[index] && (*m_joystick_btns_now_ptr)[index])
+	if (m_jsk_btns_prev_ptr->count(index))
+		if (!(*m_jsk_btns_prev_ptr)[index] && (*m_jsk_btns_now_ptr)[index])
 			return true;
 	return false;
 }
 
 bool CInputManager::isJoystickButtonJustReleased(int index) const
 {
-	if (m_joystick_btns_prev_ptr->count(index))
-		if ((*m_joystick_btns_prev_ptr)[index] && !(*m_joystick_btns_now_ptr)[index])
+	if (m_jsk_btns_prev_ptr->count(index))
+		if ((*m_jsk_btns_prev_ptr)[index] && !(*m_jsk_btns_now_ptr)[index])
 			return true;
 	return false;
 }
@@ -1435,7 +1431,7 @@ void CFlowText::update(int delta_time)
         m_offset.y = m_time*0.03f*m_splash_vector.y;
 
         m_offset.x *= 2;
-        m_color = m_time*0.2f;
+        m_color = (int)m_time*0.2f;
         if (m_color >= 255)
             m_flashing = false;
 
@@ -1650,7 +1646,7 @@ Vector  collsionResponse(const Rect& own_rect, const Vector& own_speed, const Re
     if (!intersection.width() || !intersection.height())
         return new_pos;
 
-    double dt = 0;
+    float dt = 0;
     if (delta_speed.x && delta_speed.y)
     {
         float dx_t = intersection.width() / std::abs(delta_speed.x);
