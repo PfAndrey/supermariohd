@@ -486,31 +486,31 @@ void CLevelPortal::cameBackFromSublevel()
 
 void CLevelPortal::update(int delta_time)  
 {	
-     if (!m_used &&  getBounds().isContain(m_mario->getBounds()) &&
+     if (!m_used && getBounds().isContain(m_mario->getBounds()) &&
         (m_direction == Vector::zero || m_mario->getInputDirection() == m_direction) &&
         (m_mario->isGrounded() || m_direction == Vector::zero || m_mario->isClimbing()))
         {
 			m_used = true;
 			if (m_direction != Vector::zero)
-			m_mario->setState(new CTransitionMarioState(m_direction*0.03f, TRANSITION_TIME));
+				m_mario->setState(new CTransitionMarioState(m_direction*0.03f, TRANSITION_TIME));
 
 			switch (m_portal_type)
 			{
-			 case(PortalType::enterLevel):
-			 {
-				MarioGame().timer().invoke(std::bind(&CLevelPortal::goToLevel, this), TRANSITION_TIME);
-				break;
-			 }
-			 case(PortalType::enterSublevel):
-			 {
-				 MarioGame().timer().invoke(std::bind(&CLevelPortal::goToSublevel, this), (m_direction != Vector::zero) ? TRANSITION_TIME : 0);
-				 break;
-			 }
-			 case(PortalType::comebackSublevel):
-			 {
-				 MarioGame().timer().invoke(std::bind(&CLevelPortal::cameBackFromSublevel, this), (m_direction != Vector::zero) ? TRANSITION_TIME : 0);
-				 break;
-			 }
+				 case(PortalType::enterLevel):
+				 {
+					MarioGame().timer().invoke(std::bind(&CLevelPortal::goToLevel, this), TRANSITION_TIME);
+					break;
+				 }
+				 case(PortalType::enterSublevel):
+				 {
+					 MarioGame().timer().invoke(std::bind(&CLevelPortal::goToSublevel, this), (m_direction != Vector::zero) ? TRANSITION_TIME : 0);
+					 break;
+				 }
+				 case(PortalType::comebackSublevel):
+				 {
+					 MarioGame().timer().invoke(std::bind(&CLevelPortal::cameBackFromSublevel, this), (m_direction != Vector::zero) ? TRANSITION_TIME : 0);
+					 break;
+				 }
 			}
 	    }
  }

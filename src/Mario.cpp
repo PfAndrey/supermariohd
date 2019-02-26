@@ -848,7 +848,13 @@ void CNormalMarioState::update(int delta_time)
 	static int screen_height = CMarioGame::instance()->screenSize().y - 200;
 	if (_mario->getBounds().bottom() > screen_height)
 	{
-		setMarioState(MarioState::died);
+		if (_mario->getParent()->castTo<CMarioGameScene>()->getLevelName().substr(0,2) != "Sk")
+			setMarioState(MarioState::died);
+		if (_mario->m_invincible_mode)
+		{
+			CMarioGame::instance()->invincibleMode(false);
+			CMarioGame::instance()->stopMusic();
+		}
 	}
 
 	if (_mario->m_invincible_mode)
