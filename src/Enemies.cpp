@@ -1270,7 +1270,6 @@ CBulletBill::CBulletBill(const Vector& initial_pos, const Vector& initial_speed)
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
 	m_animator.create("fly", texture, Vector(64, 112), Vector(32, 32), 1, 3, 0.005f);
 	m_animator.create("died", texture, { 64,176 + 32,32,-32 });
-
 	setState(State::Normal);
 }
 
@@ -1291,8 +1290,9 @@ void CBulletBill::update(int delta_time)
 		updatePhysics(delta_time, 0);
 		m_animator.update(delta_time);
 		int camera_width = getParent()->castTo<CMarioGameScene>()->cameraRect().width();
-        if (std::abs(getPosition().x - mario()->getPosition().x) > camera_width)
-			setState(State::Died);
+		int distance_to_mario = std::abs(getPosition().x - mario()->getPosition().x);
+		if (distance_to_mario > camera_width)
+			getParent()->removeObject(this);
 		break;
 	}
 	case (State::Died):
@@ -1618,11 +1618,26 @@ void CBulletBillSpawner::update(int delta_time)
 {
 	int camera_width = getParent()->castTo<CMarioGameScene>()->cameraRect().width();
 	m_spawn_timer += delta_time;
-    if (m_spawn_timer > spawn_interval && std::abs(m_mario->getPosition().x - getPosition().x) < camera_width)
+	bool is_mario_close_enough = std::abs(m_mario->getPosition().x - getPosition().x) < camera_width;
+	bool is_time_to_push = m_spawn_timer > spawn_interval;
+	bool is_bullet_bill_beyond_tiled_map = isBulletBillBeyondTiledMap();
+    if (is_time_to_push && (is_mario_close_enough || is_bullet_bill_beyond_tiled_map))
 	{
 		Vector direction = (m_mario->getPosition().x < getPosition().x) ? Vector::left : Vector::right;
-		getParent()->addObject(new CBulletBill(getPosition(), direction*bullet_speed));
+		Vector pos = getPosition();
+
+		if (is_bullet_bill_beyond_tiled_map)
+		{
+			int k = (pos.x < m_mario->getPosition().x ? -1 : 1);
+			pos.x = m_mario->getPosition().x + k*MarioGame().screenSize().x / 2;
+		}
+
+		getParent()->addObject(new CBulletBill(pos, direction*bullet_speed));
 		m_spawn_timer = 0;
+		if (is_bullet_bill_beyond_tiled_map)
+			m_spawn_timer = -4000 - rand() % 8000;
+
+		MarioGame().playSound("fireworks");
 	}
 }
 
@@ -1631,9 +1646,17 @@ void CBulletBillSpawner::onActivated()
 
 }
 
+bool CBulletBillSpawner::isBulletBillBeyondTiledMap() const
+{
+	return getPosition().x < 0 || getPosition().x > m_blocks_width;
+}
+
 void CBulletBillSpawner::start()
 {
 	m_mario = getParent()->findObjectByName<CMario>("Mario");
+	m_blocks_width = getParent()->findObjectByName<CBlocks>("Blocks")->width();
+	if (isBulletBillBeyondTiledMap())
+		m_spawn_timer = - rand() % 5000;
 }
 
 //----------------------------------------------------------------------------------------------------------------

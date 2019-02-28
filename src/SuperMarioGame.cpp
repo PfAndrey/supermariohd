@@ -31,7 +31,7 @@ CMarioGame::CMarioGame() : CGame("SuperMario", { 1280,720 })
 	const std::string sounds_dir = MARIO_RES_PATH + "Sounds/";
 	for (auto sound : { "breakblock", "bump", "coin", "fireball", "jump_super", "kick", "stomp","powerup_appears",
 		 "powerup", "pipe","flagpole", "bowser_falls", "bowser_fire", "mario_die","stage_clear",
-		 "game_over","1-up","warning", "world_clear","pause","beep" })
+		 "game_over","1-up","warning", "world_clear","pause","beep","fireworks" })
 		soundManager().loadFromFile(sound, sounds_dir + sound + ".wav");
 
 	//Load music

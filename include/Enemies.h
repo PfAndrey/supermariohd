@@ -268,7 +268,9 @@ public:
 	void onActivated() override;
 	void start() override;
 private:
+	bool isBulletBillBeyondTiledMap() const;
 	CMario * m_mario = NULL;
+	int m_blocks_width = 0;
 	const int spawn_interval = 4000;
 	const float bullet_speed = 0.15f;
 	float m_spawn_timer = 0;
