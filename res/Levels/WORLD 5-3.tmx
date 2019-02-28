@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="192" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="244">
+<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="192" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="257">
  <tileset firstgid="1" name="Blocks" tilewidth="32" tileheight="32" tilecount="128" columns="8">
   <image source="../Textures/Tiles.png" width="256" height="512"/>
  </tileset>
@@ -11,7 +11,7 @@
    </properties>
   </object>
   <object id="152" name="Mario" type="Mario" x="383.667" y="415" width="32" height="32"/>
-  <object id="156" name="MoveablePlatform" type="MoveablePlatform" x="1863.67" y="255.667" width="96" height="16">
+  <object id="156" name="MoveablePlatform" type="MoveablePlatform" x="1886.67" y="254.667" width="64" height="16">
    <properties>
     <property name="Amplitude" type="int" value="80"/>
     <property name="Orientation" type="int" value="0"/>
@@ -92,7 +92,7 @@
    </properties>
   </object>
   <object id="218" name="Goomba" type="Goomba" x="2845.33" y="156" width="32" height="32"/>
-  <object id="219" name="MoveablePlatform" type="MoveablePlatform" x="3008" y="254.667" width="96" height="16">
+  <object id="219" name="MoveablePlatform" type="MoveablePlatform" x="3018" y="251.667" width="64" height="16">
    <properties>
     <property name="Amplitude" type="int" value="80"/>
     <property name="Orientation" type="int" value="1"/>
@@ -100,7 +100,7 @@
     <property name="Phase" type="int" value="0"/>
    </properties>
   </object>
-  <object id="220" name="MoveablePlatform" type="MoveablePlatform" x="3254.67" y="274.667" width="96" height="16">
+  <object id="220" name="MoveablePlatform" type="MoveablePlatform" x="3264.67" y="271.667" width="64" height="16">
    <properties>
     <property name="Amplitude" type="int" value="80"/>
     <property name="Orientation" type="int" value="1"/>
@@ -108,7 +108,7 @@
     <property name="Phase" type="int" value="1"/>
    </properties>
   </object>
-  <object id="221" name="MoveablePlatform" type="MoveablePlatform" x="4696" y="225.333" width="96" height="16">
+  <object id="221" name="MoveablePlatform" type="MoveablePlatform" x="4704" y="223.333" width="64" height="16">
    <properties>
     <property name="Amplitude" type="int" value="80"/>
     <property name="Orientation" type="int" value="1"/>
@@ -196,6 +196,9 @@
    </properties>
   </object>
   <object id="242" name="castle flag" type="CastleFlag" x="5696.29" y="63.125" width="32" height="32"/>
+  <object id="252" name="BulletBillSpawner" type="BulletBillSpawner" x="6208" y="224" width="32" height="32"/>
+  <object id="253" name="BulletBillSpawner" type="BulletBillSpawner" x="6208" y="352" width="32" height="32"/>
+  <object id="256" name="BulletBillSpawner" type="BulletBillSpawner" x="6208" y="96" width="32" height="32"/>
  </objectgroup>
  <layer id="4" name="Tile Layer 1" width="192" height="16">
   <data encoding="csv">

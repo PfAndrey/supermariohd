@@ -29,7 +29,7 @@
    <properties>
     <property name="ComebackPortal" value=""/>
     <property name="Direction" value="Right"/>
-    <property name="Level" value="WORLD 1-1"/>
+    <property name="Level" value="WORLD 5-1"/>
     <property name="SubLevel" value=""/>
    </properties>
   </object>

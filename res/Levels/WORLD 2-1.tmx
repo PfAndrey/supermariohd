@@ -110,7 +110,7 @@
   <object id="322" name="Portal_to_sky" type="LevelPortal" x="2462.74" y="-12.6268" width="97.519" height="83.2535">
    <properties>
     <property name="ComebackPortal" value="ComeBackPort2"/>
-    <property name="Direction" value="None"/>
+    <property name="Direction" value="Up"/>
     <property name="Level" value=""/>
     <property name="SubLevel" value="Sk1"/>
    </properties>
