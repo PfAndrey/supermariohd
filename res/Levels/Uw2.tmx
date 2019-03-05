@@ -90,7 +90,7 @@
   <object id="125" name="MoveablePlatform" type="MoveablePlatform" x="942" y="407" width="96" height="16">
    <properties>
     <property name="Amplitude" type="int" value="80"/>
-    <property name="Orientation" type="int" value="0"/>
+    <property name="Orientation" type="int" value="2"/>
     <property name="Period" type="float" value="4"/>
     <property name="Phase" type="int" value="0"/>
    </properties>

@@ -112,7 +112,7 @@
     <property name="ComebackPortal" value="ComeBackPort2"/>
     <property name="Direction" value="Up"/>
     <property name="Level" value=""/>
-    <property name="SubLevel" value="Sk1"/>
+    <property name="SubLevel" value="Sk2"/>
    </properties>
   </object>
   <object id="323" name="ComeBackPort2" type="LevelPortal" x="4992.07" y="0.7994" width="43.8523" height="64.4012">
