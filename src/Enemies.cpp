@@ -14,9 +14,13 @@ void CEnemy::checkNextTileUnderFoots()
 {
 	if (m_speed.y == 0)
 	{
-		Vector next_under_foot = m_blocks->toBlockCoordinates(getBounds().center() + Vector::down * 30 + math::sign(m_speed.x)*Vector::right * 20);
-		Vector prev_back = m_blocks->toBlockCoordinates(getBounds().center() - math::sign(m_speed.x)*Vector::right * 50);
-		if (!m_blocks->isCollidableBlock(next_under_foot.x, next_under_foot.y) && !m_blocks->isCollidableBlock(prev_back.x, prev_back.y))
+		Vector own_center = getBounds().center();
+		Vector opposite_vector = math::sign(m_speed.x)*Vector::right;
+		bool is_next_under_foot = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center + 20*opposite_vector + 30*Vector::down));
+		bool is_prev_back = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center - 50*opposite_vector));
+		bool is_next_back = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center + 50*opposite_vector));
+
+		if (!is_next_under_foot && !is_prev_back && (is_prev_back || is_next_back))
 			m_speed.x = -m_speed.x;
 	}
 }
