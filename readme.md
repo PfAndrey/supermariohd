@@ -1,8 +1,7 @@
-# SuperMarioHD 
-----
+# SuperMarioHD  
 ![MARIO logo](https://github.com/PfAndrey/supermariohd/blob/master/res/Screen.jpg?raw=true)
 Cross-platform HD remake of Super Mario Bros. (NES, 1985).  
-Project was created for learning purposes only.   
+Project was created for learning purposes only.  
 The game demo on the YouTube: https://youtu.be/RJ181cc_AMI
 
 ## Windows
