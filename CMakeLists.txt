@@ -30,33 +30,30 @@ set(TINY_XML_LIB ${INSTALL_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${SFML_LIB}/include ${TINY_XML_LIB}/include)
 
 set(SOURCE
-	${CMAKE_SOURCE_DIR}/src/Main.cpp
-	${CMAKE_SOURCE_DIR}/src/Blocks.cpp
-	${CMAKE_SOURCE_DIR}/src/GameEngine.cpp
-	${CMAKE_SOURCE_DIR}/src/Geometry.cpp
-	${CMAKE_SOURCE_DIR}/src/Items.cpp
-	${CMAKE_SOURCE_DIR}/src/Mario.cpp
-	${CMAKE_SOURCE_DIR}/src/Enemies.cpp
-	${CMAKE_SOURCE_DIR}/src/Pickups.cpp
-	${CMAKE_SOURCE_DIR}/src/SuperMarioGame.cpp
-)
-
-set(HEADERS
-	${CMAKE_SOURCE_DIR}/include/Blocks.h
-	${CMAKE_SOURCE_DIR}/include/GameEngine.h
-	${CMAKE_SOURCE_DIR}/include/Geometry.h
-	${CMAKE_SOURCE_DIR}/include/Items.h
-	${CMAKE_SOURCE_DIR}/include/Mario.h
-	${CMAKE_SOURCE_DIR}/include/Enemies.h
-	${CMAKE_SOURCE_DIR}/include/Pickups.h
-	${CMAKE_SOURCE_DIR}/include/SuperMarioGame.h
+	${CMAKE_SOURCE_DIR}/source/Blocks.h
+	${CMAKE_SOURCE_DIR}/source/Blocks.cpp
+	${CMAKE_SOURCE_DIR}/source/GameEngine.h
+	${CMAKE_SOURCE_DIR}/source/GameEngine.cpp
+	${CMAKE_SOURCE_DIR}/source/Geometry.h
+	${CMAKE_SOURCE_DIR}/source/Geometry.cpp
+	${CMAKE_SOURCE_DIR}/source/Items.h
+	${CMAKE_SOURCE_DIR}/source/Items.cpp
+	${CMAKE_SOURCE_DIR}/source/Mario.h
+	${CMAKE_SOURCE_DIR}/source/Mario.cpp
+	${CMAKE_SOURCE_DIR}/source/Enemies.h
+	${CMAKE_SOURCE_DIR}/source/Enemies.cpp
+	${CMAKE_SOURCE_DIR}/source/Pickups.h
+	${CMAKE_SOURCE_DIR}/source/Pickups.cpp
+	${CMAKE_SOURCE_DIR}/source/SuperMarioGame.h
+	${CMAKE_SOURCE_DIR}/source/SuperMarioGame.cpp
+	${CMAKE_SOURCE_DIR}/source/main.cpp
 )
  
 # LINK EXTERNAL LIBRARIES TO EXECUTABLE
 LINK_DIRECTORIES(${SFML_LIB}/lib ${TINY_XML_LIB}/lib)
 
 # ADD EXECUTABLE
-add_executable(SuperMario ${SOURCE} ${HEADERS})
+add_executable(SuperMario ${SOURCE})
 if (MSVC)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT SuperMario)
 	set_target_properties( SuperMario PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/Build")

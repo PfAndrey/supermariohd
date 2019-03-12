@@ -29,8 +29,8 @@ protected:
 	const float gravity_force = 0.0015f;
 	Vector m_speed;
 	Vector m_direction = Vector::left;
-	CMario* m_mario = NULL;
-	CBlocks* m_blocks = NULL;
+	CMario* m_mario = nullptr;
+	CBlocks* m_blocks = nullptr;
 	const float m_run_speed = -0.05f;
 };
 
@@ -269,7 +269,7 @@ public:
 	void start() override;
 private:
 	bool isBulletBillBeyondTiledMap() const;
-	CMario * m_mario = NULL;
+	CMario* m_mario = NULL;
 	int m_blocks_width = 0;
 	const int spawn_interval = 4000;
 	const float bullet_speed = 0.15f;

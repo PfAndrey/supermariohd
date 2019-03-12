@@ -73,7 +73,7 @@ void CEnemy::addScoreToPlayer(int score)
 void CEnemy::start()
 {
 	m_mario = getParent()->findObjectByName<CMario>("Mario");
-	m_blocks = getParent()->findObjectByType<CBlocks>();
+	m_blocks = getParent()->findObjectByName<CBlocks>("Blocks");
 	assert(m_mario && m_blocks);
 }
 
@@ -87,9 +87,10 @@ void CEnemy::update(int delta_time)
 CGoomba::CGoomba()
 {
 	setSize({ 32,32 });
-	m_animator.create("walk", *MarioGame().textureManager().get("Enemies"), { { 0,0,32,32 },{ 32,0,32,32 } }, 0.005f);
-	m_animator.create("cramped", *MarioGame().textureManager().get("Enemies"), { 64,0,32,32 });
-	m_animator.create("fall", *MarioGame().textureManager().get("Enemies"), { 0,32,32,-32 });
+	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
+	m_animator.create("walk", texture, { { 0,0,32,32 },{ 32,0,32,32 } }, 0.005f);
+	m_animator.create("cramped", texture, { 64,0,32,32 });
+	m_animator.create("fall", texture, { 0,32,32,-32 });
 	m_animator.setSpriteOffset("cramped", 0, { 0,8 });
 }
 
@@ -435,7 +436,6 @@ void CKoopa::update(int delta_time)
 	if (m_state == State::Bullet && ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right)))
 		getParent()->castTo<CMarioGameScene>()->playSoundAtPoint("bump", getBounds().center());
 	
-
 	m_animator.flipX(m_speed.x > 0);
 	m_animator.update(delta_time);
 }
@@ -643,8 +643,9 @@ bool CBuzzyBeetle::isInBulletState() const
 
 CHammer::CHammer(CMario* target)
 {
-	m_animator.create("fly", *MarioGame().textureManager().get("Enemies"), Vector(96, 112), Vector(32, 32), 4, 1, 0.01f);
-	m_animator.create("in_hand", *MarioGame().textureManager().get("Enemies"), { 96,112,32,32 });
+	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
+	m_animator.create("fly", texture, Vector(96, 112), Vector(32, 32), 4, 1, 0.01f);
+	m_animator.create("in_hand", texture, { 96,112,32,32 });
 	m_animator.play("in_hand");
 	m_target = target;
 	setSize({ 32,32 });
@@ -870,8 +871,6 @@ CSpinny::CSpinny(const Vector& position, const Vector& speed, const Vector& walk
 	setSize({ 31, 32 });
 
 	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-
-
 	m_animator.create("walk", texture, Vector(64, 80), Vector(32, 32), 2, 1, 0.005f);
 	m_animator.create("egg", texture, Vector(128, 80), Vector(32, 32), 2, 1, 0.005f);
 	m_animator.create("died", texture, { 64,80 + 32,32,-32 });
@@ -1112,26 +1111,26 @@ void CCheepCheep::update(int delta_time)
 	CEnemy::update(delta_time);
 	switch (m_state)
 	{
-	case (State::Normal):
-	{
-		updatePhysics(delta_time, gravity_force*0.4f);
-		m_animator.update(delta_time);
-		break;
-	}
-	case (State::Underwater):
-	{
-        if (std::abs(mario()->getPosition().x - getPosition().x) < MarioGame().screenSize().x / 2)
+		case (State::Normal):
 		{
-			move(m_speed*delta_time);
+			updatePhysics(delta_time, gravity_force*0.4f);
 			m_animator.update(delta_time);
+			break;
 		}
-		break;
-	}
-	case (State::Died):
-	{
-		updatePhysics(delta_time, gravity_force);
-		break;
-	}
+		case (State::Underwater):
+		{
+			if (std::abs(mario()->getPosition().x - getPosition().x) < MarioGame().screenSize().x / 2)
+			{
+				move(m_speed*delta_time);
+				m_animator.update(delta_time);
+			}
+			break;
+		}
+		case (State::Died):
+		{
+			updatePhysics(delta_time, gravity_force);
+			break;
+		}
 	}
 
 }
@@ -1690,7 +1689,6 @@ void CFireball::update(int delta_time)
 		getParent()->removeObject(this);
 	move(delta_time*m_speed);
 
-
 	if (m_mario->getBounds().isContain(getPosition()))
 		m_mario->reciveDamage();
 }
@@ -1736,70 +1734,70 @@ void CBowser::enterState(State state)
 		return;
 	switch (state)
 	{
-	case(State::walk):
-	{
-		m_speed.x = m_old_speed.x;
-		m_animator.play("walk");
-		m_delay_timer = 2000;
-		break;
-	}
-	case(State::turn):
-	{
-		m_animator.play("turn");
-		m_delay_timer = 400;
-		break;
-	}
-	case(State::pre_jump):
-	{
-		m_old_speed.x = m_speed.x;
-		m_old_speed.y = -1;
-		m_speed.x = 0;
-		m_animator.play("pre_jump");
-		m_delay_timer = 300;
-		break;
-	}
-	case(State::jump):
-	{
-		m_speed = 0.4f*Vector::up;
-		break;
-	}
-	case(State::middle_fire):
-	{
-		m_old_speed.x = m_speed.x;
-		m_speed.x = 0;
-		m_animator.play("middle_fire");
-		m_delay_timer = 500;
-		break;
-	}
-	case(State::land_fire):
-	{
-		m_old_speed.x = m_speed.x;
-		m_speed.x = 0;
-		m_animator.play("land_fire");
-		m_delay_timer = 700;
-		break;
-	}
-	case(State::no_bridge):
-	{
-		m_animator.play("walk");
-		m_animator.get("walk")->setSpeed(anim_speed * 2.5f);
-		m_delay_timer = 1000;
-		break;
-	}
-	case(State::fall):
-	{
-		m_animator.get("walk")->setSpeed(0);
-		MarioGame().playSound("bowser_falls");
-		m_speed = Vector::zero;
-		break;
-	}
-	case(State::died):
-	{
-		m_animator.play("died");
-		MarioGame().playSound("bowser_falls");
-		m_speed = Vector::zero;
-		break;
-	}
+		case(State::walk):
+		{
+			m_speed.x = m_old_speed.x;
+			m_animator.play("walk");
+			m_delay_timer = 2000;
+			break;
+		}
+		case(State::turn):
+		{
+			m_animator.play("turn");
+			m_delay_timer = 400;
+			break;
+		}
+		case(State::pre_jump):
+		{
+			m_old_speed.x = m_speed.x;
+			m_old_speed.y = -1;
+			m_speed.x = 0;
+			m_animator.play("pre_jump");
+			m_delay_timer = 300;
+			break;
+		}
+		case(State::jump):
+		{
+			m_speed = 0.4f*Vector::up;
+			break;
+		}
+		case(State::middle_fire):
+		{
+			m_old_speed.x = m_speed.x;
+			m_speed.x = 0;
+			m_animator.play("middle_fire");
+			m_delay_timer = 500;
+			break;
+		}
+		case(State::land_fire):
+		{
+			m_old_speed.x = m_speed.x;
+			m_speed.x = 0;
+			m_animator.play("land_fire");
+			m_delay_timer = 700;
+			break;
+		}
+		case(State::no_bridge):
+		{
+			m_animator.play("walk");
+			m_animator.get("walk")->setSpeed(anim_speed * 2.5f);
+			m_delay_timer = 1000;
+			break;
+		}
+		case(State::fall):
+		{
+			m_animator.get("walk")->setSpeed(0);
+			MarioGame().playSound("bowser_falls");
+			m_speed = Vector::zero;
+			break;
+		}
+		case(State::died):
+		{
+			m_animator.play("died");
+			MarioGame().playSound("bowser_falls");
+			m_speed = Vector::zero;
+			break;
+		}
 	}
 	m_state = state;
 }
@@ -1820,100 +1818,100 @@ void CBowser::update(int delta_time)
 
 	switch (m_state)
 	{
-	case(State::walk):
-	{
-        if (std::abs(getPosition().x - m_center_x) > c_walk_amlitude)
+		case(State::walk):
 		{
-			m_speed.x = -m_speed.x;
-            move({ (float)(c_walk_amlitude - std::abs(getPosition().x - m_center_x))*math::sign(-m_speed.x),0.f });
-		}
-		auto old_direction = m_direction;
-		m_direction = (m_mario->getPosition().x < getPosition().x) ? Vector::left : Vector::right;
+			if (std::abs(getPosition().x - m_center_x) > c_walk_amlitude)
+			{
+				m_speed.x = -m_speed.x;
+				move({ (float)(c_walk_amlitude - std::abs(getPosition().x - m_center_x))*math::sign(-m_speed.x),0.f });
+			}
+			auto old_direction = m_direction;
+			m_direction = (m_mario->getPosition().x < getPosition().x) ? Vector::left : Vector::right;
 
-		if (old_direction != m_direction)
-		{
-			enterState(State::turn);
+			if (old_direction != m_direction)
+			{
+				enterState(State::turn);
+				break;
+			}
+
+			m_animator.flipX(m_direction == Vector::right);
+
+			m_delay_timer -= delta_time;
+			if (m_delay_timer < 0)
+			{
+				int d = rand() % 3;
+				if (d == 0) enterState(State::pre_jump);
+				if (d == 1) enterState(State::middle_fire);
+				if (d == 2) enterState(State::land_fire);
+			}
 			break;
 		}
+		case(State::turn):
+		{
+			m_delay_timer -= delta_time;
+			if (m_delay_timer < 0)
+				enterState(State::walk);
+			break;
+		}
+		case(State::jump):
+		{
+			if (m_speed.y > 0)
+				m_animator.play("down_jump");
+			else if (m_speed.y < 0)
+				m_animator.play("up_jump");
+			if (m_speed.y > 0 && m_old_speed.y < 0) //jump peak
+			{
 
-		m_animator.flipX(m_direction == Vector::right);
-
-		m_delay_timer -= delta_time;
-		if (m_delay_timer < 0)
-		{
-			int d = rand() % 3;
-			if (d == 0) enterState(State::pre_jump);
-			if (d == 1) enterState(State::middle_fire);
-			if (d == 2) enterState(State::land_fire);
+				getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::down * 20, m_direction*0.13f));
+				MarioGame().playSound("bowser_fire");
+			}
+			m_old_speed.y = m_speed.y;
+			if (m_collision_tag & ECollisionTag::floor)
+				enterState(State::walk);
+			break;
 		}
-		break;
-	}
-	case(State::turn):
-	{
-		m_delay_timer -= delta_time;
-		if (m_delay_timer < 0)
-			enterState(State::walk);
-		break;
-	}
-	case(State::jump):
-	{
-		if (m_speed.y > 0)
-			m_animator.play("down_jump");
-		else if (m_speed.y < 0)
-			m_animator.play("up_jump");
-		if (m_speed.y > 0 && m_old_speed.y < 0) //jump peak
+		case(State::pre_jump):
 		{
-
-			getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::down * 20, m_direction*0.13f));
-			MarioGame().playSound("bowser_fire");
+			m_delay_timer -= delta_time;
+			if (m_delay_timer < 0)
+				enterState(State::jump);
+			break;
 		}
-		m_old_speed.y = m_speed.y;
-		if (m_collision_tag & ECollisionTag::floor)
-			enterState(State::walk);
-		break;
-	}
-	case(State::pre_jump):
-	{
-		m_delay_timer -= delta_time;
-		if (m_delay_timer < 0)
-			enterState(State::jump);
-		break;
-	}
-	case(State::land_fire):
-	{
-		m_delay_timer -= delta_time;
-		if (m_delay_timer < 0)
+		case(State::land_fire):
 		{
-			getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::down * 10, m_direction*0.13f));
-			MarioGame().playSound("bowser_fire");
-			enterState(State::walk);
+			m_delay_timer -= delta_time;
+			if (m_delay_timer < 0)
+			{
+				getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::down * 10, m_direction*0.13f));
+				MarioGame().playSound("bowser_fire");
+				enterState(State::walk);
+			}
+			break;
 		}
-		break;
-	}
-	case(State::middle_fire):
-	{
-		m_delay_timer -= delta_time;
-		if (m_delay_timer < 0)
+		case(State::middle_fire):
 		{
-			getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::up * 10, m_direction*0.13f));
-			MarioGame().playSound("bowser_fire");
-			enterState(State::walk);
+			m_delay_timer -= delta_time;
+			if (m_delay_timer < 0)
+			{
+				getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::up * 10, m_direction*0.13f));
+				MarioGame().playSound("bowser_fire");
+				enterState(State::walk);
+			}
+			break;
 		}
-		break;
-	}
-	case(State::no_bridge):
-	{
-		m_delay_timer -= delta_time;
-		if (m_delay_timer < 0)
-			enterState(State::fall);
-		break;
-	}
-	case(State::died):
-	case(State::fall):
-	{
-		updatePhysics(delta_time, gravity_force / 2);
-		break;
-	}
+		case(State::no_bridge):
+		{
+			m_delay_timer -= delta_time;
+			if (m_delay_timer < 0)
+				enterState(State::fall);
+			break;
+		}
+		case(State::died):
+		case(State::fall):
+		{
+			updatePhysics(delta_time, gravity_force / 2);
+			break;
+		}
 	}
 }
 
