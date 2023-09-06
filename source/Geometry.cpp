@@ -52,6 +52,10 @@ Vector Vector::operator* (const float& k) const
     return Vector(x*k, y*k);
 }
 
+
+
+
+
 void Vector::operator*= (const float& k)
 {
     x *= k;
