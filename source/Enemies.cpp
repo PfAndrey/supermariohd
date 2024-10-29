@@ -1,1945 +1,1624 @@
-#include "Enemies.h"
-
-#include "Mario.h"
-#include "Blocks.h"
-#include "SuperMarioGame.h"
 #include <cmath>
 
-void CEnemy::fired(CMario* mario)
-{
-	kickFromBottom(mario);
+#include <Logger.hpp>
+#include "Blocks.hpp"
+#include "Enemies.hpp"
+#include "Mario.hpp"
+#include "SuperMarioGame.hpp"
+
+namespace {
+
+bool isCharacterInFront(Character* target, GameObject* origin) {
+    return (target->getBounds().center().x > origin->getBounds().center().x);
 }
 
-void CEnemy::checkNextTileUnderFoots()
-{
-	if (m_speed.y == 0)
-	{
-		Vector own_center = getBounds().center();
-		Vector opposite_vector = math::sign(m_speed.x)*Vector::right;
-		bool is_next_under_foot = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center + 20*opposite_vector + 32*Vector::down));
-		bool is_prev_under_foot = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center - 60*opposite_vector + 32*Vector::down));
-		bool is_prev_back = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center - 50*opposite_vector));
-		bool is_next_back = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center + 50*opposite_vector));
+} // anonymous namespace
 
-		if ((!is_next_under_foot && !is_prev_back) && (is_next_under_foot || is_prev_under_foot))
-			m_speed.x = -m_speed.x;
-	}
+void Enemy::checkNextTileUnderFoots() {
+    if (m_speed.y != 0) {
+        return;
+    }
+
+    Vector own_center = getBounds().center();
+    Vector opposite_vector = math::sign(m_speed.x) * Vector::RIGHT;
+    bool is_next_under_foot = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center + 20*opposite_vector + 32*Vector::DOWN));
+    bool is_prev_under_foot = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center - 60*opposite_vector + 32*Vector::DOWN));
+    bool is_prev_back = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center - 50*opposite_vector));
+    bool is_next_back = m_blocks->isCollidableBlock(m_blocks->toBlockCoordinates(own_center + 50*opposite_vector));
+
+    if ((!is_next_under_foot && !is_prev_back) && (is_next_under_foot || is_prev_under_foot)) {
+            m_speed.x = -m_speed.x;
+    }
 }
 
-void CEnemy::checkCollideOtherCharasters()
+void Enemy::checkCollideOtherCharasters()
 {
-	auto enemies = getParent()->findObjectsByType<CEnemy>();
-	for (auto enemy : enemies)
-		if (enemy != this && enemy->isAlive() && enemy->getBounds().isIntersect(getBounds()))
-		{
-			bool is_enemy_in_bullet_state_also = enemy->isInBulletState();
-			enemy->kickFromBottom(nullptr);
-			if (is_enemy_in_bullet_state_also)
-			{
-				kickFromBottom(nullptr);
-				break;
-			}
-		}
+    auto enemies = getParent()->findChildObjectsByType<Enemy>();
+    for (auto enemy : enemies) {
+        if ((enemy != this) && enemy->isAlive() && enemy->getBounds().isIntersect(getBounds())) {
+            enemy->takeDamage(DamageType::HIT_FROM_BELOW, this);
+        }
+    }
 }
 
-void CEnemy::updateCollision(float delta_time)
-{
-	m_collision_tag = ECollisionTag::none;
-	setPosition(m_blocks->collsionResponse(getBounds(), m_speed, delta_time, m_collision_tag));
+void Enemy::updateCollision(float delta_time) {
+    m_collision_tag = ECollisionTag::NONE;
+    setPosition(m_blocks->collsionResponse(getBounds(), m_speed, delta_time, m_collision_tag));
 }
 
-void CEnemy::updatePhysics(float delta_time, float gravity)
-{
-	m_speed += Vector::down*gravity * delta_time;
-	move(delta_time*m_speed);
+void Enemy::updatePhysics(float delta_time, float gravity) {
+    m_speed += Vector::DOWN * gravity * delta_time;
+    move(delta_time * m_speed);
 }
 
-void CEnemy::checkFallUndergound()
-{
-	if (getPosition().y > 1000)
-		getParent()->removeObject(this);
+bool Enemy::isInCamera() const {
+    Rect cameraRect = getParent()->castTo<MarioGameScene>()->cameraRect();
+    return (std::abs(getPosition().x - cameraRect.center().x) < cameraRect.width() / 2);
 }
 
-CMario* CEnemy::mario()
-{
-	return m_mario;
+void Enemy::playAnimation(const std::string& name) {
+    m_animator.play(name);
 }
 
-void CEnemy::addScoreToPlayer(int score)
-{
-	MarioGame().addScore(score, getBounds().center());
+void Enemy::checkFallUndergound() {
+    if (getPosition().y > 1000) {
+        removeLater();
+    }
 }
 
-void CEnemy::start()
-{
-	m_mario = getParent()->findObjectByName<CMario>("Mario");
-	m_blocks = getParent()->findObjectByName<CBlocks>("Blocks");
-	assert(m_mario && m_blocks);
+Mario* Enemy::mario() {
+    return m_mario;
 }
 
-void CEnemy::update(int delta_time)
-{
-	checkFallUndergound();
+void Enemy::addScoreToPlayer(int score) {
+    MARIO_GAME.addScore(score, getBounds().center());
 }
 
-//-----------------------------------------------------------------------------------------------------------------------------------------------
-
-CGoomba::CGoomba()
-{
-	setSize({ 32,32 });
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("walk", texture, { { 0,0,32,32 },{ 32,0,32,32 } }, 0.005f);
-	m_animator.create("cramped", texture, { 64,0,32,32 });
-	m_animator.create("fall", texture, { 0,32,32,-32 });
-	m_animator.setSpriteOffset("cramped", 0, { 0,8 });
+void Enemy::onStarted() {
+    m_mario = MARIO_GAME.getPlayer();
+    m_blocks = getParent()->findChildObjectByType<Blocks>();
+    assert(m_mario && m_blocks);
 }
 
-void CGoomba::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void Enemy::update(int delta_time) {
+    checkFallUndergound();
+}
+//---------------------------------------------------------------------------
+//! Goomba
+//---------------------------------------------------------------------------
+Goomba::Goomba() {
+    setSize({ 32,32 });
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("walk",    texture, { { 0, 0, 32, 32 },{ 32, 0, 32, 32 } }, 0.005f);
+    m_animator.create("cramped", texture, { 64, 0, 32, 32 });
+    m_animator.create("fall",    texture, { 0, 32, 32, -32 });
+    m_animator.setSpriteOffset("cramped", 0, { 0,8 });
 }
 
-void CGoomba::update(int delta_time)
-{
-	CEnemy::update(delta_time);
+void Goomba::setState(State state) {
+    if (m_state == state) {
+        return;
+    }
+ 
+    m_state = state;
 
-	switch (m_state)
-	{
-		case (State::Deactivated):
-		{
-			auto scene = getParent()->castTo<CMarioGameScene>();
-			Rect camera_rect = scene->cameraRect();
-			if (std::abs(getPosition().x - camera_rect.center().x) < camera_rect.width() / 2)
-				setState(State::Normal);
-			break;
-		}
-		case (State::Normal):
-		{
-			updatePhysics(delta_time, gravity_force);
-			updateCollision(delta_time);
-			if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-				m_speed.y = 0;
-			if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-				m_speed.x = -m_speed.x;
-			break;
-		}
-		case (State::Died):
-		{
-			updatePhysics(delta_time, gravity_force);
-			break;
-		}
-		case(State::Cramped):
-		{
-			m_timer += delta_time;
-			if (m_timer > 3000)
-				getParent()->removeObject(this);
-			break;
-		}
-	}
+    switch (m_state) {
+    case State::NORMAL:
+        m_speed.x = RUN_SPEED;
+        playAnimation("walk");
+        break;
+    case State::CRAMPED:
+        m_speed.x = 0;
+        playAnimation("cramped");
+        addScoreToPlayer(100);
+        MARIO_GAME.playSound("stomp");
+        break;
+    case State::DIED:
+        m_speed.x = 0;
+        m_speed += 0.4f * Vector::UP;
+        playAnimation("fall");
+        addScoreToPlayer(100);
+        MARIO_GAME.playSound("kick");
+        break;
+    }
 
-	switch (m_state)
-	{
-		case(State::Normal):
-		{
-			m_animator.play("walk");
-			m_animator.update(delta_time);
-			break;
-		};
-		case(State::Cramped): { m_animator.play("cramped"); break; };
-		case(State::Died): { m_animator.play("fall"); break; };
-	}
+    m_timer = 0;
 }
 
-void CGoomba::kickFromTop(CMario* mario)
-{
-	setState(State::Cramped);
+void Goomba::update(int delta_time) {
+    Enemy::update(delta_time);
+
+    switch (m_state) {
+    case State::DEACTIVATED:
+        if (isInCamera()) {
+            setState(State::NORMAL);
+        }
+        break;
+    case State::NORMAL:
+        updatePhysics(delta_time, GRAVITY_FORCE);
+        updateCollision(delta_time);
+        if (m_collision_tag & ECollisionTag::Y_AXIS) {
+            m_speed.y = 0;
+        }
+        if (m_collision_tag & ECollisionTag::X_AXIS) {
+            m_speed.x = -m_speed.x;
+        }
+        m_animator.update(delta_time);
+        break;
+    case State::DIED:
+        updatePhysics(delta_time, GRAVITY_FORCE);
+        break;
+    case State::CRAMPED:
+        m_timer += delta_time;
+        if (m_timer > 3000) {
+            removeLater();
+        }
+        break;
+    }
 }
 
-void CGoomba::kickFromBottom(CMario* mario)
-{
-	if (m_state != Died)
-	{
-		setState(State::Died);
-		m_speed += 0.4f*Vector::up;
-	}
+void Goomba::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CGoomba::touchSide(CMario* mario)
-{
-	if (m_state == State::Normal)
-		mario->reciveDamage();
+void Goomba::takeDamage(DamageType damageType, Character*) {
+    if (damageType == DamageType::HIT_FROM_ABOVE) {
+        setState(State::CRAMPED);
+    } else {
+        setState(State::DIED);
+    }
 }
 
-bool CGoomba::isAlive() const
-{
-	return m_state == Normal;
+void Goomba::touch(Character* character) {
+    character->takeDamage(DamageType::KICK, this);
 }
 
-void CGoomba::setState(State state)
-{
-	m_state = state;
-	switch (m_state)
-	{
-		case State::Normal:
-		{
-			m_speed.x = m_run_speed;
-			break;
-		}
-		case State::Cramped:
-		{
-			m_speed.x = 0;
-			addScoreToPlayer(100);
-			MarioGame().playSound("stomp");
-			break;
-		}
-		case State::Died:
-		{
-			m_speed.x = 0;
-			addScoreToPlayer(100);
-			MarioGame().playSound("kick");
-			break;
-		}
-	}
-	m_timer = 0;
+bool Goomba::isAlive() const {
+    return (m_state == State::NORMAL);
+}
+//---------------------------------------------------------------------------
+//! Koopa
+//---------------------------------------------------------------------------
+Koopa::Koopa() {
+    setSize({ 32, 48 });
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("walk",   texture, { { 0,32,32,48 },{ 32,32,32,48 } }, 0.005f);
+    m_animator.create("flying", texture, { 224,32 }, { 32, 48 }, 2, 1, 0.005f);
+    m_animator.create("climb",  texture, { { 64,48,32,32 },{ 192,48,32,32 } }, 0.005f);
+    m_animator.create("hidden", texture, { 64,48,32,32 });
+    m_animator.create("bullet", texture, { 64, 48 }, { 32, 32 }, 4, 1, 0.01f);
+    m_animator.create("fall",   texture, { 0,80, 32, -48 });
 }
 
-//-----------------------------------------------------------------------------------------------------------------------------------------------
+void Koopa::setState(State state) {
+    if (m_state == state) {
+        return;
+    }
 
-CKoopa::CKoopa()
-{
-	setSize({ 32, 48 });
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("walk", texture, { { 0,32,32,48 },{ 32,32,32,48 } }, 0.005f);
-	m_animator.create("flying", texture, { 224,32 }, { 32, 48 }, 2, 1, 0.005f);
-	m_animator.create("climb", texture, { { 64,48,32,32 },{ 192,48,32,32 } }, 0.005f);
-	m_animator.create("hidden", texture, { 64,48,32,32 });
-	m_animator.create("bullet", texture, { 64, 48 }, { 32, 32 }, 4, 1, 0.01f);
-	m_animator.create("fall", texture, { 0,80, 32, -48 });
+    m_state = state;
+
+    switch (m_state) {
+    case State::JUMPING:
+        m_speed.x = RUN_SPEED;
+        playAnimation("flying");
+        break;
+    case State::LEVITATING:
+        playAnimation("flying");
+        m_speed.x = 0;
+        m_initial_pos = getPosition();
+        break;
+    case State::NORMAL:
+        m_speed.x = RUN_SPEED;
+        m_animator.flipX(m_speed.x > 0);
+        playAnimation("walk");
+        move(getBounds().size() - full_size);
+        setSize(full_size);
+        break;
+    case State::HIDDEN:
+        move(getBounds().size() - hidden_size);
+        setSize(hidden_size);
+        m_speed.x = 0;
+        playAnimation("hidden");
+        break;
+    case State::BULLET:
+        move(getBounds().size() - hidden_size);
+        setSize(hidden_size);
+        playAnimation("bullet");
+        break;
+    case State::CLIMB:
+        move(getBounds().size() - hidden_size);
+        setSize(hidden_size);
+        playAnimation("climb");
+        break;
+    case State::DIED:
+        m_speed.y = -0.4f;
+        playAnimation("fall");
+        MARIO_GAME.playSound("kick");
+        break;
+    }
+
+    m_timer = 0;
 }
 
-void  CKoopa::kickFromTop(CMario* mario)
-{
-	switch (m_state)
-	{
-		case CKoopa::Levitating:
-		case CKoopa::Jumping:
-		{
-			m_speed.y = 0;
-			setState(State::Normal);
-			addScoreToPlayer(100);
-			MarioGame().playSound("stomp");
-			break;
-		}
-		case CKoopa::Normal:
-		{
-			if (m_speed.y == 0)
-			{
-				setState(State::Hidden);
-				addScoreToPlayer(100);
-				MarioGame().playSound("stomp");
-			}
-			break;
-		}
-		case CKoopa::Hidden:
-		case CKoopa::Climb:
-		{
-			setState(State::Bullet);
-			m_speed.x = (mario->getBounds().center().x > this->getBounds().center().x) ? -std::abs(m_run_speed) * 6 : std::abs(m_run_speed) * 6;
-			addScoreToPlayer(400);
-			MarioGame().playSound("kick");
-			break;
-		}
-		case CKoopa::Bullet:
-		{
-			setState(Hidden);
-			break;
-		}
-	}
+void Koopa::update(int delta_time) {
+    Enemy::update(delta_time);
+ 
+    if ((m_state != State::DIED) &&
+        (m_state != State::LEVITATING) &&
+        (m_state != State::DEACTIVATED)) {
+        updatePhysics(delta_time, (m_state != State::JUMPING) ? GRAVITY_FORCE : 0.5 * GRAVITY_FORCE);
+        updateCollision(delta_time);
+
+        if (m_collision_tag & ECollisionTag::X_AXIS) {
+            m_speed.x = -m_speed.x;
+        }
+
+        if (m_collision_tag & ECollisionTag::Y_AXIS) {
+            m_speed.y = 0;
+        }
+
+        m_animator.update(delta_time);
+        m_animator.flipX(m_speed.x > 0);
+    }
+ 
+    if (m_state == State::LEVITATING) {
+        m_animator.update(delta_time);
+        m_animator.flipX(m_speed.x > 0);
+    }
+
+    switch (m_state) {
+    case State::DEACTIVATED:
+        if (isInCamera()) {
+            setState(m_initial_state);
+        }
+        break;
+    case State::NORMAL:
+        checkNextTileUnderFoots();
+        break;
+    case State::JUMPING:
+        if (m_collision_tag & ECollisionTag::FLOOR) {
+            m_speed.y = -0.4f; // jump
+        }
+        break;
+    case State::LEVITATING:
+        m_timer += delta_time;
+        setPosition(m_initial_pos + Vector::UP * sin(m_timer / 800.f) * 50);
+        break;
+    case State::HIDDEN:
+        m_timer += delta_time;
+        if (m_timer > 3000) {
+            setState(State::CLIMB);
+        }
+        break;
+    case State::CLIMB:
+        m_timer += delta_time;
+        if (m_timer > 5000) {
+            setState(State::NORMAL);
+        }
+        break;
+    case State::BULLET:
+        checkCollideOtherCharasters();
+        if (m_collision_tag & ECollisionTag::X_AXIS) {
+            getParent()->castTo<MarioGameScene>()->playSoundAtPoint("bump", getBounds().center());
+        }
+        break;
+    case State::DIED:
+        updatePhysics(delta_time, GRAVITY_FORCE);
+        break;
+    }
 }
 
-void  CKoopa::kickFromBottom(CMario* mario)
-{
-	if (m_state != State::Died)
-	{
-		setState(State::Died);
+void Koopa::takeDamage(DamageType damageType, Character* attacker) {
+    if (!isAlive()) {
+        return;
+    }
 
-		addScoreToPlayer(500);
-		MarioGame().playSound("kick");
-	}
+    if (damageType == DamageType::HIT_FROM_ABOVE) {
+        switch (m_state) {
+        case State::LEVITATING: // fall through
+        case State::JUMPING:
+            m_speed.y = 0;
+            setState(State::NORMAL);
+            addScoreToPlayer(100);
+            MARIO_GAME.playSound("stomp");
+            break;
+        case State::NORMAL:
+            if (m_collision_tag & ECollisionTag::FLOOR) {
+                setState(State::HIDDEN);
+                addScoreToPlayer(100);
+                MARIO_GAME.playSound("stomp");
+            }
+            break;
+        case State::HIDDEN: // fall through
+        case State::CLIMB:
+            setState(State::BULLET);
+            m_speed.x = isCharacterInFront(mario(), this) ? -std::abs(RUN_SPEED) * 6
+                                                          : std::abs(RUN_SPEED) * 6;
+            addScoreToPlayer(400);
+            MARIO_GAME.playSound("kick");
+            break;
+        case State::BULLET:
+            setState(State::HIDDEN);
+            break;
+        }
+    } else {
+       //  Handle case when other (Koopa or BuzzyBeetle) hit this Koopa from below (bullet state)
+       //  if ((damageType == DamageType::HIT_FROM_BELOW) && attacker && attacker->isTypeOf<Enemy>())
+       //  {
+       //     attacker->takeDamage(DamageType::HIT_FROM_BELOW, nullptr);
+       //  }
+
+        setState(State::DIED);
+        addScoreToPlayer(500);
+        MARIO_GAME.playSound("kick");
+    }
 }
 
-bool  CKoopa::isAlive() const
-{
-	return m_state != Died;
+void Koopa::touch(Character* character) {
+    switch (m_state) {
+    case State::HIDDEN: // fall through
+    case State::CLIMB: 
+        setState(State::BULLET);
+        m_speed.x = isCharacterInFront(character, this) ? -std::abs(RUN_SPEED) * 6
+                                                        : std::abs(RUN_SPEED) * 6;
+        move(15 * Vector::RIGHT * math::sign(m_speed.x));
+        addScoreToPlayer(400);
+        MARIO_GAME.playSound("kick");
+        break;
+    case State::BULLET: // fall through
+    case State::NORMAL:
+        character->takeDamage(DamageType::KICK, this);
+        break;
+    }
 }
 
-void CKoopa::touchSide(CMario* mario)
-{
-	if (m_state == State::Hidden || m_state == State::Climb)
-	{
-		setState(State::Bullet);
-        m_speed.x = (mario->getBounds().center().x > this->getBounds().center().x) ? -std::abs(m_run_speed) * 6 : std::abs(m_run_speed) * 6;
-		move(14 * Vector::right*math::sign(m_speed.x));
-		addScoreToPlayer(400);
-		MarioGame().playSound("kick");
-	}
-	else if (m_state == State::Normal || m_state == State::Bullet)
-		mario->reciveDamage();
+void Koopa::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CKoopa::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+bool Koopa::isAlive() const {
+    return (m_state != State::DIED);
 }
 
-void CKoopa::setState(State state)
-{
-	m_timer = 0;
-	if (m_state != state)
-	{
-		m_state = state;
-		switch (m_state)
-		{
-		case (State::Jumping):
-		{
-			m_animator.play("flying");
-			m_speed.x = m_run_speed;
-			break;
-		}
-		case (State::Levitating):
-		{
-			m_animator.play("flying");
-			m_speed.x = 0;
-			m_initial_pos = getPosition();
-			break;
-		}
-		case (State::Normal):
-		{
-			m_speed.x = m_run_speed;
-			m_animator.play("walk");
+void Koopa::onStarted() {
+    Enemy::onStarted();
 
-			move(getBounds().size() - full_size);
-			setSize(full_size);
-
-			break;
-		}
-		case (State::Hidden):
-		{
-			move(getBounds().size() - hidden_size);
-			setSize(hidden_size);
-			m_speed.x = 0;
-			m_animator.play("hidden");
-			break;
-		}
-		case (State::Bullet):
-		{
-			move(getBounds().size() - hidden_size);
-			setSize(hidden_size);
-			m_animator.play("bullet");
-			break;
-		}
-		case (State::Climb):
-		{
-			move(getBounds().size() - hidden_size);
-			setSize(hidden_size);
-			m_animator.play("climb");
-			break;
-		}
-		case (State::Died):
-		{
-			m_speed.y = -0.4f;
-			m_animator.play("fall");
-			break;
-		}
-		}
-		m_timer = 0;
-	}
+    switch(getProperty("Flying").asInt()) {
+    case 1:
+        m_initial_state = State::JUMPING;
+        break;
+    case 2:
+        m_initial_state = State::LEVITATING;
+        break;
+    default:
+        m_initial_state = State::NORMAL;
+        break;
+    }
+}
+//---------------------------------------------------------------------------
+//! BuzzyBeetle
+//---------------------------------------------------------------------------
+BuzzyBeetle::BuzzyBeetle() {
+    setSize({ 32, 32 });
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("walk", texture, { { 96,0,32,32 },{ 128,0,32,32 } }, 0.005f);
+    m_animator.create("hidden", texture, { 160,0,32,32 });
+    m_animator.create("bullet", texture, { 160, 0 }, { 32, 32 }, 4, 1, 0.01f);
+    m_animator.create("fall", texture, { 96,32, 32, -32 });
+    setState(State::NORMAL);
 }
 
-void CKoopa::update(int delta_time)
-{
-	CEnemy::update(delta_time);
+void BuzzyBeetle::takeDamage(DamageType damageType, Character* attacker) {
+    if (!isAlive()) {
+        return;
+    }
 
-	if (m_state == State::Deactivated)
-	{
-		Rect camera_rect = getParent()->castTo<CMarioGameScene>()->cameraRect();
-        if (std::abs(getPosition().x - camera_rect.center().x) < camera_rect.width() / 2)
-			if (m_flying_mode == 1)
-				setState(State::Jumping);
-			else if (m_flying_mode == 2)
-				setState(State::Levitating);
-			else
-				setState(State::Normal);
-	}
-	else
-	{
-		if (m_state != State::Levitating)
-			updatePhysics(delta_time, gravity_force);
-		if (m_state != State::Died && m_state != State::Levitating)
-		{
-			updateCollision(delta_time);
+    m_timer = 0;
 
-			if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-				m_speed.x = -m_speed.x;
+    if (damageType == DamageType::HIT_FROM_ABOVE) {
+        switch (m_state) {
+        case State::NORMAL:
+            if (m_speed.y == 0) {
+                setState(State::HIDDEN);
+                addScoreToPlayer(100);
+                MARIO_GAME.playSound("stomp");
+            }
+        case State::HIDDEN:
+            setState(State::BULLET);
+            
+            m_speed.x = isCharacterInFront(attacker, this) ? -std::abs(RUN_SPEED) * 6
+                                                           : std::abs(RUN_SPEED) * 6;
+            addScoreToPlayer(400);
+            MARIO_GAME.playSound("kick");
+        case State::BULLET:
+            setState(State::HIDDEN);
+            break;
+        }
+    } else if (damageType == DamageType::HIT_FROM_BELOW) {
+        // Handle case when other (Koopa or BuzzyBeetle) hit this BuzzyBeetle from below (bullet state)
+        if ((damageType == DamageType::HIT_FROM_BELOW) && attacker && attacker->isAlive() && attacker->isTypeOf<Enemy>()) {
+            attacker->takeDamage(DamageType::HIT_FROM_BELOW, nullptr);
+        }
 
-			if (m_collision_tag & ECollisionTag::floor)
-				if (m_state == State::Jumping)
-					m_speed.y = -0.4f;
-				else
-					m_speed.y = 0.f;
-			if (m_collision_tag & ECollisionTag::cell)
-				m_speed.y = 0;
-		}
-
-		switch (m_state)
-		{
-			case(State::Normal):
-			{
-				checkNextTileUnderFoots();
-				break;
-			}
-			case(State::Jumping):
-			{
-				m_speed += Vector::up*delta_time*gravity_force / 2; //anti-grav force
-				break;
-			}
-			case(State::Levitating):
-			{
-				m_timer += delta_time;
-				setPosition(m_initial_pos + Vector::up*sin(m_timer / 800.f) * 50);
-				break;
-			}
-			case(State::Hidden):
-			{
-				m_timer += delta_time;
-				if (m_timer > 3000)
-					setState(State::Climb);
-				break;
-			}
-			case(State::Climb):
-			{
-				m_timer += delta_time;
-				if (m_timer > 5000)
-					setState(State::Normal);
-				break;
-			}
-			case(State::Bullet):
-			{
-				checkCollideOtherCharasters();
-				break;
-			}
-		}
-	}
-
-	if (m_state == State::Bullet && ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right)))
-		getParent()->castTo<CMarioGameScene>()->playSoundAtPoint("bump", getBounds().center());
-	
-	m_animator.flipX(m_speed.x > 0);
-	m_animator.update(delta_time);
+        setState(State::DIED);
+        m_speed.y = -0.4f;
+        addScoreToPlayer(800);
+        MARIO_GAME.playSound("kick");
+    }
 }
 
-bool CKoopa::isInBulletState() const
-{
-	return m_state == State::Bullet;
+void BuzzyBeetle::touch(Character* character) {
+    switch(m_state)
+    {
+    case State::HIDDEN:
+        setState(State::BULLET);
+        m_speed.x = isCharacterInFront(character, this) ? -std::abs(RUN_SPEED) * 6
+                                                        : std::abs(RUN_SPEED) * 6;
+        move(14 * Vector::RIGHT * math::sign(m_speed.x));
+        MARIO_GAME.playSound("kick");
+        break;
+    case State::NORMAL: // fall through
+    case State::BULLET:
+        character->takeDamage(DamageType::KICK, this);
+        break;
+    }
 }
 
-void CKoopa::onActivated()
-{
-	m_flying_mode = getProperty("Flying").asInt();
+bool BuzzyBeetle::isAlive() const {
+    return (m_state != State::DIED);
 }
 
-//--------------------------------------------------------------------------------------------------------------
-
-CBuzzyBeetle::CBuzzyBeetle()
-{
-	setSize({ 32, 32 });
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("walk", texture, { { 96,0,32,32 },{ 128,0,32,32 } }, 0.005f);
-	m_animator.create("hidden", texture, { 160,0,32,32 });
-	m_animator.create("bullet", texture, { 160, 0 }, { 32, 32 }, 4, 1, 0.01f);
-	m_animator.create("fall", texture, { 96,32, 32, -32 });
-	setState(State::Normal);
+void BuzzyBeetle::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void  CBuzzyBeetle::kickFromTop(CMario* mario)
-{
-	if (m_state == Normal)
-	{
-		if (m_speed.y == 0)
-		{
-			setState(State::Hidden);
-			addScoreToPlayer(100);
-			MarioGame().playSound("stomp");
-		}
-	}
-	else if (m_state == Hidden)
-	{
-		setState(State::Bullet);
-        m_speed.x = (mario->getBounds().center().x > this->getBounds().center().x) ? -std::abs(m_run_speed) * 6 : std::abs(m_run_speed) * 6;
-		addScoreToPlayer(400);
-		MarioGame().playSound("kick");
-	}
-	else if (m_state == Bullet)
-		setState(Hidden);
-	m_timer = 0;
+void BuzzyBeetle::setState(State state) {
+    m_state = state;
+    m_timer = 0;
+
+    switch (m_state) {
+    case State::NORMAL:
+        m_speed.x = RUN_SPEED;
+        playAnimation("walk");
+        break;
+    case State::HIDDEN:
+        m_speed.x = 0;
+        playAnimation("hidden");
+        break;
+    case State::BULLET:
+        m_speed.x = 6 * RUN_SPEED;
+        playAnimation("bullet");
+        break;
+    case State::DIED:
+        m_speed.y = -0.4f;
+        playAnimation("fall");
+        break;
+    }
 }
 
-void  CBuzzyBeetle::kickFromBottom(CMario* mario)
-{
-	if (m_state != Died)
-	{
-		setState(State::Died);
-		m_speed.y = -0.4f;
-		m_timer = 0;
-		addScoreToPlayer(800);
-		MarioGame().playSound("kick");
-	}
+void BuzzyBeetle::update(int delta_time) {
+    Enemy::update(delta_time);
+
+    if ((m_state != State::DIED) &&
+        (m_state != State::DEACTIVATED))
+    {
+        updatePhysics(delta_time, GRAVITY_FORCE);
+        updateCollision(delta_time);
+
+        if (m_collision_tag & ECollisionTag::X_AXIS) {
+            m_speed.x = -m_speed.x;
+        }
+
+        if (m_collision_tag & ECollisionTag::Y_AXIS) {
+            m_speed.y = 0;
+        }
+
+        m_animator.update(delta_time);
+        m_animator.flipX(m_speed.x > 0);
+    }
+
+    switch (m_state) {
+    case State::DEACTIVATED:
+        if (isInCamera()) {
+            setState(State::NORMAL);
+        }
+        break;
+    case State::NORMAL:
+        checkNextTileUnderFoots();
+        break;
+    case State::HIDDEN:
+        m_timer += delta_time;
+        if (m_timer > 5000) {
+            setState(State::NORMAL);
+            m_timer = 0;
+        }
+        break;
+    case State::BULLET:
+        checkCollideOtherCharasters();
+        if (m_collision_tag & ECollisionTag::X_AXIS) {
+            getParent()->castTo<MarioGameScene>()->playSoundAtPoint("bump", getBounds().center());
+        }
+        break;
+    case State::DIED:
+        updatePhysics(delta_time, GRAVITY_FORCE);
+        break;
+    }
+
+    m_animator.flipX(m_speed.x > 0);
+    m_animator.update(delta_time);
+}
+//---------------------------------------------------------------------------
+//! Hammer
+//---------------------------------------------------------------------------
+Hammer::Hammer(Mario* target) {
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("fly", texture, Vector(96, 112), Vector(32, 32), 4, 1, 0.01f);
+    m_animator.create("in_hand", texture, { 96,112,32,32 });
+    m_animator.play("in_hand");
+    m_target = target;
+    setSize({ 32,32 });
 }
 
-bool  CBuzzyBeetle::isAlive() const
-{
-	return m_state != Died;
-}
+void Hammer::update(int delta_time) {
+    if (m_state == State::FLY) {
+        m_animator.update(delta_time);
+        m_speed += Vector::DOWN * GRAVITY_FORCE * delta_time;
+        move(m_speed*delta_time);
 
-void CBuzzyBeetle::touchSide(CMario* mario)
-{
-	if (m_state == State::Hidden)
-	{
-		setState(State::Bullet);
-        m_speed.x = (mario->getBounds().center().x > this->getBounds().center().x) ? -std::abs(m_run_speed) * 6 : std::abs(m_run_speed) * 6;
-		move(14 * Vector::right*math::sign(m_speed.x));
-		MarioGame().playSound("kick");
-	}
-	else if (m_state == State::Normal || m_state == State::Bullet)
-		mario->reciveDamage();
-}
+        if (getPosition().y > 1000) {
+            removeLater();
+        }
 
-void CBuzzyBeetle::fired(CMario* mario)
-{
-	//nothing happen
-}
-
-void CBuzzyBeetle::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
-}
-
-void CBuzzyBeetle::setState(State state)
-{
-	m_state = state;
-	switch (m_state)
-	{
-	case (State::Normal):
-	{
-		m_speed.x = m_run_speed;
-		m_animator.play("walk");
-		break;
-	}
-	case (State::Hidden):
-	{
-		m_speed.x = 0;
-		m_animator.play("hidden");
-		break;
-	}
-	case (State::Bullet):
-	{
-		m_speed.x = 6 * m_run_speed;
-		m_animator.play("bullet");
-		break;
-	}
-	case (State::Died):
-	{
-		m_speed.y = -0.4f;
-		m_animator.play("fall");
-		break;
-	}
-	}
-	m_timer = 0;
-}
-
-void CBuzzyBeetle::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-
-	switch (m_state)
-	{
-	case(State::Deactivated):
-	{
-		auto scene = getParent()->castTo<CMarioGameScene>();
-		Rect camera_rect = scene->cameraRect();
-        if (std::abs(getPosition().x - camera_rect.center().x) < camera_rect.width() / 2)
-			setState(Normal);
-		break;
-	}
-	case(State::Normal):
-	{
-		updatePhysics(delta_time, gravity_force);
-		updateCollision(delta_time);
-
-		if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-		{
-			m_speed.x = -m_speed.x;
-		}
-		if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-			m_speed.y = 0;
-
-		checkNextTileUnderFoots();
-		break;
-	}
-	case(State::Hidden):
-	{
-		m_timer += delta_time;
-		if (m_timer > 5000)
-		{
-			setState(State::Normal);
-			m_timer = 0;
-		}
-		updatePhysics(delta_time, gravity_force);
-		updateCollision(delta_time);
-
-		if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-			m_speed.x = -m_speed.x;
-		if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-			m_speed.y = 0;
-
-		break;
-	}
-	case(State::Bullet):
-	{
-		updatePhysics(delta_time, gravity_force);
-		updateCollision(delta_time);
-
-		if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-		{
-			m_speed.x = -m_speed.x;
-			getParent()->castTo<CMarioGameScene>()->playSoundAtPoint("bump", getBounds().center());
-		}
-		if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-			m_speed.y = 0;
-
-		checkCollideOtherCharasters();
-		break;
-	}
-	case(State::Died):
-	{
-		updatePhysics(delta_time, gravity_force);
-		break;
-	}
-	}
-	m_animator.flipX(m_speed.x > 0);
-	m_animator.update(delta_time);
-
-}
-
-bool CBuzzyBeetle::isInBulletState() const
-{
-	return m_state == State::Bullet;
-}
-
-//---------------------------------------------------------------------------------------------------------------
-
-CHammer::CHammer(CMario* target)
-{
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("fly", texture, Vector(96, 112), Vector(32, 32), 4, 1, 0.01f);
-	m_animator.create("in_hand", texture, { 96,112,32,32 });
-	m_animator.play("in_hand");
-	m_target = target;
-	setSize({ 32,32 });
-}
-
-void CHammer::update(int delta_time)
-{
-	if (m_state == in_hand)
-	{
-	}
-	else if (m_state == fly)
-	{
-		m_animator.update(delta_time);
-		m_speed += Vector::down*gravity_force * delta_time;
-		move(m_speed*delta_time);
-		if (getPosition().y > 1000)
-			getParent()->removeObject(this);
-		if (m_target->getBounds().isContain(getBounds().center()))
-			m_target->reciveDamage();
-	}
+        if (m_target->getBounds().isContain(getBounds().center())) {
+            m_target->takeDamage(DamageType::SHOOT, nullptr);
+        }
+    }
 };
 
-void  CHammer::throwAway(const Vector& speed)
-{
-	m_speed = speed;
-	m_animator.play("fly");
-	m_state = fly;
+void Hammer::throwAway(const Vector& speed) {
+    m_speed = speed;
+    m_animator.play("fly");
+    m_state = State::FLY;
 }
 
-void  CHammer::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void Hammer::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
+}
+//---------------------------------------------------------------------------
+//! HammerBro
+//---------------------------------------------------------------------------
+HammerBro::HammerBro() {
+    setSize({ 32, 44 });
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("died", texture, { 96,160 + 48,32,-48 });
+    m_animator.create("walk", texture, Vector(96, 160), Vector(32, 48), 2, 1, 0.005f);
+    m_animator.create("walk_with_hammer", texture, Vector(160, 160), Vector(32, 48), 2, 1, 0.005f);
+    m_animator.play("walk_with_hammer");
+    m_speed.x = RUN_SPEED;
 }
 
-//---------------------------------------------------------------------------------------------------------------
-
-CHammerBro::CHammerBro()
-{
-	setSize({ 32, 44 });
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("died", texture, { 96,160 + 48,32,-48 });
-	m_animator.create("walk", texture, Vector(96, 160), Vector(32, 48), 2, 1, 0.005f);
-	m_animator.create("walk_with_hammer", texture, Vector(160, 160), Vector(32, 48), 2, 1, 0.005f);
-	m_animator.play("walk_with_hammer");
-	m_speed.x = m_run_speed;
+void HammerBro::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CHammerBro::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void HammerBro::update(int delta_time) {
+    Enemy::update(delta_time);
+
+    if (m_speed.y == 0) {
+        m_animator.update(delta_time);
+    }
+
+    switch (m_state) {
+    case State::NORMAL:
+        // Physic processing
+        updatePhysics(delta_time, GRAVITY_FORCE / 2);
+
+        if (m_collision_on) {
+            updateCollision(delta_time);
+ 
+            if (m_collision_tag & ECollisionTag::X_AXIS) {
+                m_speed.x = -m_speed.x;
+            }
+            if (m_collision_tag & ECollisionTag::Y_AXIS) {
+                m_speed.y = 0;
+            }
+        }
+
+        // Walk processing
+        if (std::abs(getPosition().x - m_center_x) > WALK_AMPLITUDE) {
+            m_speed.x = -m_speed.x;
+        }
+
+        m_direction = (mario()->getPosition().x > getPosition().x) ? Vector::RIGHT
+                                                                   : Vector::LEFT;
+        m_animator.flipX(m_direction == Vector::RIGHT);
+
+        // Jump processing
+        m_jump_timer += delta_time;
+        if (m_jump_timer > JUMP_RATE) {
+            if (m_jump_direction == Vector::UP && !isCanJumpUp() && isCanJumpDown())
+                m_jump_direction = Vector::DOWN;
+            if (m_jump_direction == Vector::DOWN && !isCanJumpDown())
+                m_jump_direction = Vector::UP;
+
+            if (m_jump_direction == Vector::UP) {   // jump up
+                m_speed += Vector::UP * 0.5;
+            } else {                                  // jump-off down
+                m_speed += Vector::UP * 0.25;
+                m_drop_off_height = getPosition().y + getBounds().height() + 32.f;
+            }
+
+            m_collision_on = false;                // turn off collision check for moving through walls
+            m_jump_timer = 0;
+        }
+
+        if (!m_collision_on) {                      // turn on collision check for take ground
+            if (m_jump_direction == Vector::UP) {
+                m_collision_on = (m_speed.y > 0);
+            } else {
+                m_collision_on = (getPosition().y > m_drop_off_height);
+            }
+        }
+
+        // Fire processing
+        m_fire_timer += delta_time;
+        if (m_fire_timer < FIRE_RATE / 2) {
+            // just walk
+        } else if (m_fire_timer < FIRE_RATE)  {
+            // get hammer in hand
+            if (!m_hummer) {
+                m_hummer = MARIO_GAME.spawnObject<Hammer>(mario());
+                playAnimation("walk_with_hammer");
+            }
+            const Vector hand_off_set = { -3 * m_direction.x, -22.f };
+            m_hummer->setPosition(getPosition() + hand_off_set);
+        } else {
+            // throw hummer
+            m_hummer->throwAway({ m_direction.x * 0.15f, -0.55f });
+            m_hummer = nullptr;
+            m_fire_timer = 0;
+            playAnimation("walk");
+        };
+        break;
+    case State::DIED:
+        updatePhysics(delta_time, GRAVITY_FORCE);
+        break;
+    }
 }
 
-void CHammerBro::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-	if (m_speed.y == 0)
-		m_animator.update(delta_time);
-
-	switch (m_state)
-	{
-	case(State::Normal):
-	{
-		//Physic processing
-		updatePhysics(delta_time, gravity_force / 2);
-		if (m_collision_on)
-		{
-			updateCollision(delta_time);
-			if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-				m_speed.x = -m_speed.x;
-			if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-				m_speed.y = 0;
-		}
-
-		//Walk processing
-        if (std::abs(getPosition().x - m_center_x) > walk_amlitude)
-			m_speed.x = -m_speed.x;
-		m_direction = (m_mario->getPosition().x < getPosition().x) ? Vector::left : Vector::right;
-		m_animator.flipX(m_direction == Vector::right);
-
-		// Jump processing
-		m_jump_timer += delta_time;
-		if (m_jump_timer > jump_rate)
-		{
-			if (m_jump_direction == Vector::up && !isCanJumpUp() && isCanJumpDown())
-				m_jump_direction = Vector::down;
-			if (m_jump_direction == Vector::down && !isCanJumpDown())
-				m_jump_direction = Vector::up;
-
-			if (m_jump_direction == Vector::up)  //jump up
-				m_speed += Vector::up*0.5;
-			else                                   //jump-off down
-			{
-				m_speed += Vector::up*0.25;
-				m_drop_off_height = getPosition().y + getBounds().height() + 32.f;
-			}
-
-			m_collision_on = false;               //turn off collision check for moving through walls
-			m_jump_timer = 0;
-		}
-
-		if (!m_collision_on)                      //turn on collision check for take ground
-		{
-			if (m_jump_direction == Vector::up)
-			{
-				if (m_speed.y > 0)
-					m_collision_on = true;
-			}
-			else
-			{
-				if (getPosition().y > m_drop_off_height)
-					m_collision_on = true;
-			}
-		}
-
-		//Fire processing
-		m_fire_timer += delta_time;
-		if (m_fire_timer < fire_rate / 2)  //just walk
-		{
-
-		}
-		else if (m_fire_timer < fire_rate) //get hammer in hand
-		{
-			if (!m_hummer)
-			{
-				m_hummer = new CHammer(m_mario);
-				getParent()->addObject(m_hummer);
-				m_animator.play("walk_with_hammer");
-			}
-			const Vector hand_off_set = { -3 * m_direction.x, -22.f };
-			m_hummer->setPosition(getPosition() + hand_off_set);
-		}
-		else                      //throw hummer
-		{
-			m_hummer->throwAway({ m_direction.x*0.15f, -0.55f });
-			m_hummer = NULL;
-			m_fire_timer = 0;
-			m_animator.play("walk");
-		};
-		break;
-	}
-	case(State::Died):
-	{
-		updatePhysics(delta_time, gravity_force);
-		break;
-	}
-	}
+void HammerBro::setState(State state) {
+    m_state = state;
+    if (m_state == State::DIED) {
+        m_speed.y = 0;
+        if (m_hummer) {
+            m_hummer->removeLater();
+            m_hummer = nullptr;
+        }
+        playAnimation("died");
+        MARIO_GAME.playSound("kick");
+        addScoreToPlayer(1000);
+    }
 }
 
-void CHammerBro::setState(State state)
-{
-	m_state = state;
-	if (m_state == State::Died)
-	{
-		m_animator.play("died");
-		m_speed.y = 0;
-		if (m_hummer)
-		{
-			getParent()->removeObject(m_hummer);
-			m_hummer = NULL;
-		}
-		addScoreToPlayer(1000);
-		MarioGame().playSound("kick");
-	}
+void HammerBro::onStarted() {
+    Enemy::onStarted();
+    m_center_x = getPosition().x;
+    m_fire_timer = rand() % 500;
+    m_jump_timer = rand() % int(JUMP_RATE / 2);
 }
 
-void CHammerBro::onActivated()
-{
-	m_center_x = getPosition().x;
-	m_fire_timer = rand() % 500;
-	m_jump_timer = rand() % int(jump_rate / 2);
+void HammerBro::takeDamage(DamageType damageType, Character* attacker) {
+    setState(State::DIED);
 }
 
-void CHammerBro::kickFromTop(CMario* mario)
-{
-	setState(State::Died);
+void HammerBro::touch(Character* character) {
+    if (m_state == State::NORMAL) {
+        character->takeDamage(DamageType::KICK, this);
+    }
 }
 
-void CHammerBro::kickFromBottom(CMario* mario)
-{
-	setState(State::Died);
+bool HammerBro::isAlive() const {
+    return (m_state != State::DIED);
 }
 
-void CHammerBro::touchSide(CMario* mario)
-{
-	if (m_state == State::Normal)
-		mario->reciveDamage();
+bool HammerBro::isCanJumpUp() const {
+    Vector begin_point = m_blocks->toBlockCoordinates(getBounds().center());
+    Vector end_point = begin_point;
+
+    while (m_blocks->isBlockInBounds(end_point) && !m_blocks->isCollidableBlock(end_point)) {
+        end_point += Vector::UP;
+    }
+
+    if ((end_point == begin_point) || (end_point.y <= 0)) {
+        return false;
+    }
+
+    bool result = (std::abs(end_point.y - begin_point.y) >= 2); 
+    return result;
 }
 
-bool CHammerBro::isAlive() const
-{
-	return m_state != State::Died;
+bool HammerBro::isCanJumpDown() const {
+    Vector begin_point = m_blocks->toBlockCoordinates(getBounds().center()) + Vector::DOWN * 2;
+    return (!m_blocks->isCollidableBlock(begin_point));
+}
+//---------------------------------------------------------------------------
+//! Spinny
+//---------------------------------------------------------------------------
+Spinny::Spinny(const Vector& position, const Vector& speed, const Vector& walk_direction) {
+    setPosition(position);
+    m_speed = speed;
+    m_walk_direction = walk_direction;
+    setSize({ 31, 32 });
+
+    const auto& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("walk", texture, Vector(64, 80), Vector(32, 32), 2, 1, 0.005f);
+    m_animator.create("egg", texture, Vector(128, 80), Vector(32, 32), 2, 1, 0.005f);
+    m_animator.create("died", texture, { 64,80 + 32,32,-32 });
+
+    setState(State::EGG);
 }
 
-bool CHammerBro::isCanJumpUp() const
-{
-	Vector begin_point = m_blocks->toBlockCoordinates(getBounds().center(), true);
-	Vector end_point = m_blocks->traceLine(begin_point, Vector::up);
-	if (end_point == begin_point)
-		return false;
-	if (end_point.y == 0) return false;
-    if (std::abs(end_point.y - begin_point.y) == 2 && !m_blocks->isCollidableBlock(end_point + Vector::up * 2))
-		return true;
-	return false;
+void Spinny::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-bool CHammerBro::isCanJumpDown() const
-{
-	Vector begin_point = m_blocks->toBlockCoordinates(getBounds().center()) + Vector::down * 2;
-	if (!m_blocks->isCollidableBlock(begin_point))
-		return true;
-	return false;
+void Spinny::setState(State state) {
+    m_state = state;
+
+    switch(m_state) {
+    case State::NORMAL:
+        playAnimation("walk");
+        m_speed.x = RUN_SPEED;
+        if (m_walk_direction == Vector::RIGHT) {
+            m_speed = -m_speed;
+        }
+        break;
+    case State::DIED:
+        playAnimation("died");
+        addScoreToPlayer(400);
+        MARIO_GAME.playSound("kick");
+        break;
+    case State::EGG:
+        playAnimation("egg");
+        break;
+    }
 }
 
-//----------------------------------------------------------------------------------------------------------------
+void Spinny::update(int delta_time) {
+    Enemy::update(delta_time);
+    m_animator.update(delta_time);
 
-CSpinny::CSpinny(const Vector& position, const Vector& speed, const Vector& walk_direction)
-{
-	setPosition(position);
-	m_speed = speed;
-	m_walk_direction = walk_direction;
-	setSize({ 31, 32 });
+    if (m_state != State::DIED) {
+        updatePhysics(delta_time, GRAVITY_FORCE / 2);
+        updateCollision(delta_time);
 
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("walk", texture, Vector(64, 80), Vector(32, 32), 2, 1, 0.005f);
-	m_animator.create("egg", texture, Vector(128, 80), Vector(32, 32), 2, 1, 0.005f);
-	m_animator.create("died", texture, { 64,80 + 32,32,-32 });
+        if (m_collision_tag & ECollisionTag::X_AXIS) {
+            m_speed.x = -m_speed.x;
+        }
+        if (m_collision_tag & ECollisionTag::Y_AXIS) {
+            m_speed.y = 0;
+        }
+    }
 
-	setState(State::Egg);
+    switch (m_state) {
+    case State::EGG:
+        if (m_collision_tag & ECollisionTag::FLOOR) {
+            setState(State::NORMAL);
+        }
+        break;
+    case State::NORMAL:
+        m_animator.flipX(m_speed.x > 0);
+        break;
+    case State::DIED:
+        updatePhysics(delta_time, GRAVITY_FORCE / 2);
+        break;
+    }
 }
 
-void CSpinny::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void Spinny::takeDamage(DamageType damageType, Character* attacker) {
+    if (damageType == DamageType::HIT_FROM_ABOVE) {
+        attacker->takeDamage(DamageType::KICK, this);
+    } else {
+        setState(State::DIED);
+    }
 }
 
-void CSpinny::setState(State state)
-{
-	m_state = state;
-
-	if (m_state == State::Normal)
-	{
-		m_animator.play("walk");
-		m_speed.x = m_run_speed;
-		if (m_walk_direction == Vector::right)
-			m_speed = -m_speed;
-	}
-	else if (m_state == State::Died)
-	{
-		m_animator.play("died");
-		addScoreToPlayer(400);
-		MarioGame().playSound("kick");
-	}
-	else if (m_state == State::Egg)
-	{
-		m_animator.play("egg");
-	}
+void Spinny::touch(Character* character) {
+    character->takeDamage(DamageType::KICK, this);
 }
 
-void CSpinny::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-	m_animator.update(delta_time);
-
-	switch (m_state)
-	{
-	case (State::Egg):
-	{
-		updatePhysics(delta_time, gravity_force / 2);
-		updateCollision(delta_time);
-		if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-			m_speed.x = -m_speed.x;
-		if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-		{
-			m_speed.y = 0;
-			setState(State::Normal);
-		}
-		break;
-	}
-	case (State::Normal):
-	{
-		updatePhysics(delta_time, gravity_force / 2);
-		updateCollision(delta_time);
-		if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-			m_speed.x = -m_speed.x;
-		if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-			m_speed.y = 0;
-		m_animator.flipX(m_speed.x > 0);
-		break;
-	}
-	case (State::Died):
-	{
-		updatePhysics(delta_time, gravity_force / 2);
-		break;
-	}
-	}
-
+bool Spinny::isAlive() const {
+    return (m_state != State::DIED);
+}
+//---------------------------------------------------------------------------
+// ! Lakity
+//---------------------------------------------------------------------------
+Lakity::Lakity() {
+    setName("Lakity");
+    setSize({ 32, 48 });
+    const auto& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("fire", texture, { 0, 128, 32, 48 });
+    m_animator.create("fly",  texture, { 32, 128, 32, 48 });
+    m_animator.create("died", texture, { 32, 128 + 48, 32, -48 });
+    setState(State::NORMAL);
 }
 
-void CSpinny::kickFromTop(CMario* mario)
-{
-	mario->reciveDamage();
+void Lakity::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CSpinny::kickFromBottom(CMario* mario)
-{
-	setState(State::Died);
-}
+void Lakity::update(int delta_time) {
+    Enemy::update(delta_time);
 
-void CSpinny::touchSide(CMario* mario)
-{
-	mario->reciveDamage();
-}
-
-bool CSpinny::isAlive() const
-{
-	return m_state != State::Died;
-}
-
-//---------------------------------------------------------------------------------------------------------------
-
-CLakity::CLakity()
-{
-	setName("Lakity");
-	setSize({ 32, 48 });
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("fire", texture, { 0,128,32,48 });
-	m_animator.create("fly", texture, { 32,128,32,48 });
-	m_animator.create("died", texture, { 32,128 + 48,32,-48 });
-	setState(State::Normal);
-}
-
-void CLakity::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
-}
-
-void CLakity::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-
-	switch (m_state)
-	{
-	case (State::Normal):
-	{
-		//move porcessing
-		float diff_x = m_mario->getPosition().x - getPosition().x;
+    switch (m_state) {
+    case State::NORMAL: {
+        // move porcessing
+        float diff_x = mario()->getPosition().x - getPosition().x;
         m_speed.x += math::sign(diff_x)*sqrt(std::abs(diff_x)) / 4000;
-		m_speed.x = math::clamp(m_speed.x, -0.35f, 0.35f);
+        m_speed.x = math::clamp(m_speed.x, -0.35f, 0.35f);
 
-		move(m_speed*delta_time);
+        move(m_speed*delta_time);
 
-		//fire processing
-		m_fire_timer += delta_time;
-		if (m_fire_timer > fire_rate)
-		{
-			Vector fly_direction = (m_mario->getPosition().x > getPosition().x) ? Vector::right : Vector::left;
-			CSpinny* spinny = new CSpinny(getPosition() - Vector(0, 10), Vector(-0.05f*fly_direction.x, -0.2f), fly_direction);
-			getParent()->addObject(spinny);
-			m_fire_timer = 0;
-			m_animator.play("fly");
-		}
-		if (m_fire_timer > fire_rate*0.8f)
-			m_animator.play("fire");
+        // fire processing
+        m_fire_timer += delta_time;
+        if (m_fire_timer > FIRE_RATE) {
+            Vector fly_direction = isCharacterInFront(mario(), this) ? Vector::RIGHT
+                                                                     : Vector::LEFT;
+            Vector spinny_position = getPosition() + Vector(0, 10);
+            Vector spinny_speed = Vector(0.05f * fly_direction.x, 0.2f);
+            MARIO_GAME.spawnObject<Spinny>(spinny_position, spinny_speed, fly_direction);
 
-		break;
-	}
-	case (State::RunAway):
-	{
-		move(m_speed*delta_time);
-		m_died_timer += delta_time;
-		if (m_died_timer > 2000)
-			getParent()->removeObject(this);
-		break;
-	}
-	case (State::Died):
-	{
-		updatePhysics(delta_time, gravity_force / 2);
-		break;
-	}
-	}
+            m_fire_timer = 0;
+            playAnimation("fly");
+        }
+        if (m_fire_timer > FIRE_RATE * 0.8f) {
+            playAnimation("fire");
+        }
+        break;
+    }
+    case State::RUN_AWAY:
+        move(m_speed * delta_time);
+        m_died_timer += delta_time;
+        if (m_died_timer > 2000) {
+            removeLater();
+        }
+        break;
+    case State::DIED:
+        updatePhysics(delta_time, GRAVITY_FORCE / 2);
+        break;
+    }
 }
 
-void CLakity::kickFromTop(CMario* mario)
-{
-	setState(State::Died);
+void Lakity::takeDamage(DamageType damageType, Character* attacker) {
+    setState(State::DIED);
 }
 
-void CLakity::kickFromBottom(CMario* mario)
-{
-	setState(State::Died);
+void Lakity::touch(Character* character) {
+    character->takeDamage(DamageType::KICK, character);
 }
 
-void CLakity::touchSide(CMario* mario)
-{
-	mario->reciveDamage();
+bool Lakity::isAlive() const {
+    return (m_state != State::DIED);
 }
 
-bool CLakity::isAlive() const
-{
-	return m_state != State::Died;
+void Lakity::setState(State state) {
+    m_state = state;
+    if (m_state == State::DIED) {
+        m_animator.play("died");
+        m_speed = Vector::ZERO;
+        addScoreToPlayer(1200);
+        MARIO_GAME.playSound("kick");
+    } else if (m_state == State::NORMAL) {
+        m_animator.play("fly");
+    }
 }
 
-void CLakity::setState(State state)
-{
-	m_state = state;
-	if (m_state == State::Died)
-	{
-		m_animator.play("died");
-		m_speed = Vector::zero;
-		addScoreToPlayer(1200);
-		MarioGame().playSound("kick");
-	}
-	else if (m_state == State::Normal)
-		m_animator.play("fly");
+void Lakity::runAway(const Vector& run_direction) {
+    m_speed.x = run_direction.x * 0.2f;
+    setState(State::RUN_AWAY);
 }
 
-void CLakity::runAway(const Vector& run_direction)
-{
-	m_speed.x = run_direction.x * 0.2f;
-	setState(State::RunAway);
+CheepCheep::CheepCheep(const Vector& initial_pos, const Vector& initial_speed) {
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("fly", texture, Vector(0, 176), Vector(32, 32), 2, 1, 0.005f);
+    m_animator.create("died", texture, { 0, 176 + 32, 32, -32 });
+    setSize({ 32, 32 });
+
+    m_speed = initial_speed;
+    setPosition(initial_pos);
+    setState(State::NORMAL);
 }
 
-void CLakity::start()
-{
-	CEnemy::start();
+CheepCheep::CheepCheep() {
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("fly", texture, Vector(0, 176), Vector(32, 32), 2, 1, 0.005f);
+    m_animator.create("died", texture, { 0, 176 + 32, 32, -32 });
+    setSize({ 32, 32 });
+
+    m_speed = Vector::LEFT * 0.05f;
+    setState(State::UNDERWATER);
 }
 
-//----------------------------------------------------------------------------------------------------------------
-
-CCheepCheep::CCheepCheep(const Vector& initial_pos, const Vector& initial_speed)
-{
-	setSize({ 32, 32 });
-	m_speed = initial_speed;
-	setPosition(initial_pos);
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("fly", texture, Vector(0, 176), Vector(32, 32), 2, 1, 0.005f);
-	m_animator.create("died", texture, { 0,176 + 32,32,-32 });
-	setState(State::Normal);
+void CheepCheep::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-CCheepCheep::CCheepCheep()
-{
-	setSize({ 32, 32 });
-	m_speed = Vector::left*0.05f;
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("fly", texture, Vector(0, 176), Vector(32, 32), 2, 1, 0.005f);
-	m_animator.create("died", texture, { 0,176 + 32,32,-32 });
-	setState(State::Underwater);
+void CheepCheep::update(int delta_time) {
+    Enemy::update(delta_time);
+    switch (m_state) {
+    case State::NORMAL:
+        updatePhysics(delta_time, GRAVITY_FORCE*0.4f);
+        m_animator.update(delta_time);
+        break;
+    case State::UNDERWATER:
+        if (std::abs(mario()->getPosition().x - getPosition().x) < MARIO_GAME.screenSize().x / 2) {
+            move(m_speed * delta_time);
+            m_animator.update(delta_time);
+        }
+        break;
+    case State::DIED:
+        updatePhysics(delta_time, GRAVITY_FORCE);
+        break;
+    }
 }
 
-void CCheepCheep::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void CheepCheep::takeDamage(DamageType damageType, Character* attacker) {
+    setState(State::DIED);
 }
 
-void CCheepCheep::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-	switch (m_state)
-	{
-		case (State::Normal):
-		{
-			updatePhysics(delta_time, gravity_force*0.4f);
-			m_animator.update(delta_time);
-			break;
-		}
-		case (State::Underwater):
-		{
-			if (std::abs(mario()->getPosition().x - getPosition().x) < MarioGame().screenSize().x / 2)
-			{
-				move(m_speed*delta_time);
-				m_animator.update(delta_time);
-			}
-			break;
-		}
-		case (State::Died):
-		{
-			updatePhysics(delta_time, gravity_force);
-			break;
-		}
-	}
-
+void CheepCheep::touch(Character* character) {
+    character->takeDamage(DamageType::KICK, character);
 }
 
-void CCheepCheep::kickFromTop(CMario* mario)
-{
-	setState(State::Died);
+bool CheepCheep::isAlive() const {
+    return (m_state != State::DIED);
 }
 
-void CCheepCheep::kickFromBottom(CMario* mario)
-{
-	setState(State::Died);
+void CheepCheep::setState(State state) {
+    m_state = state;
+
+    if (m_state == State::NORMAL) {
+        playAnimation("fly");
+        m_animator.flipX(m_speed.x > 0);
+    } else if (m_state == State::DIED) {
+        m_speed = Vector::ZERO;
+        addScoreToPlayer(200);
+        playAnimation("died");
+        MARIO_GAME.playSound("kick");
+    }
+}
+//---------------------------------------------------------------------------
+//! Blooper
+//---------------------------------------------------------------------------
+Blooper::Blooper() {
+    setSize({ 32, 48 });
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("zig", texture, { 224,161,32,48 });
+    m_animator.create("zag", texture, { 256,161,32,48 });
+    m_animator.create("died", texture, { 224,161 + 48,32,-48 });
 }
 
-void CCheepCheep::touchSide(CMario* mario)
-{
-	mario->reciveDamage();
+void Blooper::enterState(State state) {
+    m_state = state;
+    switch (state) {
+    case Blooper::ZIG:
+        m_speed = -Vector(1, 1) * 0.15f;
+        m_animator.play("zig");
+        m_delay_time = 400;
+        break;
+    case Blooper::ZAG:
+        m_speed = Vector::DOWN * 0.05f;
+        m_animator.play("zag");
+        m_delay_time = 1200;
+        break;
+    case Blooper::DIED:
+        m_animator.play("died");
+        m_speed = Vector::DOWN * 0.2f;
+        break;
+    }
 }
 
-bool CCheepCheep::isAlive() const
-{
-	return m_state != State::Died;
+void Blooper::update(int delta_time) {
+    Enemy::update(delta_time);
+
+    if (std::abs(mario()->getPosition().x - getPosition().x) < MARIO_GAME.screenSize().x / 2) {
+        switch (m_state) {
+        case Blooper::ZIG:
+            m_delay_time -= delta_time;
+            if (m_delay_time < 0)
+                enterState(State::ZAG);
+            break;
+        case Blooper::ZAG:
+            m_delay_time -= delta_time;
+            if (m_delay_time < 0)
+                enterState(State::ZIG);
+            break;
+        }
+        move(delta_time*m_speed);
+        m_animator.update(delta_time);
+    }
 }
 
-void CCheepCheep::setState(State state)
-{
-	m_state = state;
-	if (m_state == State::Normal)
-	{
-		m_animator.play("fly");
-		m_animator.flipX(m_speed.x > 0);
-	}
-	else  if (m_state == State::Died)
-	{
-		m_speed = Vector::zero;
-		m_animator.play("died");
-		addScoreToPlayer(200);
-		MarioGame().playSound("kick");
-	}
+void Blooper::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-//---------------------------------------------------------------------------------------------------------------
-
-CBlooper::CBlooper()
-{
-	setSize({ 32, 48 });
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("zig", texture, { 224,161,32,48 });
-	m_animator.create("zag", texture, { 256,161,32,48 });
-	m_animator.create("died", texture, { 224,161 + 48,32,-48 });
+void Blooper::takeDamage(DamageType damageType, Character* attacker) {
+    if (damageType == DamageType::HIT_FROM_ABOVE) {
+        attacker->takeDamage(DamageType::KICK, this);
+    } else {
+        enterState(State::DIED);
+    }
 }
 
-void CBlooper::enterState(State state)
-{
-	m_state = state;
-	switch (state)
-	{
-	case (CBlooper::Zig):
-	{
-		m_speed = -Vector(1, 1)*0.15f;
-		m_animator.play("zig");
-		m_delay_time = 400;
-		break;
-	}
-	case (CBlooper::Zag):
-	{
-		m_speed = Vector::down*0.05f;
-		m_animator.play("zag");
-		m_delay_time = 1200;
-		break;
-	}
-	case (CBlooper::Died):
-	{
-		m_animator.play("died");
-		m_speed = Vector::down*0.2f;
-		break;
-	}
-	}
+void Blooper::touch(Character* character) {
+    character->takeDamage(DamageType::KICK, character);
 }
 
-void CBlooper::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-    if (std::abs(mario()->getPosition().x - getPosition().x) < MarioGame().screenSize().x / 2)
-	{
-		switch (m_state)
-		{
-		case (CBlooper::Zig):
-		{
-			m_delay_time -= delta_time;
-			if (m_delay_time < 0)
-				enterState(State::Zag);
-			break;
-		}
-		case (CBlooper::Zag):
-		{
-			m_delay_time -= delta_time;
-			if (m_delay_time < 0)
-				enterState(State::Zig);
-			break;
-		}
-		}
-		move(delta_time*m_speed);
-		m_animator.update(delta_time);
-	}
+bool Blooper::isAlive() const {
+    return (m_state != State::DIED);
+}
+//---------------------------------------------------------------------------
+//! BulletBill
+//---------------------------------------------------------------------------
+BulletBill::BulletBill(const Vector& initial_pos, const Vector& initial_speed) {
+    setSize({ 32, 32 });
+    m_speed = initial_speed;
+    setPosition(initial_pos);
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("fly", texture, Vector(64, 112), Vector(32, 32), 1, 3, 0.005f);
+    m_animator.create("died", texture, { 64,176 + 32,32,-32 });
+    setState(State::NORMAL);
 }
 
-void CBlooper::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void BulletBill::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CBlooper::kickFromTop(CMario* mario)
-{
-	mario->reciveDamage();
+void BulletBill::update(int delta_time) {
+    Enemy::update(delta_time);
+
+    switch (m_state) {
+    case State::NORMAL: {
+        updatePhysics(delta_time, 0);
+        m_animator.update(delta_time);
+        int camera_width = getParent()->castTo<MarioGameScene>()->cameraRect().width();
+        int distance_to_mario = std::abs(getPosition().x - mario()->getPosition().x);
+        if (distance_to_mario > camera_width) {
+            removeLater();
+        }
+        break;
+    }
+    case State::DIED:
+        updatePhysics(delta_time, GRAVITY_FORCE);
+        break;
+    }
 }
 
-void CBlooper::kickFromBottom(CMario* mario)
-{
-	enterState(State::Died);
+void BulletBill::takeDamage(DamageType damageType, Character* attacker) {
+    setState(State::DIED);
 }
 
-void CBlooper::touchSide(CMario* mario)
-{
-	mario->reciveDamage();
+void BulletBill::touch(Character* character) {
+    character->takeDamage(DamageType::KICK, character);
 }
 
-bool CBlooper::isAlive() const
-{
-	return m_state != State::Died;
+bool BulletBill::isAlive() const {
+    return (m_state != State::DIED);
 }
 
-//----------------------------------------------------------------------------------------------------------------
-
-CBulletBill::CBulletBill(const Vector& initial_pos, const Vector& initial_speed)
-{
-	setSize({ 32, 32 });
-	m_speed = initial_speed;
-	setPosition(initial_pos);
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("fly", texture, Vector(64, 112), Vector(32, 32), 1, 3, 0.005f);
-	m_animator.create("died", texture, { 64,176 + 32,32,-32 });
-	setState(State::Normal);
+void BulletBill::setState(State state) {
+    m_state = state;
+    if (m_state == State::NORMAL)
+    {
+        playAnimation("fly");
+        m_animator.flipX(m_speed.x > 0);
+    }
+    else if (m_state == State::DIED)
+    {
+        m_speed = Vector::ZERO;
+        m_animator.play("died");
+        addScoreToPlayer(1000);
+        MARIO_GAME.playSound("kick");
+    }
+}
+//---------------------------------------------------------------------------
+//! PiranhaPlant
+//---------------------------------------------------------------------------
+PiranhaPlant::PiranhaPlant() {
+    auto texture = MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("open",   *texture, Vector(32, 80), SIZE, 1, 1, 1);
+    m_animator.create("close",  *texture, Vector(0,  80), SIZE, 1, 1, 1);
+    m_animator.create("biting", *texture, Vector(0, 80), SIZE, 2, 1, 0.01);
 }
 
-void CBulletBill::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void PiranhaPlant::takeDamage(DamageType damageType, Character* attacker) {
+    if (damageType == DamageType::HIT_FROM_ABOVE) {
+        if (m_dead_zone) {
+            attacker->takeDamage(DamageType::KICK, this);
+        }
+    } else {
+        removeLater();
+        addScoreToPlayer(800);
+        MARIO_GAME.playSound("kick");
+    }
 }
 
-void CBulletBill::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-
-	switch (m_state)
-	{
-	case (State::Normal):
-	{
-		updatePhysics(delta_time, 0);
-		m_animator.update(delta_time);
-		int camera_width = getParent()->castTo<CMarioGameScene>()->cameraRect().width();
-		int distance_to_mario = std::abs(getPosition().x - mario()->getPosition().x);
-		if (distance_to_mario > camera_width)
-			getParent()->removeObject(this);
-		break;
-	}
-	case (State::Died):
-	{
-		updatePhysics(delta_time, gravity_force);
-		break;
-	}
-	}
+bool PiranhaPlant::isAlive() const {
+    return true;
 }
 
-void CBulletBill::kickFromTop(CMario* mario)
-{
-	setState(State::Died);
+void PiranhaPlant::touch(Character* character) {
+    if (m_dead_zone) {
+        character->takeDamage(DamageType::KICK, character);
+    }
 }
 
-void CBulletBill::kickFromBottom(CMario* mario)
-{
-	setState(State::Died);
+void PiranhaPlant::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CBulletBill::touchSide(CMario* mario)
-{
-	mario->reciveDamage();
+void PiranhaPlant::update(int delta_time) {
+    Enemy::update(delta_time);
+    m_animator.update(delta_time);
+
+    m_timer += delta_time;
+
+    m_dead_zone = ((m_timer > 0.25 * PERIOD_MS) &&
+                   (m_timer < 3 * PERIOD_MS));
+
+    float height = 0;
+
+    if (m_timer < PERIOD_MS) { // none
+        height = 0;
+        // too close to mario - don't appear
+        if ((mario()->getBounds().center() - getBounds().center()).length() < 100) {
+            hideInTube();
+        }
+    } else if (m_timer < 1.25 * PERIOD_MS) { // appearing
+        playAnimation("open");
+        height = ((m_timer - PERIOD_MS) / (0.25f * PERIOD_MS)) * SIZE.y;
+    } else if (m_timer < 3 * PERIOD_MS) {    // in full size
+        playAnimation("biting");
+        height = SIZE.y;
+    } else if (m_timer < 3.25 * PERIOD_MS) { // hiding
+        playAnimation("close");
+        height = (1 - ((m_timer - 3 * PERIOD_MS) / (0.25f * PERIOD_MS))) * SIZE.y;
+    } else {
+        m_timer = 0;
+    }
+
+    setSize({ SIZE.x, height });
+    move({0.f, m_buttom - getPosition().y - height });
 }
 
-bool CBulletBill::isAlive() const
-{
-	return m_state != State::Died;
+void PiranhaPlant::hideInTube() {
+    m_timer = 0;
+    setSize({ SIZE.x, 0.f });
+    move({ 0.f, m_buttom - getPosition().y });
 }
 
-void CBulletBill::setState(State state)
-{
-	m_state = state;
-	if (m_state == State::Normal)
-	{
-		m_animator.play("fly");
-		m_animator.flipX(m_speed.x > 0);
-	}
-	else  if (m_state == State::Died)
-	{
-		m_speed = Vector::zero;
-		m_animator.play("died");
-		addScoreToPlayer(1000);
-		MarioGame().playSound("kick");
-	}
+void PiranhaPlant::onStarted() {
+    Enemy::onStarted();
+    m_buttom = getPosition().y + SIZE.y;
+    // moveToBack();
+}
+//--------------------------------------------------------------------------
+//! Podoboo
+//--------------------------------------------------------------------------
+Podoboo::Podoboo() {
+    setSize({ 32,32 });
+    const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
+    m_animator.create("up", texture, Vector(192, 80), Vector(32, 32), 3, 1, 0.005f);
+    m_animator.create("down", texture, Vector(192, 112), Vector(32, -32), 3, 1, 0.005f);
 }
 
-void CBulletBill::start()
-{
-	CEnemy::start();
+void Podoboo::takeDamage(DamageType damageType, Character* attacker) {
+    if (damageType == DamageType::HIT_FROM_ABOVE) {
+        attacker->takeDamage(DamageType::SHOOT, this);
+    }
 }
 
-//------------------------------------------------------------------------------------------------------------------
-
-CPiranhaPlant::CPiranhaPlant()
-{
-	m_sprite.setTexture(*MarioGame().textureManager().get("Enemies"));
-	m_sprite.setTextureRect({ 0,0,0,0 });
-
-	setSize(size);
+bool Podoboo::isAlive() const {
+    return true;
 }
 
-void CPiranhaPlant::kickFromTop(CMario* mario)
-{
-	if (m_dead_zone)
-		mario->reciveDamage();
+void Podoboo::touch(Character* character) {
+    character->takeDamage(DamageType::SHOOT, character);
 }
 
-void CPiranhaPlant::kickFromBottom(CMario* mario)
-{
-	getParent()->removeObject(this);
-	addScoreToPlayer(800);
-	MarioGame().playSound("kick");
+void Podoboo::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-bool CPiranhaPlant::isAlive() const
-{
-	return true;
+void Podoboo::update(int delta_time) {
+    Enemy::update(delta_time);
+    m_timer += delta_time;
+
+    if (getPosition().y > m_center.y) {
+        m_speed += Vector::UP * m_acceleration * delta_time;
+    } else {
+        m_speed += Vector::DOWN * m_acceleration * delta_time;
+    }
+
+    if (m_timer > PERIOD_TIME) { // synchronization
+        setPosition(m_center);
+        m_speed = Vector::UP * m_acceleration * PERIOD_TIME * 0.25;
+        m_timer = 0;
+    }
+
+    m_animator.update(delta_time);
+    move(m_speed * delta_time);
+    m_animator.play((m_speed.y < 0) ? "down" : "up");
 }
 
-void CPiranhaPlant::touchSide(CMario* mario)
-{
-	if (m_dead_zone)
-		mario->reciveDamage();
+void Podoboo::onStarted() {
+    Enemy::onStarted();
+    m_center = getPosition();
+    m_acceleration = AMPLITUDE / (PERIOD_TIME * PERIOD_TIME * 0.25f * 0.25f);
+    m_speed = Vector::UP*m_acceleration * PERIOD_TIME * 0.25f;
+}
+//--------------------------------------------------------------------------
+//! LakitySpawner
+//--------------------------------------------------------------------------
+void LakitySpawner::update(int delta_time) {
+    GameObject::update(delta_time);
+
+    m_lakity_checker_timer += delta_time;
+    if (m_lakity_checker_timer > CHECK_INTERVAL) {
+        m_lakity = getParent()->findChildObjectByType<Lakity>();
+        Rect camera_rect = getParent()->castTo<MarioGameScene>()->cameraRect();
+
+        if (!m_lakity) {
+            // Add Lakity to the scene processing
+            if (getBounds().isContainByX(m_mario->getPosition())) {
+                m_lakity = MARIO_GAME.spawnObject<Lakity>();
+                m_lakity->setPosition(camera_rect.left() - 32, 64);
+            }
+        }
+        m_lakity_checker_timer = 0;
+    }
+
+    if (m_lakity) {
+        // throw Lakity from the scene processing
+        Rect camera_rect = getParent()->castTo<MarioGameScene>()->cameraRect();
+        if (m_lakity->getPosition().x > getBounds().right() + camera_rect.size().x / 2) {
+            m_lakity->runAway(Vector::LEFT);
+            m_lakity = nullptr;
+        } else if (m_lakity->getPosition().x < getBounds().left() - camera_rect.size().x / 2) {
+            m_lakity->runAway(Vector::RIGHT);
+            m_lakity = nullptr;
+        }
+    }
 }
 
-void CPiranhaPlant::fired(CMario* mario)
-{
-	getParent()->removeObject(this);
-	addScoreToPlayer(800);
-	MarioGame().playSound("kick");
+void LakitySpawner::onStarted() {
+    setSize({ getProperty("width").asFloat(), getProperty("height").asFloat() });
+    m_mario = MARIO_GAME.getPlayer();
+}
+//--------------------------------------------------------------------------
+//! CheepCheepSpawner
+//--------------------------------------------------------------------------
+void CheepCheepSpawner::update(int delta_time) {
+    m_spawn_timer += delta_time;
+
+    if ((m_spawn_timer > SPAWN_INTERVAL) && getBounds().isContainByX(m_mario->getPosition())) {
+        int camera_width = getParent()->castTo<MarioGameScene>()->cameraRect().width();
+        int x = rand() % int(camera_width) - camera_width / 2 + m_mario->getPosition().x;
+        Vector direction = (m_mario->getPosition().x < x) ? Vector::LEFT
+                                                          : Vector::RIGHT;
+
+        MARIO_GAME.spawnObject<CheepCheep>(Vector(x, m_map_height + 32), Vector(direction.x * spawn_speed.x, spawn_speed.y));
+        m_spawn_timer = 0;
+    }
 }
 
-void CPiranhaPlant::draw(sf::RenderWindow* render_window)
-{
-	m_sprite.setPosition(getPosition());
-	render_window->draw(m_sprite);
+void CheepCheepSpawner::onStarted() {
+    setSize({ getProperty("width").asFloat(), getProperty("height").asFloat() });
+    m_map_height = getParent()->findChildObjectByType<Blocks>()->getRenderBounds().height();
+    m_mario = MARIO_GAME.getPlayer();
+}
+//--------------------------------------------------------------------------
+//! BulletBillSpawner
+//--------------------------------------------------------------------------
+BulletBillSpawner::BulletBillSpawner() {
+    m_spawn_timer = rand() % SPAWN_INTERVAL;
 }
 
-void CPiranhaPlant::update(int delta_time)
-{
-	CEnemy::update(delta_time);
+void BulletBillSpawner::update(int delta_time) {
+    int camera_width = getParent()->castTo<MarioGameScene>()->cameraRect().width();
+    m_spawn_timer += delta_time;
+    bool is_mario_close_enough = std::abs(m_mario->getPosition().x - getPosition().x) < camera_width;
+    bool is_time_to_push = m_spawn_timer > SPAWN_INTERVAL;
+    bool is_bullet_bill_beyond_tiled_map = isBulletBillBeyondTiledMap();
 
-	int sprite_index = 0;
-	float height = 0;
-	m_timer += delta_time;
+    if (is_time_to_push && (is_mario_close_enough || is_bullet_bill_beyond_tiled_map)) {
+        Vector direction = isCharacterInFront(m_mario, this) ? Vector::RIGHT
+                                                             : Vector::LEFT;
+        Vector pos = getPosition();
 
-	m_dead_zone = (m_timer > period_time*0.25 && m_timer < 3 * period_time);
-		
-	if (m_timer < period_time) //None
-	{
-		//too close to mario ===> no appear
-		static const int distance = 20;
-		if ((mario()->getBounds().center() - getBounds().center()).length() < 100)
-			hideInTube();
-		height = 0;
-	}
-	else  if (m_timer < 1.25 * period_time) //Appearing
-	{
-		sprite_index = 1;
-		height = ((m_timer - period_time) / (0.25f*period_time)) * size.y;
-	}
-	else  if (m_timer < 3 * period_time)   //in full size 
-	{
-		sprite_index = int(m_timer / 100) % 2;
-		height = size.y;
-	}
-	else  if (m_timer < 3.25 * period_time)  //Hiding
-	{
-		sprite_index = 0;
-		height = (1 - ((m_timer - 3 * period_time) / (0.25f*period_time))) * size.y;
-	}
-	else 
-		m_timer = 0;
+        if (is_bullet_bill_beyond_tiled_map) {
+            int k = (pos.x < m_mario->getPosition().x ? -1 : 1);
+            pos.x = m_mario->getPosition().x + k * MARIO_GAME.screenSize().x / 2;
+        }
 
-
-	setSize({ size.x, height });
-	move({ 0.f,m_buttom - getPosition().y - height });
-	m_sprite.setTextureRect({ 32 * sprite_index,80,(int)size.x, (int)height });
-}
-
-void CPiranhaPlant::hideInTube()
-{
-	m_timer = 0;
-	setSize({ size.x, 0.f });
-	move({ 0.f,m_buttom - getPosition().y });
-}
-
-void CPiranhaPlant::onActivated()
-{
-	m_buttom = getPosition().y + size.y;
-}
-
-//-----------------------------------------------------------------------------------------------------------------
-
-CPodoboo::CPodoboo()
-{
-	m_shape.setRadius(16);
-	m_shape.setFillColor(sf::Color::Red);
-	setSize({ 32,32 });
-	const sf::Texture& texture = *MarioGame().textureManager().get("Enemies");
-	m_animator.create("up", texture, Vector(192, 80), Vector(32, 32), 3, 1, 0.005f);
-	m_animator.create("down", texture, Vector(192, 112), Vector(32, -32), 3, 1, 0.005f);
-}
-
-void CPodoboo::kickFromTop(CMario* mario)
-{
-	mario->reciveDamage();
-}
-
-void CPodoboo::kickFromBottom(CMario* mario)
-{
-	//nothing
-}
-
-bool CPodoboo::isAlive() const
-{
-	return true;
-}
-
-void CPodoboo::touchSide(CMario* mario)
-{
-	mario->reciveDamage();
-}
-
-void CPodoboo::fired(CMario* mario)
-{
-	//nothing
-}
-
-void CPodoboo::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
-}
-
-void CPodoboo::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-	m_timer += delta_time;
-
-	if (getPosition().y > m_center.y)
-		m_speed += Vector::up*m_acceleration*delta_time;
-	else
-		m_speed += Vector::down*m_acceleration*delta_time;
-
-	if (m_timer > period_time) //synchronization
-	{
-		setPosition(m_center);
-		m_speed = Vector::up*m_acceleration * period_time*0.25;
-		m_timer = 0;
-	}
-
-	m_animator.update(delta_time);
-	move(m_speed*delta_time);
-	m_animator.play((m_speed.y < 0) ? "down" : "up");
-
-}
-
-void CPodoboo::onActivated()
-{
-	m_center = getPosition();// -Vector(16, 16);
-	m_acceleration = amplitude / (period_time*period_time*0.25f*0.25f);
-	m_speed = Vector::up*m_acceleration * period_time*0.25f;
-}
-
-//----------------------------------------------------------------------------------------------------------------
-
-CLakitySpawner::CLakitySpawner()
-{
-
-}
-
-void CLakitySpawner::update(int delta_time)
-{
-	CGameObject::update(delta_time);
-
-	m_lakity_checker_timer += delta_time;
-	if (m_lakity_checker_timer > check_interval)
-	{
-		m_lakity = getParent()->findObjectByName<CLakity>("Lakity");
-		Rect camera_rect = getParent()->castTo<CMarioGameScene>()->cameraRect();
-
-
-		if (!m_lakity)  	// Add Lakity to the scene processing
-		{
-			if (getBounds().isContainByX(m_mario->getPosition()))
-			{
-				m_lakity = new CLakity();
-				m_lakity->setPosition(camera_rect.left() - 32, 64);
-				getParent()->addObject(m_lakity);
-			}
-		}
-		m_lakity_checker_timer = 0;
-	}
-
-	if (m_lakity)              // Throw Lakity from the scene processing
-	{
-		Rect camera_rect = getParent()->castTo<CMarioGameScene>()->cameraRect();
-		if (m_lakity->getPosition().x > getBounds().right() + camera_rect.size().x / 2)
-		{
-			m_lakity->runAway(Vector::left);
-			m_lakity = NULL;
-		}
-		else if (m_lakity->getPosition().x < getBounds().left() - camera_rect.size().x / 2)
-		{
-			m_lakity->runAway(Vector::right);
-			m_lakity = NULL;
-		}
-	}
-
-}
-
-void CLakitySpawner::onActivated()
-{
-	setSize({ getProperty("width").asFloat(), getProperty("height").asFloat() });
-}
-
-void CLakitySpawner::start()
-{
-	m_mario = getParent()->findObjectByName<CMario>("Mario");
-}
-
-//-----------------------------------------------------------------------------------------------------------------
-
-CCheepCheepSpawner::CCheepCheepSpawner()
-{
-
-}
-
-void CCheepCheepSpawner::update(int delta_time)
-{
-	m_spawn_timer += delta_time;
-	if (m_spawn_timer > spawn_interval && getBounds().isContainByX(m_mario->getPosition()))
-	{
-		int camera_width = getParent()->castTo<CMarioGameScene>()->cameraRect().width();
-		int x = rand() % int(camera_width) - camera_width / 2 + m_mario->getPosition().x;
-		Vector direction = (m_mario->getPosition().x < x) ? Vector::left : Vector::right;
-		getParent()->addObject(new CCheepCheep({ x, m_map_height + 32 }, { direction.x*spawn_speed.x, spawn_speed.y }));
-		m_spawn_timer = 0;
+        getParent()->addChild(new BulletBill(pos, direction * BULLET_SPEED));
+        m_spawn_timer = 0;
+        if (is_bullet_bill_beyond_tiled_map) {
+            m_spawn_timer = -4000 - rand() % 8000;
+        }
+        MARIO_GAME.playSound("fireworks");
 	}
 }
 
-void CCheepCheepSpawner::onActivated()
-{
-	setSize({ getProperty("width").asFloat(), getProperty("height").asFloat() });
+bool BulletBillSpawner::isBulletBillBeyondTiledMap() const {
+	return (getPosition().x < 0) || (getPosition().x > m_blocks_width);
 }
 
-void CCheepCheepSpawner::start()
-{
-	m_map_height = getParent()->findObjectByName<CBlocks>("Blocks")->height();
-	m_mario = getParent()->findObjectByName<CMario>("Mario");
+void BulletBillSpawner::onStarted() {
+    m_mario = MARIO_GAME.getPlayer();
+    m_blocks_width = getParent()->findChildObjectByType<Blocks>()->getRenderBounds().width();
+    if (isBulletBillBeyondTiledMap()) {
+       m_spawn_timer = - rand() % 5000;
+    }
+}
+//--------------------------------------------------------------------------
+//! Fireball
+//--------------------------------------------------------------------------
+Fireball::Fireball(const Vector& Position, const Vector& SpeedVector) {
+    auto texture = MARIO_GAME.textureManager().get("Bowser");
+    m_animator.create("fire", *texture, { 0,364 }, { 32,36 }, 4, 1, 0.01f, AnimType::FORWARD_BACKWARD_CYCLE);
+    m_speed = SpeedVector;
+    setPosition(Position);
+    m_animator.flipX(SpeedVector.x < 0);
+    m_animator.get("fire")->setOrigin({ 16,18 });
 }
 
-//-------------------------------------------------------------------------------------------------------------
-
-CBulletBillSpawner::CBulletBillSpawner()
-{
-	m_spawn_timer = rand() % spawn_interval;
+void Fireball::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CBulletBillSpawner::update(int delta_time)
-{
-	int camera_width = getParent()->castTo<CMarioGameScene>()->cameraRect().width();
-	m_spawn_timer += delta_time;
-	bool is_mario_close_enough = std::abs(m_mario->getPosition().x - getPosition().x) < camera_width;
-	bool is_time_to_push = m_spawn_timer > spawn_interval;
-	bool is_bullet_bill_beyond_tiled_map = isBulletBillBeyondTiledMap();
-    if (is_time_to_push && (is_mario_close_enough || is_bullet_bill_beyond_tiled_map))
-	{
-		Vector direction = (m_mario->getPosition().x < getPosition().x) ? Vector::left : Vector::right;
-		Vector pos = getPosition();
+void Fireball::update(int delta_time) {
+    m_animator.update(delta_time);
+    m_life_timer -= delta_time;
 
-		if (is_bullet_bill_beyond_tiled_map)
-		{
-			int k = (pos.x < m_mario->getPosition().x ? -1 : 1);
-			pos.x = m_mario->getPosition().x + k*MarioGame().screenSize().x / 2;
-		}
+    if (m_life_timer < 0) {
+        removeLater();
+    }
 
-		getParent()->addObject(new CBulletBill(pos, direction*bullet_speed));
-		m_spawn_timer = 0;
-		if (is_bullet_bill_beyond_tiled_map)
-			m_spawn_timer = -4000 - rand() % 8000;
+    move(delta_time * m_speed);
 
-		MarioGame().playSound("fireworks");
-	}
+    if (m_mario->getBounds().isContain(getPosition())) {
+        m_mario->takeDamage(DamageType::SHOOT, nullptr);
+    }
 }
 
-void CBulletBillSpawner::onActivated()
-{
-
+void Fireball::onStarted() {
+	m_mario = MARIO_GAME.getPlayer();
+}
+//--------------------------------------------------------------------------
+//! Bowser
+//--------------------------------------------------------------------------
+Bowser::Bowser() {
+    setSize({ 84,80 });
+    auto texture = MARIO_GAME.textureManager().get("Bowser");
+    m_animator.create("walk", *texture, { 0,0 }, { 84,80 }, 6, 1, ANIM_SPEED, AnimType::FORWARD_CYCLE);
+    m_animator.create("died", *texture, { 0,80,84,-80 });
+    m_animator.create("turn", *texture, { 381,122 }, { 74,85 }, 2, 1, ANIM_SPEED / 2, AnimType::FORWARD_STOP);
+    m_animator.create("middle_fire", *texture, { 0,167 }, { 91,100 }, 4, 1, ANIM_SPEED, AnimType::FORWARD_STOP);
+    m_animator.create("land_fire", *texture, { 0,267 }, { 92,97 }, 6, 1, ANIM_SPEED, AnimType::FORWARD_STOP);
+    m_animator.create("pre_jump", *texture, { 0,80 }, { 91,79 }, 2, 1, ANIM_SPEED, AnimType::FORWARD_STOP);
+    m_animator.create("up_jump", *texture, { 182,80,84,87 });
+    m_animator.create("down_jump", *texture, { 266,80, 84,87 });
+    m_animator.get("middle_fire")->setOrigin(Vector::DOWN * 16);
+    m_animator.get("land_fire")->setOrigin(Vector::DOWN * 16);
+    m_animator.get("turn")->setOrigin(Vector::DOWN * 5);
 }
 
-bool CBulletBillSpawner::isBulletBillBeyondTiledMap() const
-{
-	return getPosition().x < 0 || getPosition().x > m_blocks_width;
+void Bowser::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CBulletBillSpawner::start()
-{
-	m_mario = getParent()->findObjectByName<CMario>("Mario");
-	m_blocks_width = getParent()->findObjectByName<CBlocks>("Blocks")->width();
-	if (isBulletBillBeyondTiledMap())
-		m_spawn_timer = - rand() % 5000;
+void Bowser::noBridge() {
+    enterState(State::NO_BRIDGE);
 }
 
-//----------------------------------------------------------------------------------------------------------------
+void Bowser::enterState(State state) {
+    if (state == m_state) {
+        return;
+    }
 
-CFireball::CFireball(const Vector& Position, const Vector& SpeedVector)
-{
-	auto texture = MarioGame().textureManager().get("Bowser");
-	m_animator.create("fire", *texture, { 0,364 }, { 32,36 }, 4, 1, 0.01f, AnimType::forward_backward_cycle);
-	m_speed = SpeedVector;
-	setPosition(Position);
-	m_animator.flipX(SpeedVector.x < 0);
-	m_animator.get("fire")->setOrigin({ 16,18 });
+    LOG("AI", VERBOSE, "Bowser state changed to %d", m_state);
+
+    m_state = state;
+
+    switch (state) {
+    case State::WALK:
+        playAnimation("walk");
+        m_delay_timer = 2000;
+        break;
+    case State::TURN:
+        playAnimation("turn");
+        m_delay_timer = 400;
+        break;
+    case State::PRE_JUMP:
+        playAnimation("pre_jump");
+        m_delay_timer = 300;
+        break;
+    case State::JUMP:
+        playAnimation("up_jump");
+        m_speed.y = -0.4f;
+        m_old_speed.x = m_speed.x;
+        m_speed.x = 0;
+        break;
+    case State::MIDDLE_FIRE:
+        playAnimation("middle_fire");
+        m_delay_timer = 500;
+        break;
+    case State::LAND_FIRE:
+        playAnimation("land_fire");
+        m_delay_timer = 700;
+        break;
+    case State::NO_BRIDGE:
+        playAnimation("walk");
+        m_animator.get("walk")->setSpeed(ANIM_SPEED * 2.5f);
+        m_delay_timer = 1000;
+        break;
+    case State::FALL:
+        m_animator.flipX(m_direction == Vector::RIGHT);
+        m_animator.get("walk")->setSpeed(0);
+        MARIO_GAME.playSound("bowser_falls");
+        m_speed = Vector::ZERO;
+        break;
+    case(State::DIED):
+        playAnimation("died");
+        MARIO_GAME.playSound("bowser_falls");
+        m_speed = Vector::ZERO;
+        break;
+    }
 }
 
-void CFireball::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void Bowser::update(int delta_time) {
+    auto processTimer = [this](int delta_time) -> bool {
+            m_delay_timer -= delta_time;
+            if (m_delay_timer < 0) {
+                m_delay_timer = 0;
+                return true;
+            }
+            return false;
+        };
+
+    Enemy::update(delta_time);
+    m_animator.update(delta_time);
+
+    if ((m_state == State::WALK) ||
+        (m_state == State::JUMP)) {
+        updatePhysics(delta_time, GRAVITY_FORCE / 2);
+        updateCollision(delta_time);
+        if (m_collision_tag & ECollisionTag::X_AXIS) {
+            m_speed.x = -m_speed.x;
+        }
+        if (m_collision_tag & ECollisionTag::Y_AXIS) {
+            m_speed.y = 0.f;
+        }
+    }
+
+    switch (m_state) {
+    case State::WALK:
+    {
+        // Walk processing
+        if (std::abs(getPosition().x - m_center_x) > WALK_AMPLITUDE) {
+            m_speed.x = -m_speed.x;
+        }
+
+        auto old_direction = m_direction;
+        m_direction = isCharacterInFront(mario(), this) ? Vector::RIGHT
+                                                        : Vector::LEFT;
+
+        if (old_direction != m_direction) {
+            enterState(State::TURN);
+            return;
+        }
+
+        m_animator.flipX(m_direction == Vector::RIGHT);
+
+        if (processTimer(delta_time)) {
+            int d = rand() % 3;
+            if (d == 0) enterState(State::PRE_JUMP);
+            if (d == 1) enterState(State::MIDDLE_FIRE);
+            if (d == 2) enterState(State::LAND_FIRE);
+        }
+        break;
+    }
+    case State::TURN:
+        if (processTimer(delta_time)) {
+            enterState(State::WALK);
+        }
+        break;
+    case State::JUMP:
+        if ((m_speed.y >= 0) && (m_old_speed.y <= 0)) {
+            // jump peak
+            fire(Vector::DOWN * 20);
+            playAnimation("down_jump");
+        }
+ 
+        m_old_speed.y = m_speed.y;
+        if (m_collision_tag & ECollisionTag::FLOOR) {
+            m_speed.x = m_old_speed.x;
+            enterState(State::WALK);
+        }
+        break;
+    case State::PRE_JUMP:
+        if (processTimer(delta_time)) {
+            enterState(State::JUMP);
+        }
+        break;
+    case State::LAND_FIRE:
+        if (processTimer(delta_time)) {
+            fire(Vector::DOWN * 10);
+            enterState(State::WALK);
+        }
+        break;
+    case State::MIDDLE_FIRE:
+        if (processTimer(delta_time)) {
+            fire(Vector::UP * 10);
+            enterState(State::WALK);
+        }
+        break;
+    case State::NO_BRIDGE:
+        if (processTimer(delta_time)) {
+            enterState(State::FALL);
+        }
+        break;
+    case State::DIED: // fall through
+    case State::FALL:
+        updatePhysics(delta_time, GRAVITY_FORCE / 2);
+        break;
+    }
 }
 
-void CFireball::update(int delta_time)
-{
-	m_animator.update(delta_time);
-	m_life_timer -= delta_time;
-	if (m_life_timer < 0)
-		getParent()->removeObject(this);
-	move(delta_time*m_speed);
-
-	if (m_mario->getBounds().isContain(getPosition()))
-		m_mario->reciveDamage();
+void Bowser::fire(const Vector& fireBallOffset) {
+    MARIO_GAME.spawnObject<Fireball>(getBounds().center() + m_direction * 50 +
+                                     fireBallOffset, m_direction * 0.13f);
+    MARIO_GAME.playSound("bowser_fire");
 }
 
-void  CFireball::start()
-{
-	m_mario = getParent()->findObjectByName<CMario>("Mario");
+void Bowser::onStarted() {
+    Enemy::onStarted();
+    m_center_x = getPosition().x;
+    m_speed.x = RUN_SPEED;
 }
 
-//----------------------------------------------------------------------------------------------------------------
-
-CBowser::CBowser()
-{
-	setSize({ 84,80 });
-	auto texture = MarioGame().textureManager().get("Bowser");
-	m_animator.create("walk", *texture, { 0,0 }, { 84,80 }, 6, 1, anim_speed, AnimType::forward_cycle);
-	m_animator.create("died", *texture, { 0,80,84,-80 });
-	m_animator.create("turn", *texture, { 381,122 }, { 74,85 }, 2, 1, anim_speed / 2, AnimType::forward_stop);
-	m_animator.create("middle_fire", *texture, { 0,167 }, { 91,100 }, 4, 1, anim_speed, AnimType::forward_stop);
-	m_animator.create("land_fire", *texture, { 0,267 }, { 92,97 }, 6, 1, anim_speed, AnimType::forward_stop);
-	m_animator.create("pre_jump", *texture, { 0,80 }, { 91,79 }, 2, 1, anim_speed, AnimType::forward_stop);
-	m_animator.create("up_jump", *texture, { 182,80,84,87 });
-	m_animator.create("down_jump", *texture, { 266,80, 84,87 });
-	m_animator.get("middle_fire")->setOrigin(Vector::down * 16);
-	m_animator.get("land_fire")->setOrigin(Vector::down * 16);
-	m_animator.get("turn")->setOrigin(Vector::down * 5);
-	m_speed.x = m_run_speed;
-}
-void CBowser::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void Bowser::takeDamage(DamageType damageType, Character* attacker) {
+    if (damageType == DamageType::HIT_FROM_ABOVE) {
+        attacker->takeDamage(DamageType::KICK, this);
+    } else {
+        --m_lives;
+        if (m_lives < 0) {
+            enterState(State::DIED);
+        }
+    }
 }
 
-void  CBowser::noBridge()
-{
-	enterState(State::no_bridge);
+void Bowser::touch(Character* character) {
+    character->takeDamage(DamageType::KICK, character);
 }
 
-void CBowser::enterState(State state)
-{
-	if (state == m_state)
-		return;
-	switch (state)
-	{
-		case(State::walk):
-		{
-			m_speed.x = m_old_speed.x;
-			m_animator.play("walk");
-			m_delay_timer = 2000;
-			break;
-		}
-		case(State::turn):
-		{
-			m_animator.play("turn");
-			m_delay_timer = 400;
-			break;
-		}
-		case(State::pre_jump):
-		{
-			m_old_speed.x = m_speed.x;
-			m_old_speed.y = -1;
-			m_speed.x = 0;
-			m_animator.play("pre_jump");
-			m_delay_timer = 300;
-			break;
-		}
-		case(State::jump):
-		{
-			m_speed = 0.4f*Vector::up;
-			break;
-		}
-		case(State::middle_fire):
-		{
-			m_old_speed.x = m_speed.x;
-			m_speed.x = 0;
-			m_animator.play("middle_fire");
-			m_delay_timer = 500;
-			break;
-		}
-		case(State::land_fire):
-		{
-			m_old_speed.x = m_speed.x;
-			m_speed.x = 0;
-			m_animator.play("land_fire");
-			m_delay_timer = 700;
-			break;
-		}
-		case(State::no_bridge):
-		{
-			m_animator.play("walk");
-			m_animator.get("walk")->setSpeed(anim_speed * 2.5f);
-			m_delay_timer = 1000;
-			break;
-		}
-		case(State::fall):
-		{
-			m_animator.get("walk")->setSpeed(0);
-			MarioGame().playSound("bowser_falls");
-			m_speed = Vector::zero;
-			break;
-		}
-		case(State::died):
-		{
-			m_animator.play("died");
-			MarioGame().playSound("bowser_falls");
-			m_speed = Vector::zero;
-			break;
-		}
-	}
-	m_state = state;
+bool Bowser::isAlive() const {
+    return ((m_state != State::DIED) &&
+            (m_state != State::FALL));
 }
-
-void CBowser::update(int delta_time)
-{
-	CEnemy::update(delta_time);
-	m_animator.update(delta_time);
-	if (m_state == State::walk || m_state == State::jump)
-	{
-		updatePhysics(delta_time, gravity_force / 2);
-		updateCollision(delta_time);
-		if ((m_collision_tag & ECollisionTag::left) || (m_collision_tag & ECollisionTag::right))
-			m_speed.x = -m_speed.x;
-		if ((m_collision_tag & ECollisionTag::floor) || (m_collision_tag & ECollisionTag::cell))
-			m_speed.y = 0;
-	}
-
-	switch (m_state)
-	{
-		case(State::walk):
-		{
-			if (std::abs(getPosition().x - m_center_x) > c_walk_amlitude)
-			{
-				m_speed.x = -m_speed.x;
-				move({ (float)(c_walk_amlitude - std::abs(getPosition().x - m_center_x))*math::sign(-m_speed.x),0.f });
-			}
-			auto old_direction = m_direction;
-			m_direction = (m_mario->getPosition().x < getPosition().x) ? Vector::left : Vector::right;
-
-			if (old_direction != m_direction)
-			{
-				enterState(State::turn);
-				break;
-			}
-
-			m_animator.flipX(m_direction == Vector::right);
-
-			m_delay_timer -= delta_time;
-			if (m_delay_timer < 0)
-			{
-				int d = rand() % 3;
-				if (d == 0) enterState(State::pre_jump);
-				if (d == 1) enterState(State::middle_fire);
-				if (d == 2) enterState(State::land_fire);
-			}
-			break;
-		}
-		case(State::turn):
-		{
-			m_delay_timer -= delta_time;
-			if (m_delay_timer < 0)
-				enterState(State::walk);
-			break;
-		}
-		case(State::jump):
-		{
-			if (m_speed.y > 0)
-				m_animator.play("down_jump");
-			else if (m_speed.y < 0)
-				m_animator.play("up_jump");
-			if (m_speed.y > 0 && m_old_speed.y < 0) //jump peak
-			{
-
-				getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::down * 20, m_direction*0.13f));
-				MarioGame().playSound("bowser_fire");
-			}
-			m_old_speed.y = m_speed.y;
-			if (m_collision_tag & ECollisionTag::floor)
-				enterState(State::walk);
-			break;
-		}
-		case(State::pre_jump):
-		{
-			m_delay_timer -= delta_time;
-			if (m_delay_timer < 0)
-				enterState(State::jump);
-			break;
-		}
-		case(State::land_fire):
-		{
-			m_delay_timer -= delta_time;
-			if (m_delay_timer < 0)
-			{
-				getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::down * 10, m_direction*0.13f));
-				MarioGame().playSound("bowser_fire");
-				enterState(State::walk);
-			}
-			break;
-		}
-		case(State::middle_fire):
-		{
-			m_delay_timer -= delta_time;
-			if (m_delay_timer < 0)
-			{
-				getParent()->addObject(new CFireball(getBounds().center() + m_direction * 50 + Vector::up * 10, m_direction*0.13f));
-				MarioGame().playSound("bowser_fire");
-				enterState(State::walk);
-			}
-			break;
-		}
-		case(State::no_bridge):
-		{
-			m_delay_timer -= delta_time;
-			if (m_delay_timer < 0)
-				enterState(State::fall);
-			break;
-		}
-		case(State::died):
-		case(State::fall):
-		{
-			updatePhysics(delta_time, gravity_force / 2);
-			break;
-		}
-	}
-}
-
-void CBowser::onActivated()
-{
-	m_center_x = getPosition().x;
-}
-
-void CBowser::kickFromTop(CMario* mario)
-{
-	mario->reciveDamage();
-}
-
-void CBowser::kickFromBottom(CMario* mario)
-{
-	m_lives--;
-	if (m_lives < 0)
-		enterState(State::died);
-}
-
-void CBowser::touchSide(CMario* mario)
-{
-	mario->reciveDamage();
-}
-
-bool CBowser::isAlive() const
-{
-	return true;
-}
-
-//-----------------------------------------------------------------------------------------------------------------------------------------------------

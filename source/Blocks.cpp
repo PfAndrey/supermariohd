@@ -1,639 +1,683 @@
-#include "Blocks.h"
-#include "SuperMarioGame.h"
-#include "Pickups.h"
-#include "Enemies.h"
 #include <unordered_set>
+
 #include <SFML/Graphics.hpp>
-//-----------------------------------------------------------------------------------------------------------------------------------------------
 
-int AbstractBlock::block_size = 0;
-float AbstractBlock::timer = 0;
- 
-void AbstractBlock::killEnemiesAbove(CMario* mario)
-{
-	Rect block_rect = m_blocks->getBlockBounds((int)position.x, (int)position.y - 1).bordered(-4);
+#include "Blocks.hpp"
+#include "Enemies.hpp"
+#include "Pickups.hpp"
+#include "SuperMarioGame.hpp"
 
-	auto func = [block_rect,mario](CGameObject* obj)
-	 {
-		if (obj->getBounds().isIntersect(block_rect))
-		{
-			if (obj->isTypeOf<CEnemy>())
-			{
-				auto enemy = obj->castTo<CEnemy>();
-				if (enemy->isAlive())
-					enemy->kickFromBottom(mario);
-			}
-			else if (obj->isTypeOf<CMushroom>())
-			{
-				auto mushroom = obj->castTo<CMushroom>();
-				mushroom->addImpulse(Vector::up*0.4f);				
-			}
-			else  if (obj->isTypeOf<CCoin>())
-				obj->castTo<CCoin>()->kick();
-		}
-	 };
 
-	m_blocks->getParent()->foreachObject(func);
-}
-
-AbstractBlock::AbstractBlock(int id) :m_id(id)
+namespace
 {
 
+const Vector BLOCK_SIZE(32, 32);
+static std::unordered_set<int> NIGHT_FILTER_EXCEPT = { 82,83,50,58,62,64 };
 
-}
+} // anonymous namespace
 
-AbstractBlock::~AbstractBlock()
-{
+SpriteSheet AbstractBlock::s_questionBlockSprite = SpriteSheet();
+SpriteSheet AbstractBlock::s_waterSprite = SpriteSheet();
+SpriteSheet AbstractBlock::s_lavaSprite = SpriteSheet();
+SpriteSheet AbstractBlock::s_staticTiles = SpriteSheet();
 
-};
+AbstractBlock::AbstractBlock(TileCode id)
+    : m_id(id)
+    , m_invisible(0)
+    , m_colliable(0) {
 
-void AbstractBlock::draw(sf::RenderWindow* render_window)
-{
-
-};
-
-void AbstractBlock::update(int delta_time)
-{
-
-}
-
-void AbstractBlock::kick(CMario* mario)
-{
-
-}
-
-void AbstractBlock::setPosition(const Vector& pos)
-{
-	position = pos;
-}
-
-bool AbstractBlock::isColliable() const
-{
-	return m_colliable;
-}
-
-void AbstractBlock::setParent(CBlocks* blocks)
-{
-	m_blocks = blocks;
-}
-
-int AbstractBlock::code() const
-{
-	return m_id;
-}
-
-bool AbstractBlock::isInvisible() const
-{
-	return m_invisible;
-}
-
-void AbstractBlock::setInvisible(bool value)
-{
-	m_invisible = value;
-	m_colliable = !value;
-	m_current_sprite = &m_kicked_sprite;
-}
-
-CSpriteSheet AbstractBlock::m_question_block_sprite = CSpriteSheet();
-CSpriteSheet AbstractBlock::m_water_sprite = CSpriteSheet();
-CSpriteSheet AbstractBlock::m_lava_sprite = CSpriteSheet();
-CSpriteSheet AbstractBlock::m_kicked_sprite = CSpriteSheet();
-CSpriteSheet AbstractBlock::m_bricket_sprite = CSpriteSheet();
-
-//------------------------------------------------------------------------------------------------------------------------------------------------
-
-CStaticBlock::CStaticBlock(int id): AbstractBlock(id)
-{
-	if (m_sprite_sheet.empty())
-		 m_sprite_sheet.load(*MarioGame().textureManager().get("Tiles"), Vector(0,0), {32, 32 }, 8, 12);
-	 cur_sprite = &m_sprite_sheet[id-1];
-  
-	m_colliable = id <= 40;
-
-	if (id == 14 || id == 22)
-		m_colliable = false;
-}
-
-void CStaticBlock::draw(sf::RenderWindow* render_window)
-{
-	cur_sprite->setPosition(position*block_size);
-	render_window->draw(*cur_sprite);
-};
-
-void CStaticBlock::kick(CMario* mario)
-{
-	MarioGame().playSound("bump");
-}
-
-CSpriteSheet CStaticBlock::m_sprite_sheet = CSpriteSheet();
-CBricksBlock::CBricksBlock():AbstractBlock(BRICK_TILE_CODE)
-{
-	m_sprite_sheet.load(*MarioGame().textureManager().get("Tiles"), { { 32,0,32,32 } });
-}
-
-void CBricksBlock::draw(sf::RenderWindow* render_window)
-{
-	m_sprite_sheet.setPosition(position*block_size + Vector::up*kicked_value);
-	m_sprite_sheet.draw(render_window);		 
-};
-
-void CBricksBlock::update(int delta_time)
-{
-	if (kicked_value != 0)
-	{
-		if (kicked_dir == 0)
-		{
-			kicked_value += delta_time / 10;
-
-			if (kicked_value > 15)
-				kicked_dir = 1;
-		}
-		if (kicked_dir == 1)
-		{
-			kicked_value -= delta_time / 10;
-			if (kicked_value < 0)
-				kicked_value = 0;
-		}
-	}
-}
-
-void CBricksBlock::kick(CMario* mario)
-{
-	int x = (int)position.x;
-	int y = (int)position.y;
-	
-	if (!mario->isSmall()) // crash box
-	{
-            m_blocks->addObject(new COneBrick(Vector(x, y)*block_size, Vector(-0.05f, -0.2f)));
-            m_blocks->addObject(new COneBrick(Vector(x + 0.5f, (float)y)*block_size, Vector(0.05f, -0.2f)));
-            m_blocks->addObject(new COneBrick(Vector((float)x, y + 0.5f)*block_size, Vector(-0.05f, -0.1f)));
-            m_blocks->addObject(new COneBrick(Vector(x + 0.5f, y + 0.5f)*block_size, Vector(0.05f, -0.1f)));
-			killEnemiesAbove(mario);
-            m_blocks->clearBlock(x, y);
-			MarioGame().addScore(50);
-			MarioGame().playSound("breakblock");
-	}
-	else                                        // just kick box
-	{
-			if (kicked_value == 0)
-			{
-				killEnemiesAbove(mario);
-		 		kicked_value = 1;
-		 		kicked_dir = 0;
-				MarioGame().playSound("bump");
-			}
-	}		
-}
-
-//-----------------------------------------------------------------------------------------------------------------------------------------------------
-
-CMoneyBox::CMoneyBox():AbstractBlock(MONEY_TILE_CODE)
-{
-	m_sprite_sheet.load(*MarioGame().textureManager().get("Tiles"), { { 32,0,32,32 }, { 0,32,32,32 } });
-}
-
-void CMoneyBox::draw(sf::RenderWindow* render_window)
-{
-	m_sprite_sheet.setPosition(position*block_size + Vector::up*kicked_value);
-	m_sprite_sheet.draw(render_window);
-};
-
-void CMoneyBox::update(int delta_time)
-{
-	if (kicked_value != 0)
-	{
-		if (kicked_dir == 0)
-		{
-			kicked_value += delta_time / 10;
-
-			if (kicked_value > 15)
-				kicked_dir = 1;
-		} 
-		if (kicked_dir == 1)
-		{
-			kicked_value -= delta_time / 10;
-			if (kicked_value < 0)
-				kicked_value = 0;
-		}
-	}
-}
-
-void CMoneyBox::kick(CMario* mario)
-{
-	if (kicked_value == 0 && m_coin_left !=0 )
-	{
-		kicked_value = 1;
-		kicked_dir = 0;
-		Vector pos = (position + Vector::up)*block_size;
-		m_blocks->addObject(new CTwistedCoin(pos, mario));
-		--m_coin_left;
-		if (m_coin_left == 0)
-			m_sprite_sheet.setSpriteIndex(1);
-		MarioGame().addScore(100, m_blocks->toPixelCoordinates(position));
-		MarioGame().addCoin();
-		MarioGame().playSound("bump");
-	}
-	killEnemiesAbove(mario);
-}
-
-//------------------------------------------------------------------------------------------------------------------
-
-CBackground::CBackground()
-{
-	m_background.setTextureRect({ 0,0,1280,720 });
-}
-
-void CBackground::draw(sf::RenderWindow* render_window)
-{
-	Rect cameraRect = getParent()->castTo<CMarioGameScene>()->cameraRect();
-	m_background.setPosition(cameraRect.leftTop());
-	render_window->draw(m_background);
-}
-
-void CBackground::onActivated()
- {
-	 m_background.setTexture(*MarioGame().textureManager().get(getProperty("Picture").asString()));
-	 moveToBack();
- }
-
-void CBackground::start()  
-{
-	if (getProperty("NightViewFilter").isValid() && getProperty("NightViewFilter").asBool() == true)
-	 	getParent()->findObjectByType<CBlocks>()->enableNightViewFilter();
-}
-
-//------------------------------------------------------------------------------------------------------------------
-
-CBlocks::CBlocks(int cols, int rows, int block_size): m_block_size(block_size)
-{
-	setName("Blocks");
-	AbstractBlock::block_size = block_size;
-	m_shape.setSize(blockSize());
-	m_shape.setFillColor(sf::Color::Red);
-	m_map = new TileMap<AbstractBlock*>(cols, rows);
-	m_map->clear(NULL);
-	auto texture = MarioGame().textureManager().get("AnimTiles");
-	AbstractBlock::m_question_block_sprite.load(*texture, { 0,0 }, { 32,32 }, 4, 1);
-	AbstractBlock::m_question_block_sprite.setAnimType(AnimType::manual);
-	AbstractBlock::m_water_sprite.load(*texture, { 0,32 }, { 32,32 }, 4, 1);
-	AbstractBlock::m_water_sprite.setAnimType(AnimType::manual);
-	AbstractBlock::m_lava_sprite.load(*texture, { 0,64 }, { 32,32 }, 4, 1);
-	AbstractBlock::m_lava_sprite.setAnimType(AnimType::manual);
-	AbstractBlock::m_kicked_sprite.load(*MarioGame().textureManager().get("Tiles"), { { 0,32,32,32 } });
-	AbstractBlock::m_bricket_sprite.load(*MarioGame().textureManager().get("Tiles"), { { 32,0,32,32 } });
-
-	static const sf::String frag_shader =
-			"#version 120\n"\
-			"uniform sampler2D texture;\n"\
-			"void main()"\
-			"{"\
-			"vec4 color = texture2D(texture, gl_TexCoord[0].xy);"\
-			"float middle = (color.r + color.g)/2.f;"\
-			"gl_FragColor = vec4(color.g,middle,middle,color.a);"\
-			"}";
-	m_night_view_filter_shader.loadFromMemory(frag_shader, sf::Shader::Fragment);
-	m_night_view_filter_shader.setUniform("texture", sf::Shader::CurrentTexture);	 
-}
-
-void CBlocks::loadFromString(const std::string& data, std::function<AbstractBlock*(char)> fabric)
-{
-	m_map->loadFromString(fabric, data);
-	for (int x = 0; x < m_map->width(); ++x)
-		for (int y = 0; y < m_map->height(); ++y)
-		{
-			AbstractBlock* block = m_map->getCell(x, y);
-			if (block)
-			{
-				block->setPosition({ x, y });
-				block->setParent(this);
-			}
-		}
-}
-
-void CBlocks::enableNightViewFilter()
-{
-	m_night_view_filter = true;
-}
-
-void CBlocks::draw(sf::RenderWindow* render_window)
-{
-	static std::unordered_set<int> filter_except = {82,83,50,58,62,64};
-
-	if (m_night_view_filter)
-		sf::Shader::bind(&m_night_view_filter_shader);
-
-	Rect cameraRect = getParent()->castTo<CMarioGameScene>()->cameraRect();
-	const float block_size = blockSize().x;
-	Vector center = render_window->getView().getCenter();
-	Vector size = render_window->getView().getSize();
-	view_rect = Rect(toBlockCoordinates(center - size / 2), toBlockCoordinates(size)).getIntersection(Rect(0, 0, cols(), rows()));
-
-	for (int x = view_rect.left(); x < view_rect.right(); ++x)
-		for (int y = view_rect.top(); y < view_rect.bottom(); ++y)
-		{
-			AbstractBlock* block = m_map->getCell(x, y);
-            if (block == nullptr)
-				continue;
-			bool skip_fiter = m_night_view_filter && filter_except.count(block->m_id);
-
-			if (skip_fiter)
-				sf::Shader::bind(NULL);
-			block->draw(render_window); 
-			if (skip_fiter)
-				sf::Shader::bind(&m_night_view_filter_shader);
-		}
-
-	CGameObject::draw(render_window);
-
-	if (m_night_view_filter)
-		sf::Shader::bind(NULL);
-}
-
-void CBlocks::update(int delta_time)
-{
-    if (!m_remove_later_list.empty())
-    {
-        for (auto object : m_remove_later_list)
-            delete object;
-        m_remove_later_list.clear();
+    if (s_staticTiles.empty()) {
+        s_staticTiles.load(*MARIO_GAME.textureManager().get("Tiles"), Vector::ZERO, BLOCK_SIZE, 8, 12);
     }
 
-	CGameObject::update(delta_time);
-
-	m_timer += delta_time / 200.f;
-	AbstractBlock::timer = m_timer;
-	AbstractBlock::m_question_block_sprite.setSpriteIndex(int(m_timer) % 4);
-	CStaticBlock::m_sprite_sheet[49] = AbstractBlock::m_water_sprite[int(m_timer) % 4];
-	CStaticBlock::m_sprite_sheet[81] = AbstractBlock::m_lava_sprite [int(m_timer) % 4];
-
-	for (int x = view_rect.left(); x < view_rect.right(); ++x)
-		for (int y = view_rect.top(); y < view_rect.bottom(); ++y)
-		{
-			AbstractBlock* block = m_map->getCell(x, y);
-			if (block)
-				block->update(delta_time);
-		}
+    auto idNum = static_cast<int>(id);
+    m_colliable = (idNum <= 40) && (idNum != 14) && (idNum != 22);
 }
 
-Rect CBlocks::getBlockBounds(int x, int y) const
-{
-	return Rect(x*m_block_size, y*m_block_size, m_block_size, m_block_size);
+void AbstractBlock::init() {
+    auto& atlas = *MARIO_GAME.textureManager().get("AnimTiles");
+    AbstractBlock::s_questionBlockSprite.load(atlas, { 0,0 }, BLOCK_SIZE, 4, 1, 0.005f);
+    AbstractBlock::s_waterSprite.load(atlas, { 0,32 }, BLOCK_SIZE, 4, 1, 0.005f);
+    AbstractBlock::s_lavaSprite.load(atlas, { 0,64 }, BLOCK_SIZE, 4, 1, 0.005f);
 }
 
-Rect CBlocks::getBlockBounds(const Vector& pos) const
-{
-	return Rect(pos.x*m_block_size, pos.y*m_block_size, m_block_size, m_block_size );
-}
+void AbstractBlock::killCharactersAbove(Character* attacker) {
+    Rect block_rect(m_position - Vector(0,16), BLOCK_SIZE);
+ 
+    const auto& objects = m_blocks->getParent()->getChilds();
 
-Vector CBlocks::traceLine(const Vector& start_cell, const Vector& direction)
-{
-	return m_map->traceLine(start_cell, direction, [](AbstractBlock* block) {return !(block && block->isColliable()); });
-}
-
-Vector CBlocks::blockSize() const
-{
-	return{ m_block_size,m_block_size };
-}
-
-AbstractBlock* CBlocks::getBlock(int x, int y)
-{
-	return m_map->getCell(x, y);
-}
-
-void CBlocks::clearBlock(int x, int y)
-{
-    m_remove_later_list.push_back(m_map->getCell(x, y));
-    m_map->setCell(x, y, nullptr);
-}
-
-void CBlocks::kickBlock(int x, int y, CMario* mario)
-{
-	AbstractBlock* block = getBlock(x, y);
-	if (block)
-		block->kick(mario);
-	if (block && block->isInvisible())
-		block->setInvisible(false);
-}
-
-int CBlocks::rows() const
-{
-	return m_map->height();
-}
-
-int CBlocks::cols() const
-{
-	return m_map->width();
-}
-
-int CBlocks::width() const
-{
-	return cols()*m_block_size;
-}
-
-int CBlocks::height() const
-{
-	return rows()*m_block_size;
-}
-
-bool CBlocks::isCollidableBlock(int x, int y) const
-{
-	AbstractBlock* block = m_map->getCell(x, y);
-	if (block == NULL)
-	 return false;
-  return block->isColliable();
-}
-
-bool CBlocks::isCollidableBlock(const Vector& block) const
-{
-	AbstractBlock* b = m_map->getCell(block.x, block.y);
-	if (b == NULL)
-		return false;
-	return b->isColliable();
-}
-
-bool CBlocks::isInvizibleBlock(const Vector& block) const
-{
-	AbstractBlock* b = m_map->getCell(block.x, block.y);
-	if (b == NULL)
-		return false;
-	return b->isInvisible();
-}
-
-Vector CBlocks::toBlockCoordinates(const Vector& pixel, bool rounded) const
-{
-	if (rounded)
-		return round(pixel / m_block_size);
-	return  pixel / m_block_size;
-}
-
-Vector CBlocks::toPixelCoordinates(const Vector& block) const
-{
-	return  block*m_block_size;
-}
-
-bool CBlocks::isBlockInBounds(int x, int y) const
-{
-	if (x >= 0 && y >= 0 && x < cols() && y < rows())
-		return true;
-	return false;
-}
-
-bool CBlocks::isBlockInBounds(const Vector& block) const
-{
-	if (block.x >= 0 && block.y >= 0 && block.x < cols() && block.y < rows())
-		return true;
-	return false;
-}
-
-Vector CBlocks::collsionResponse(const Rect& body_rect, const Vector& body_speed, float delta_time, ECollisionTag& collision_tag)
-{
-	CBlocks* blocks = this;
-	Vector  own_size = body_rect.size();
-	float tile_size = blocks->blockSize().x;
-	Vector new_pos = body_rect.leftTop();
-
-	// Y axis
-	new_pos.x -= body_speed.x*delta_time;
-	for (int x = new_pos.x / tile_size; x < (new_pos.x + own_size.x) / tile_size; ++x)
-		for (int y = new_pos.y / tile_size; y < (new_pos.y + own_size.y) / tile_size; ++y)
-			if (blocks->isBlockInBounds(x, y) && (blocks->isCollidableBlock(x, y) || (blocks->isInvizibleBlock({ x,y }) && body_speed.y < 0)))
-			{
-				if (body_speed.y == 0 && body_rect.bottom() > (y+1) * tile_size) //fix for "body in the restricted area" collision bug
-				{
-					collision_tag |= ECollisionTag::cell;
-					collision_tag |= ECollisionTag::floor;
-					return new_pos + Vector::right*2; //push avay body onto right side
-				}
-				if (body_speed.y >= 0)
-				{
-					new_pos.y = y * tile_size - own_size.y;
-					collision_tag |= ECollisionTag::floor;
-				}
-				else if (body_speed.y < 0)
-				{
-					new_pos.y = y * tile_size + tile_size;
-					collision_tag |= ECollisionTag::cell;
-				}
-				goto stopYLoop;
-			}
-	stopYLoop:;
-	new_pos.x += body_speed.x*delta_time;
-
-	// X axis
-	for (int x = new_pos.x / tile_size; x < (new_pos.x + own_size.x) / tile_size; ++x)
-		for (int y = new_pos.y / tile_size; y < (new_pos.y + own_size.y) / tile_size; ++y)
-			if (blocks->isBlockInBounds(x, y) && blocks->isCollidableBlock(x, y))
-			{
-				if (body_speed.x > 0)
-				{
-					new_pos.x = x * tile_size - own_size.x;
-					collision_tag |= ECollisionTag::left;
-
-				}
-				else if (body_speed.x <  0)
-				{
-					new_pos.x = x * tile_size + tile_size;
-					collision_tag |= ECollisionTag::right;
+    for (auto obj : objects) {
+        if (obj->getBounds().isIntersect(block_rect)) {
+            if (obj->isTypeOf<Enemy>()) {
+                auto enemy = obj->castTo<Enemy>();
+                if (enemy->isAlive()) {
+                    enemy->takeDamage(DamageType::HIT_FROM_BELOW, attacker);
                 }
-				goto stopXLoop;
-			}
-	stopXLoop:;
-	return new_pos;
+            } else if (obj->isTypeOf<Mushroom>()) {
+                obj->castTo<Mushroom>()->kick();
+            } else  if (obj->isTypeOf<Coin>()) {
+                obj->castTo<Coin>()->kick();
+            }
+        }
+    };
 }
 
-CBlocks::~CBlocks()
-{
+AbstractBlock::~AbstractBlock() {
+};
 
-	for (int x = 0; x < m_map->width(); ++x)
-		for (int y = 0; y < m_map->height(); ++y)
-			delete m_map->getCell(x, y);
-	delete m_map;
-
+void AbstractBlock::update(int delta_time) {
 }
 
-std::vector<Vector> CBlocks::getBridgeBlocks()
-{
-	std::vector<Vector> bridge_cells;
-
-		for (int x = 0; x < m_map->width(); x++)
-			for (int y = 0; y < m_map->height(); y++)
-				if (m_map->getCell(x, y) && (m_map->getCell(x, y)->code() == AbstractBlock::BRIDGE_TILE_CODE ||
-					                         m_map->getCell(x, y)->code() == AbstractBlock::CHAIN_TILE_CODE))
-					bridge_cells.emplace_back(x, y);
-
-		//std::reverse(bridge_cells.begin(), bridge_cells.end());
-		return bridge_cells;
+void AbstractBlock::setPosition(const Vector& pos) {
+    m_position = pos;
 }
 
-//---------------------------------------------------------------------------------------------------------------
-
-COneBrick::COneBrick(const Vector& pos, const Vector& speed_vector)
-{
-	setPosition(pos);
-	m_speed = speed_vector;
-	m_sprite_sheet.load(*MarioGame().textureManager().get("Items"), { { 96,0,16,16 }, { 96,16,16,-16 } });
-
-	m_sprite_sheet.setAnimType(AnimType::forward_cycle);
-	m_sprite_sheet.setSpeed(0.005f);
+bool AbstractBlock::isColliable() const {
+    return m_colliable;
 }
 
-void COneBrick::draw(sf::RenderWindow* render_window)
+void AbstractBlock::setParent(Blocks* blocks) {
+    m_blocks = blocks;
+}
+
+TileCode AbstractBlock::code() const {
+    return m_id;
+}
+
+bool AbstractBlock::isInvisible() const {
+    return m_invisible;
+}
+
+void AbstractBlock::setInvisible(bool value) {
+    m_invisible = value;
+    m_colliable = !value;
+}
+
+bool isInvis(TileCode id) {
+    return (id == TileCode::INVIZ_UP) ||
+           (id == TileCode::INVIZ_COIN) ||
+           (id == TileCode::INVIZ_LADDER);
+}
+
+void AbstractBlock::drawTileSprite(TileCode id, const Vector& pos, sf::RenderWindow* wnd) {
+    SpriteSheet* spriteSheet = nullptr;
+
+    switch (id)
+    {
+    case TileCode::INVIZ_UP:       // fall through
+    case TileCode::INVIZ_COIN:     // fall through
+    case TileCode::INVIZ_LADDER:
+        // skip drawing
+        return;
+    case TileCode::BRICK:          // fall through
+    case TileCode::COIN_BOX:       // fall through
+    case TileCode::BRICK_LADDER:   // fall through
+    case TileCode::BRICK_LIVE_UP:  // fall through
+    case TileCode::BRICK_MUSHROOM: // fall through
+    case TileCode::BRICK_STAR:
+        id = TileCode::BRICK;
+        break;
+    case TileCode::QUESTION_ONE_COIN: // fall through
+    case TileCode::QUESTION_MUSHROOM:
+        spriteSheet = &s_questionBlockSprite;
+        break;
+    case TileCode::WATER:
+        spriteSheet = &s_waterSprite;
+        break;
+    case TileCode::LAVA:
+        spriteSheet = &s_lavaSprite;
+        break;
+    default:
+        break;
+    }
+
+    if (!spriteSheet)
+    {
+        spriteSheet = &s_staticTiles;
+        spriteSheet->setSpriteIndex(static_cast<int>(id) - 1);
+    }
+
+    spriteSheet->setPosition(pos);
+    spriteSheet->draw(wnd);
+}
+//---------------------------------------------------------------------------
+//! StaticBlock
+//---------------------------------------------------------------------------
+StaticBlock::StaticBlock(TileCode id)
+    : AbstractBlock(id) {
+}
+
+void StaticBlock::draw(sf::RenderWindow* render_window) {
+    drawTileSprite(code(), m_position, render_window);
+};
+
+void StaticBlock::hit(Mario* mario) {
+    MARIO_GAME.playSound("bump");
+}
+//---------------------------------------------------------------------------
+//! BricksBlock
+//---------------------------------------------------------------------------
+BrickBlock::BrickBlock()
+    : AbstractBlock(TileCode::BRICK) {
+}
+
+void BrickBlock::draw(sf::RenderWindow* render_window) {
+    drawTileSprite(code(), m_position + Vector::UP * m_kickedDiff, render_window);
+};
+
+void BrickBlock::update(int delta_time) {
+    if (m_kickedDir) {
+        m_kickedDiff -= m_kickedDir * delta_time / 10;
+
+        if ((m_kickedDir == -1) && (m_kickedDiff > 15)) {  // rising up until peak
+            m_kickedDir = 1;
+        } else if ((m_kickedDir == 1) && (m_kickedDiff < 0)) { // falling down until init pos
+            m_kickedDiff = 0;
+            m_kickedDir = 0;
+        }
+    }
+}
+
+void BrickBlock::hit(Mario* mario)
 {
-	m_sprite_sheet.setPosition(getPosition());
+    float x = m_position.x;
+    float y = m_position.y;
+
+    static const std::pair<Vector, Vector> bricks[] =
+    {
+        // relative position, speed vector
+        { Vector(0, 0),   Vector(-0.05f, -0.2f) },
+        { Vector(16, 0),  Vector(0.05f, -0.2f)  },
+        { Vector(0, 16),  Vector(-0.05f, -0.1f) },
+        { Vector(16, 16), Vector(0.05f, -0.1f)  }
+    };
+
+    if (!mario->isSmall()) { // crash box
+        for (auto& brick : bricks) {
+            MARIO_GAME.spawnObject<OneBrick>(m_position + brick.first, brick.second);
+        }
+
+        m_blocks->clearBlock(static_cast<int>(x / BLOCK_SIZE.x), static_cast<int>(y / BLOCK_SIZE.y));
+        MARIO_GAME.addScore(50);
+        MARIO_GAME.playSound("breakblock");
+    } else if (!m_kickedDir) { // just kick box
+        m_kickedDiff = 1;
+        m_kickedDir = -1;
+        MARIO_GAME.playSound("bump");
+    }
+
+    killCharactersAbove(mario);
+}
+//---------------------------------------------------------------------------
+//! CoinBox
+//---------------------------------------------------------------------------
+CoinBoxBlock::CoinBoxBlock(TileCode id)
+    : AbstractBlock(id) {
+}
+
+void CoinBoxBlock::draw(sf::RenderWindow* render_window) {
+    auto id = m_coinLeft ? code()
+                         : TileCode::KICKED_BOX;
+
+    drawTileSprite(id, m_position + Vector::UP * m_kickedValue, render_window);
+};
+
+void CoinBoxBlock::update(int delta_time) {
+    if (!m_kickedValue) {
+        return;
+    }
+
+    if (m_kickedDir == 0) {
+        m_kickedValue += delta_time / 10;
+        if (m_kickedValue > 15) {
+            m_kickedDir = 1;
+        }
+    } else if (m_kickedDir == 1) {
+        m_kickedValue -= delta_time / 10;
+        if (m_kickedValue < 0) {
+            m_kickedValue = 0;
+        }
+    }
+}
+
+void CoinBoxBlock::hit(Mario* mario)
+{
+    if ((m_kickedValue == 0) && m_coinLeft) {
+        m_kickedValue = 1;
+        m_kickedDir = 0;
+        --m_coinLeft;
+        Vector pos = m_position + Vector::UP * BLOCK_SIZE.y;
+
+        MARIO_GAME.spawnObject<TwistedCoin>(pos);
+        MARIO_GAME.addScore(100, pos);
+        MARIO_GAME.addCoin();
+        MARIO_GAME.playSound("bump");
+        killCharactersAbove(mario);
+    }
+
+    if (isInvisible()) {
+        setInvisible(false);
+    }
+}
+//---------------------------------------------------------------------------
+//! QuestionBlock
+//---------------------------------------------------------------------------
+QuestionBlock::QuestionBlock(TileCode id, PrizeFabricFunct prizeFabricFunct)
+    : AbstractBlock(id)
+    , m_prizeFabricFunct(prizeFabricFunct) {
+    setInvisible(isInvis(id));
+}
+
+void QuestionBlock::draw(sf::RenderWindow* render_window) {
+    if (!isInvisible()) {
+        auto id = !m_kicked ? code()
+                            : TileCode::KICKED_BOX;
+
+        drawTileSprite(id, m_position + Vector::UP * m_kickedValue, render_window);
+    }
+}
+
+void QuestionBlock::hit(Mario* mario) {
+    if (!m_kicked) {
+        m_kickedValue = 1;
+        m_kickedDir = 0;
+        m_kicked = true;
+        Vector pos = m_position + Vector::UP * BLOCK_SIZE.y;
+        GameObject* object = m_prizeFabricFunct(pos);
+        MARIO_GAME.currentScene()->addChild(object);
+        killCharactersAbove(mario);
+    }
+
+    MARIO_GAME.playSound("bump");
+    if (isInvisible()) {
+        setInvisible(false);
+    }
+}
+
+void QuestionBlock::update(int delta_time) {
+    if (!m_kickedValue) {
+        return;
+    }
+
+    if (m_kickedDir == 0) {
+        m_kickedValue += delta_time / 10;
+        if (m_kickedValue > 15) {
+            m_kickedDir = 1;
+        }
+    } else if (m_kickedDir == 1) {
+        m_kickedValue -= delta_time / 10;
+        if (m_kickedValue < 0) {
+            m_kickedValue = 0;
+        }
+    }
+}
+//---------------------------------------------------------------------------
+//! Background
+//---------------------------------------------------------------------------
+Background::Background() {
+    m_background.setTextureRect({0, 0, 1280, 720});
+}
+//---------------------------------------------------------------------------
+void Background::draw(sf::RenderWindow* render_window) {
+    render_window->draw(m_background);
+}
+//---------------------------------------------------------------------------
+void Background::update(int delta_time) {
+    Rect cameraRect = getParent()->castTo<MarioGameScene>()->cameraRect();
+    setBounds(cameraRect);
+    m_background.setPosition(cameraRect.leftTop());
+}
+//---------------------------------------------------------------------------
+void Background::onStarted() {
+    const std::string picture_name = getProperty("Picture").asString();
+    const bool nightViewOn = getProperty("NightViewFilter").isValid() && getProperty("NightViewFilter").asBool();
+
+    auto texture = MARIO_GAME.textureManager().get(picture_name);
+
+    m_background.setTexture(*texture);
+    m_background.setTextureRect({ 0, 0, 1280, 720 });
+    setSize({10, 10});
+    getParent()->findChildObjectByType<Blocks>()->enableNightViewFilter(nightViewOn);
+    moveToBack();
+}
+//---------------------------------------------------------------------------
+//! Blocks
+//---------------------------------------------------------------------------
+Blocks::Blocks(int cols, int rows, int tile_width, int tile_height) {
+    setName("Blocks");
+    m_tile_map = new TileMap<AbstractBlock*>(cols, rows, tile_width, tile_height);
+    m_tile_map->clear(nullptr);
+
+    AbstractBlock::init();
+
+    static const sf::String frag_shader =
+        "#version 120\n"\
+        "uniform sampler2D texture;\n"\
+        "void main()"\
+        "{"\
+        "   vec4 color = texture2D(texture, gl_TexCoord[0].xy);"\
+        "   float middle = (color.r + color.g)/2.f;"\
+        "   gl_FragColor = vec4(color.g,middle,middle,color.a);"\
+        "}";
+ 
+    m_nightViewFilterShader.loadFromMemory(frag_shader, sf::Shader::Fragment);
+    m_nightViewFilterShader.setUniform("texture", sf::Shader::CurrentTexture);
+}
+
+void Blocks::loadFromArray(const std::vector<char>& data, std::function<AbstractBlock*(char)> fabric) {
+   // m_tile_map->loadFromArray<char>(fabric, data);
+
+    if (data.size() != m_tile_map->cols() * m_tile_map->rows()) {
+        throw std::runtime_error("Blocks - invalid data size");
+    }
+
+    int block_cols = m_tile_map->cols();
+
+    for (int i = 0; i < data.size(); ++i) {
+        char id = data[i];
+
+        if (!id) {
+            continue;
+        }
+
+        auto block = fabric(id);
+        int x = i % block_cols;
+        int y = i / block_cols;
+
+        m_tile_map->setTile(x, y, block);
+
+        if (block) {
+            block->setPosition(Vector(x, y) * BLOCK_SIZE.x);
+            block->setParent(this);
+        }
+    }
+ 
+
+    setPosition({0, 0});
+    setSize(m_tile_map->getRenderBounds().size());
+}
+
+void Blocks::enableNightViewFilter(bool enable) {
+    m_nightViewFilter = enable;
+}
+
+void Blocks::draw(sf::RenderWindow* render_window) {
+    if (m_nightViewFilter) {
+        sf::Shader::bind(&m_nightViewFilterShader);
+    }
+
+    Rect cameraRect = getParent()->castTo<MarioGameScene>()->cameraRect();
+    const float block_size = blockSize().x;
+    Vector center = render_window->getView().getCenter();
+    Vector size = render_window->getView().getSize();
+ 
+    m_viewRect = Rect(toBlockCoordinates((center - size / 2)), toBlockCoordinates(size)).getIntersection(getRenderBounds());
+    m_viewRect.setWidth(m_viewRect.width() + 2);
+
+    forEachVisibleBlock([=](AbstractBlock* block, int, int) {
+            int idNum = static_cast<int>(block->code());
+            bool skipFilter = m_nightViewFilter && NIGHT_FILTER_EXCEPT.count(idNum);
+
+            if (skipFilter)
+                sf::Shader::bind(nullptr);
+
+            block->draw(render_window);
+
+            if (skipFilter) {
+                sf::Shader::bind(&m_nightViewFilterShader);
+            }
+        });
+
+    GameObject::draw(render_window);
+
+    if (m_nightViewFilter) {
+        sf::Shader::bind(nullptr);
+    }
+}
+
+void Blocks::update(int delta_time) {
+    if (!m_removeLaterList.empty()) {
+        for (auto object : m_removeLaterList) {
+            delete object;
+        }
+        m_removeLaterList.clear();
+    }
+
+    GameObject::update(delta_time);
+
+    AbstractBlock::s_questionBlockSprite.update(delta_time);
+    AbstractBlock::s_waterSprite.update(delta_time);
+    AbstractBlock::s_lavaSprite.update(delta_time);
+
+    forEachVisibleBlock([=](AbstractBlock* block, int, int) {
+            block->update(delta_time);
+        });
+}
+
+Rect Blocks::getBlockBounds(const Vector& block) const {
+    return Rect(Vector(block.x * BLOCK_SIZE.x, block.x * BLOCK_SIZE.y), BLOCK_SIZE);
+}
+
+const Vector& Blocks::blockSize() const {
+    return BLOCK_SIZE;
+}
+
+AbstractBlock* Blocks::getBlock(int x, int y) {
+    return m_tile_map->getTile(x, y);
+}
+
+void Blocks::clearBlock(int x, int y) {
+    m_removeLaterList.push_back(m_tile_map->getTile(x, y));
+    m_tile_map->setTile(x, y, nullptr);
+}
+
+void Blocks::hitBlock(int x, int y, Mario* mario) {
+    AbstractBlock* block = getBlock(x, y);
+    if (!block) {
+        return;
+    }
+ 
+    block->hit(mario);
+}
+
+int Blocks::rows() const {
+    return m_tile_map->rows();
+}
+
+int Blocks::cols() const {
+    return m_tile_map->cols();
+}
+
+Rect Blocks::getRenderBounds() const {
+    return m_tile_map->getRenderBounds();
+}
+
+bool Blocks::isCollidableBlock(const Vector& blockPos) const {
+    AbstractBlock* block = m_tile_map->getTile(blockPos.x, blockPos.y);
+    return block && block->isColliable();
+}
+
+bool Blocks::isInvizibleBlock(const Vector& blockPos) const {
+    AbstractBlock* block = m_tile_map->getTile(blockPos.x, blockPos.y);
+    return block && block->isInvisible();
+}
+
+Vector Blocks::toBlockCoordinates(const Vector& pixel) const {
+    return m_tile_map->getTileFromPointCoordinates(pixel);
+}
+
+Vector Blocks::toPixelCoordinates(const Vector& block) const {
+    return m_tile_map->getPointCoordinatesFromTile(block);
+}
+
+bool Blocks::isBlockInBounds(const Vector& block) const {
+    return m_tile_map->isTileInBounds(block);
+}
+
+Vector Blocks::collsionResponse(const Rect& body_rect, const Vector& body_speed, float delta_time, ECollisionTag& collision_tag) {
+    Vector own_size = body_rect.size();
+    Vector new_pos = body_rect.leftTop();
+    const float tile_size = blockSize().x;
+
+    Rect tilesRect = Rect(body_rect.leftTop(), own_size)
+        .moved(-Vector(body_speed.x * delta_time, 0.f))
+        .scaled(1 / tile_size);
+
+    // Y axis
+    for (int x = tilesRect.left(); x < tilesRect.right(); ++x) {
+        for (int y = tilesRect.top(); y < tilesRect.bottom(); ++y) {
+            Vector block(x, y);
+            if (isBlockInBounds(block) && (isCollidableBlock(block) || (isInvizibleBlock(block) && (body_speed.y < 0)))) {
+                if ((body_speed.y == 0) && (body_rect.bottom() > (y + 1) * tile_size)) { // fix for "body in the restricted area" collision bug
+                    collision_tag |= ECollisionTag::Y_AXIS;
+                    return new_pos + Vector::RIGHT * 2; // push avay body onto right side
+                } if (body_speed.y >= 0) {
+                    new_pos.y = y * tile_size - own_size.y;
+                    collision_tag |= ECollisionTag::FLOOR;
+                } else if (body_speed.y < 0) {
+                    new_pos.y = y * tile_size + tile_size;
+                    collision_tag |= ECollisionTag::CELL;
+                }
+                break;
+            }
+        }
+    }
+
+    tilesRect = Rect(new_pos, own_size).scaled(1 / tile_size);
+
+    // X axis
+    for (int x = tilesRect.left(); x < tilesRect.right(); ++x) {
+        for (int y = tilesRect.top(); y < tilesRect.bottom(); ++y) {
+            Vector block(x, y);
+            if (isBlockInBounds(block) && isCollidableBlock(block)) {
+                if (body_speed.x > 0) {
+                    new_pos.x = x * tile_size - own_size.x;
+                    collision_tag |= ECollisionTag::LEFT;
+                } else if (body_speed.x < 0) {
+                    new_pos.x = x * tile_size + tile_size;
+                    collision_tag |= ECollisionTag::RIGHT;
+                }
+                break;
+            }
+        }
+    }
+
+    return new_pos;
+}
+
+void Blocks::forEachVisibleBlock(const std::function<void(AbstractBlock*, int, int)>& func) {
+    for (int x = m_viewRect.left(); x < m_viewRect.right(); ++x) {
+        for (int y = m_viewRect.top(); y < m_viewRect.bottom(); ++y) {
+            if (!m_tile_map->isTileInBounds(Vector(x, y))) {
+                continue;
+            }
+
+            AbstractBlock* block = m_tile_map->getTile(x, y);
+
+            if (block) {
+                func(block, x, y);
+            }
+        }
+    }
+}
+
+Blocks::~Blocks() {
+    for (int x = 0; x < m_tile_map->cols(); ++x) {
+        for (int y = 0; y < m_tile_map->rows(); ++y) {
+            delete m_tile_map->getTile(x, y);
+        }
+    }
+
+    delete m_tile_map;
+}
+
+std::vector<Vector> Blocks::getBridgeBlocks() {
+    std::vector<Vector> bridge_cells;
+
+    for (int x = 0; x < m_tile_map->cols(); ++x) {
+        for (int y = 0; y < m_tile_map->rows(); ++y) {
+            auto* tile = m_tile_map->getTile(x, y);
+
+            if (tile && (tile->code() == TileCode::BRIDGE) ||
+                        (tile->code() == TileCode::CHAIN)) {
+                   bridge_cells.emplace_back(x, y);
+                }
+        }
+    }
+
+    return bridge_cells;
+}
+//---------------------------------------------------------------------------
+//! OneBrick
+//---------------------------------------------------------------------------
+OneBrick::OneBrick(const Vector& pos, const Vector& speed_vector) {
+    setName("OneBrick");
+    setPosition(pos);
+    m_speed = speed_vector;
+    m_sprite_sheet.load(*MARIO_GAME.textureManager().get("Items"), { { 96,0,16,16 }, { 96,16,16,-16 } });
+
+    m_sprite_sheet.setAnimType(AnimType::FORWARD_CYCLE);
+    m_sprite_sheet.setSpeed(0.005f);
+}
+
+void OneBrick::draw(sf::RenderWindow* render_window) {
+    m_sprite_sheet.setPosition(getPosition());
     m_sprite_sheet.draw(render_window);
 }
 
-void COneBrick::update(int delta_time) 
-{
-	m_sprite_sheet.update(delta_time);
-	m_speed.y += delta_time*0.0005f; //gravity;
-	move(m_speed*delta_time);
-	m_timer += delta_time;
-	if (m_timer > 3000)
-		getParent()->removeObject(this);
+void OneBrick::update(int delta_time)  {
+    m_sprite_sheet.update(delta_time);
+    m_speed.y += delta_time * 0.0005f; // gravity
+    move(m_speed*delta_time);
+    m_timer += delta_time;
+    if (m_timer > 3000) {
+       removeLater();
+    }
+}
+//---------------------------------------------------------------------------
+//! TwistedCoin
+//---------------------------------------------------------------------------
+TwistedCoin::TwistedCoin(const Vector& pos) {
+    auto& texture = *MARIO_GAME.textureManager().get("Items");
+    m_animator.create("twist", texture, Vector(0, 84), Vector(32, 32), 4, 1, 0.01f);
+    m_animator.create("shine", texture, Vector(0, 116), Vector(40, 32), 5, 1, 0.01f, AnimType::FORWARD);
+    m_animator.get("shine")->setOrigin(Vector(4, 0));
+
+    setPosition(pos);
+    m_speed = Vector::UP * 0.05f;
+    m_speed.y = -0.20f;
+    MARIO_GAME.addScore(100, pos);
+    MARIO_GAME.addCoin();
 }
 
-//-----------------------------------------------------------------------------------
-
-CTwistedCoin::CTwistedCoin(const Vector& pos, CMario* mario)
-{
-	setPosition(pos);
-	m_speed = Vector::up*0.05f;
-	m_speed.y = -0.20f;
-	m_animator.create("twist", *MarioGame().textureManager().get("Items"), Vector(0, 84), Vector(32, 32), 4, 1, 0.01f);
-	m_animator.create("shine", *MarioGame().textureManager().get("Items"), Vector(0, 116), Vector(40, 32), 5, 1, 0.01f, AnimType::forward);
-	m_animator.get("shine")->setOrigin(Vector(4, 0));
-	MarioGame().addScore(100, pos);
-	MarioGame().addCoin();
+void TwistedCoin::draw(sf::RenderWindow* render_window) {
+    m_animator.setPosition(getPosition());
+    m_animator.draw(render_window);
 }
 
-void CTwistedCoin::draw(sf::RenderWindow* render_window)
-{
-	m_animator.setPosition(getPosition());
-	m_animator.draw(render_window);
+void TwistedCoin::update(int delta_time) {
+    if (m_timer == 0) {
+        MARIO_GAME.playSound("coin");
+    } else if (m_timer < 700) {
+        m_speed.y += delta_time * 0.0005f; // gravity
+        move(m_speed * delta_time);
+    } else if (m_timer < 1200) {
+        m_animator.play("shine");
+    } else {
+        removeLater();
+    }
+
+    m_timer += delta_time;
+    m_animator.update(delta_time);
 }
 
-void CTwistedCoin::update(int delta_time)
-{
-	if (m_timer == 0)
-	{
-		MarioGame().playSound("coin");
-	}
-	else if (m_timer < 700)
-	{
-		m_speed.y += delta_time*0.0005f; //gravity;
-		move(m_speed*delta_time);
-	}
-	else if (m_timer < 1200)
-	{
-		m_animator.play("shine");
-	}
-	else
-	{
-		getParent()->removeObject(this);
-	}
-
-	m_timer += delta_time;
-	m_animator.update(delta_time);
+template <>
+PrizeFabricFunct prize<Mushroom>() {
+    return [](const Vector& pos) -> GameObject* {
+            if (MARIO_GAME.getPlayer()->isSmall()) {
+                return new Mushroom(pos);
+            } else {
+                return new FireFlower(pos);
+            }
+        };
 }
-

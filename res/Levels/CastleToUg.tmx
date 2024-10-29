@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="29" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="149">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="29" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="149">
  <tileset firstgid="1" name="Blocks" tilewidth="32" tileheight="32" tilecount="128" columns="8">
   <image source="../Textures/Tiles.png" width="256" height="512"/>
  </tileset>
  <objectgroup id="1" name="Object Layer 1">
-  <object id="126" name="Portal_to_Next_Level" type="LevelPortal" x="729.235" y="378.701" width="43.7614" height="74.1932">
+  <object id="126" name="Portal_to_Next_Level" type="LevelPortal" x="715.733" y="365.199" width="70.0896" height="103.222">
    <properties>
     <property name="ComebackPortal" value=""/>
     <property name="Direction" value="Right"/>
