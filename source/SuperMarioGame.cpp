@@ -7,6 +7,7 @@
 
 #include "Blocks.hpp"
 #include "Enemies.hpp"
+
 #include "Pickups.hpp"
 #include "Items.hpp"
 #include "SuperMarioGame.hpp"
@@ -72,14 +73,12 @@ MarioGame::MarioGame()
 
     //Load music
     const std::string music_dir = MARIO_RES_PATH + "Music/";
-    for (auto music : { "overworld", "underworld", "bowsercastle", "underwater", "invincibility" })
-    {
+    for (auto music : { "overworld", "underworld", "bowsercastle", "underwater", "invincibility" }) {
         musicManager().loadFromFile(music, music_dir + music + ".ogg");
     }
 
     //Configure input
-    std::vector<std::pair<std::string, std::vector<std::string>>> inputs =
-    {
+    std::vector<std::pair<std::string, std::vector<std::string>>> inputs = {
         { "Fire", { "LShift", "[1]" } },
         { "Jump", { "Space",  "[2]" } },
         { "Pause", { "Enter", "[0]" } },

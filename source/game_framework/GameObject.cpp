@@ -1,91 +1,43 @@
-
-//!
-//! \file       GameObject.cpp
-//! \author     Andriy Parfenyuk
-//! \date       14.3.2017
-//!
-//! \brief      Implementation of Blocks classes.
-//!
-//! \license    GNU
-//!
-/////////////////////////////////////////////////////////////////////////////
-
-//---------------------------------------------------------------------------
-// Includes
-//---------------------------------------------------------------------------
-
 #include <assert.h>
 #include <iostream>
 
 #include <Format.hpp>
 #include "GameObject.hpp"
 
-//---------------------------------------------------------------------------
-// Defines and Macros
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-// Typedefs
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-// Constants
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-// Local function prototypes
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-// Data
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-// Functions
-//---------------------------------------------------------------------------
-
-const Vector& GameObject::getPosition() const
-{
+const Vector& GameObject::getPosition() const {
     return m_pos;
 }
-//---------------------------------------------------------------------------
-void GameObject::setPosition(const Vector& point)
-{
+
+void GameObject::setPosition(const Vector& point) {
     onPositionChanged(point, m_pos);
     m_pos = point;
 }
-//---------------------------------------------------------------------------
-void GameObject::setPosition(float x, float y)
-{
+
+void GameObject::setPosition(float x, float y) {
     setPosition(Vector(x, y));
 }
-//---------------------------------------------------------------------------
-void GameObject::move(const Vector& point)
-{
+
+void GameObject::move(const Vector& point) {
     m_pos += point;
 }
-//---------------------------------------------------------------------------
-void GameObject::setSize(const Vector& size)
-{
+
+void GameObject::setSize(const Vector& size) {
     m_size = size;
 }
-//---------------------------------------------------------------------------
-Rect GameObject::getBounds() const
-{
+
+Rect GameObject::getBounds() const {
     return Rect(m_pos,m_size);
 }
-//---------------------------------------------------------------------------
-void GameObject::setBounds(const Rect& rect)
-{
+
+void GameObject::setBounds(const Rect& rect) {
     m_pos = rect.leftTop();
     m_size = rect.size();
 }
-//---------------------------------------------------------------------------
-void GameObject::setParent(GameObject* game_object)
-{
+
+void GameObject::setParent(GameObject* game_object) {
     m_parentObject = game_object;
 }
-//---------------------------------------------------------------------------
+
 GameObject* GameObject::getParent() const
 {
     return m_parentObject;
@@ -279,11 +231,10 @@ void GameObject::moveToBack()
         list->push_front(tmp);
     });
 }
-//---------------------------------------------------------------------------
+
 void GameObject::moveToFront()
 {
-    if (!getParent())
-    {
+    if (!getParent()) {
        // add warning
        return;
     }
@@ -298,11 +249,9 @@ void GameObject::moveToFront()
         list->push_back(tmp);
     });
 }
-//---------------------------------------------------------------------------
-void GameObject::moveUnderTo(GameObject* obj)
-{
-    if (!getParent())
-    {
+
+void GameObject::moveUnderTo(GameObject* obj) {
+    if (!getParent()) {
         // add warning
         return;
     }

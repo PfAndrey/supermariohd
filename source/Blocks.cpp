@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "Blocks.hpp"
-#include "Enemies.hpp"
+#include "Enemy.hpp"
 #include "Pickups.hpp"
 #include "SuperMarioGame.hpp"
 
@@ -317,17 +317,17 @@ void QuestionBlock::update(int delta_time) {
 Background::Background() {
     m_background.setTextureRect({0, 0, 1280, 720});
 }
-//---------------------------------------------------------------------------
+
 void Background::draw(sf::RenderWindow* render_window) {
     render_window->draw(m_background);
 }
-//---------------------------------------------------------------------------
+
 void Background::update(int delta_time) {
     Rect cameraRect = getParent()->castTo<MarioGameScene>()->cameraRect();
     setBounds(cameraRect);
     m_background.setPosition(cameraRect.leftTop());
 }
-//---------------------------------------------------------------------------
+
 void Background::onStarted() {
     const std::string picture_name = getProperty("Picture").asString();
     const bool nightViewOn = getProperty("NightViewFilter").isValid() && getProperty("NightViewFilter").asBool();
@@ -392,7 +392,6 @@ void Blocks::loadFromArray(const std::vector<char>& data, std::function<Abstract
         }
     }
  
-
     setPosition({0, 0});
     setSize(m_tile_map->getRenderBounds().size());
 }
