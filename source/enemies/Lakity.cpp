@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "SuperMarioGame.hpp"
 #include "Lakity.hpp"
 

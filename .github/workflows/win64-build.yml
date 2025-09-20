@@ -1,91 +1,60 @@
-name: Windows x64 Build & Package
-
+name: Win64 Build
 on:
-  push:
-    branches: [ main, master ]
-    tags: [ 'v*' ]
+  push: { branches: [ main, master ], tags: [ 'v*' ] }
   pull_request:
-
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
-
     env:
       BUILD_TYPE: Release
       OUTPUT_DIR: Build
       ARCH: x64
-      BUILD_DIR: build-x64               # per-arch build directory
-
+      BUILD_DIR: build-x64
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Show toolchain versions
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Toolchain info
         shell: pwsh
         run: |
           cmake --version
           ninja --version || echo "Ninja not used (VS generator expected)"
-
-      # Ensure a clean build dir to avoid generator/platform mismatch
-      - name: Clean build dir (if exists)
+      - name: Clean build dir
         shell: pwsh
         run: |
           if (Test-Path $env:BUILD_DIR) { Remove-Item -Recurse -Force $env:BUILD_DIR }
-
-      # Cache only the per-arch _deps to avoid re-downloading SFML/tinyxml2
-      - name: Cache CMake deps
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
-          path: |
-            ${{ env.BUILD_DIR }}/_deps
+          path: ${{ env.BUILD_DIR }}/_deps
           key: ${{ runner.os }}-${{ env.ARCH }}-${{ env.BUILD_TYPE }}-cmake-deps-${{ hashFiles('cmake/**', '**/CMakeLists.txt') }}
-
       - name: Configure (CMake, x64)
         shell: pwsh
         run: >
-          cmake -S . -B $env:BUILD_DIR
-          -A $env:ARCH
-          -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE
-
+          cmake -S . -B $env:BUILD_DIR -A $env:ARCH -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE
       - name: Build
         shell: pwsh
         run: cmake --build $env:BUILD_DIR --config $env:BUILD_TYPE --parallel
-
-      # Validate outputs: only the exe and res/ are required
       - name: Verify outputs
         shell: pwsh
         run: |
           $binDir = Join-Path $PWD $env:OUTPUT_DIR
-          $exe = Join-Path $binDir "SuperMario.exe"
-          $res = Join-Path $binDir "res"
-          if (-not (Test-Path $exe)) { throw "SuperMario.exe not found at $exe" }
-          if (-not (Test-Path $res)) { throw "res folder not found at $res" }
-          Write-Host "Artifacts OK: $exe and $res"
-
-      - name: Package zip (exe + res/)
+          if (-not (Test-Path (Join-Path $binDir "SuperMario.exe"))) { throw "exe missing" }
+          if (-not (Test-Path (Join-Path $binDir "res"))) { throw "res missing" }
+      - name: Package zip (Windows)
         shell: pwsh
         run: |
           $binDir = Join-Path $PWD $env:OUTPUT_DIR
-          $exe = Join-Path $binDir "SuperMario.exe"
-          $res = Join-Path $binDir "res"
-          $zipName = "SuperMario-x64-${{ env.BUILD_TYPE }}.zip"
-          if (Test-Path $zipName) { Remove-Item $zipName -Force }
-          Compress-Archive -Path $exe, $res -DestinationPath $zipName
-          Write-Host "Created $zipName"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+          $zip = "SuperMario-windows-x64-${{ env.BUILD_TYPE }}.zip"
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Compress-Archive -Path (Join-Path $binDir "SuperMario.exe"), (Join-Path $binDir "res") -DestinationPath $zip
+      - uses: actions/upload-artifact@v4
         with:
-          name: SuperMario-x64-${{ env.BUILD_TYPE }}
-          path: SuperMario-x64-${{ env.BUILD_TYPE }}.zip
+          name: SuperMario-windows-x64-${{ env.BUILD_TYPE }}
+          path: SuperMario-windows-x64-${{ env.BUILD_TYPE }}.zip
           if-no-files-found: error
-
       - name: Upload to GitHub Release (on tag)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: SuperMario-x64-${{ env.BUILD_TYPE }}.zip
+          files: SuperMario-windows-x64-${{ env.BUILD_TYPE }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

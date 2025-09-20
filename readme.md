@@ -1,9 +1,11 @@
 # SuperMarioHD
-![Build](https://github.com/PfAndrey/SuperMarioHD/actions/workflows/win64-build.yml/badge.svg)
+![Win64](https://img.shields.io/github/actions/workflow/status/PfAndrey/SuperMarioHD/win64-build.yml?branch=master&label=windows%20x64&logo=windows&logoColor=white)
+![Ubuntu](https://img.shields.io/github/actions/workflow/status/PfAndrey/SuperMarioHD/linux-build.yml?branch=master&label=ubuntu%20gcc&logo=ubuntu&logoColor=white)
 ![Latest Tag](https://img.shields.io/github/v/tag/PfAndrey/SuperMarioHD?display_name=tag)
+---
 ![MARIO logo](https://github.com/PfAndrey/supermariohd/blob/master/res/Screen.jpg?raw=true)
-Cross-platform HD remake of Super Mario Bros. (NES, 1985).  
-Project was created for learning purposes only.  
+Cross-platform HD remake of Super Mario Bros. (NES, 1985).
+Project was created for learning purposes only.
 The game demo on the YouTube: https://youtu.be/RJ181cc_AMI
 
 ## Windows
