@@ -107,7 +107,10 @@ target_link_libraries(SuperMario
 )
 
 if (UNIX AND NOT APPLE)
-    target_link_libraries(SuperMario  stdc++ m pthread)
+    target_link_libraries(SuperMario
+    PRIVATE
+    m
+    pthread)
 endif()
 
 add_custom_command(TARGET SuperMario POST_BUILD

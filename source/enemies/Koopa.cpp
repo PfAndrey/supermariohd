@@ -1,4 +1,6 @@
-﻿#include "SuperMarioGame.hpp"
+﻿#include <cmath>
+
+#include "SuperMarioGame.hpp"
 #include "Koopa.hpp"
 
 struct StateActions {

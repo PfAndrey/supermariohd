@@ -1,0 +1,54 @@
+name: Ubuntu gcc Build & Package
+on:
+  push: { branches: [ main, master ], tags: [ 'v*' ] }
+  pull_request:
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TYPE: Release
+      BUILD_DIR: build-ubuntu-x64
+      OUTPUT_DIR: ${{ github.workspace }}/build-ubuntu-x64
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential cmake zip \
+            libx11-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev \
+            libgl1-mesa-dev libudev-dev \
+            libopenal-dev libvorbis-dev libflac-dev \
+            libfreetype6-dev
+      - name: Clean build dir
+        run: rm -rf "$BUILD_DIR"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_DIR }}/_deps
+          key: ${{ runner.os }}-gcc-${{ env.BUILD_TYPE }}-cmake-deps-${{ hashFiles('cmake/**', '**/CMakeLists.txt') }}
+      - name: Configure (CMake, gcc)
+        run: cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+      - name: Build
+        run: cmake --build "$BUILD_DIR" --config "$BUILD_TYPE" --parallel
+      - name: Verify outputs
+        run: |
+          [ -f "$OUTPUT_DIR/SuperMario" ] || (echo "bin missing" && exit 1)
+          [ -d "$OUTPUT_DIR/res" ] || (echo "res missing" && exit 1)
+      - name: Package zip (Linux)
+        run: |
+          ZIP="SuperMario-linux-x64-${BUILD_TYPE}.zip"
+          rm -f "$ZIP"
+          zip -r "$ZIP" "$OUTPUT_DIR/SuperMario" "$OUTPUT_DIR/res"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SuperMario-linux-x64-${{ env.BUILD_TYPE }}
+          path: SuperMario-linux-x64-${{ env.BUILD_TYPE }}.zip
+          if-no-files-found: error
+      - name: Upload to GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: SuperMario-linux-x64-${{ env.BUILD_TYPE }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

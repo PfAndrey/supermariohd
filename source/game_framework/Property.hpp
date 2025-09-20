@@ -1,6 +1,7 @@
 #ifndef PROPERTY_HPP
 #define PROPERTY_HPP
 
+#include <cstdint>
 #include <string>
 
 class Property {
