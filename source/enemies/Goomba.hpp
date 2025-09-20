@@ -26,9 +26,13 @@ private:
     enum class State : uint8_t {
         DEACTIVATED = 0,
         WALKING     = 1,
-        CRAMPED     = 2,
+        SQUASHED    = 2,
         DIED        = 3
     };
+
+    void enterWalking();
+    void enterSquashed();
+    void enterDead();
 
     fsm::StateMachine<State, Event> m_stateMachine;
     float m_timer = 0;

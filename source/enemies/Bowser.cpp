@@ -13,9 +13,9 @@ Bowser::Bowser() {
     m_animator.create("pre_jump", *texture, { 0,80 }, { 91,79 }, 2, 1, ANIM_SPEED, AnimType::FORWARD_STOP);
     m_animator.create("up_jump", *texture, { 182,80,84,87 });
     m_animator.create("down_jump", *texture, { 266,80, 84,87 });
-    m_animator.get("middle_fire")->setOrigin(Vector::DOWN * 16);
-    m_animator.get("land_fire")->setOrigin(Vector::DOWN * 16);
-    m_animator.get("turn")->setOrigin(Vector::DOWN * 5);
+    m_animator.setOrigin("middle_fire", Vector::DOWN * 16);
+    m_animator.setOrigin("land_fire", Vector::DOWN * 16);
+    m_animator.setOrigin("turn", Vector::DOWN * 5);
 }
 
 void Bowser::draw(sf::RenderWindow* render_window) {
@@ -65,12 +65,12 @@ void Bowser::enterState(State state) {
         break;
     case State::NO_BRIDGE:
         playAnimation("walk");
-        m_animator.get("walk")->setSpeed(ANIM_SPEED * 2.5f);
+        m_animator.setSpeed("walk", ANIM_SPEED * 2.5f);
         m_delay_timer = 1000;
         break;
     case State::FALL:
         m_animator.flipX(m_direction == Vector::RIGHT);
-        m_animator.get("walk")->setSpeed(0);
+        m_animator.setSpeed("walk", 0);
         MARIO_GAME.playSound("bowser_falls");
         m_velocity = Vector::ZERO;
         break;
@@ -190,8 +190,7 @@ void Bowser::onStarted() {
 void Bowser::takeDamage(DamageType damageType, Character* attacker) {
     if (damageType == DamageType::HIT_FROM_ABOVE) {
         attacker->takeDamage(DamageType::KICK, this);
-    }
-    else {
+    } else {
         --m_lives;
         if (m_lives < 0) {
             enterState(State::DIED);

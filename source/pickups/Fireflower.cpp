@@ -2,11 +2,12 @@
 #include "Blocks.hpp"
 #include "Fireflower.hpp"
 
-FireFlower::FireFlower(const Vector& pos) {
+FireFlower::FireFlower(const Vector& pos) 
+    : m_sprite(*MARIO_GAME.textureManager().get("Items"),
+        {{ 32, 212 }, { 32, 0 }})
+{
     setSize({ 31, 1 });
     setPosition(pos.x, pos.y + 32);
-    m_sprite.setTexture(*MARIO_GAME.textureManager().get("Items"));
-    m_sprite.setTextureRect(sf::IntRect(32, 212, 32, 0));
 }
 
 void FireFlower::draw(sf::RenderWindow* render_window) {
@@ -29,7 +30,7 @@ void FireFlower::update(int delta_time) {
     case State::GROVING: {
         int height = m_timer * GROVING_RATE;
         if (height <= 32) {
-            m_sprite.setTextureRect({ m_sprite.getTextureRect().left, m_sprite.getTextureRect().top,32, height });
+            m_sprite.setTextureRect({{m_sprite.getTextureRect().position.x, m_sprite.getTextureRect().position.y}, {32, height} });
             auto old_bounds = getBounds();
             old_bounds.setTop(old_bounds.bottom() - height);
             setBounds(old_bounds);
@@ -44,7 +45,7 @@ void FireFlower::update(int delta_time) {
         if (sprite_index > 2) {
             sprite_index = 5 - sprite_index;
         }
-        m_sprite.setTextureRect({ 32 + sprite_index * 32 ,212,32,32 });
+        m_sprite.setTextureRect({{32 + sprite_index * 32 ,212}, {32,32} });
 
         if (m_mario->getBounds().isIntersect(getBounds())) {
             action();

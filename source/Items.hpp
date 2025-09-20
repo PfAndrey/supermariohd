@@ -77,7 +77,7 @@ private:
 
 class FallingPlatform : public Platform {
 public:
-    FallingPlatform() = default;
+    FallingPlatform();
     void draw(sf::RenderWindow* render_window) override;
     void update(int delta_time) override;
     Vector getSpeedVector() override;

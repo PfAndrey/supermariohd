@@ -503,9 +503,9 @@ std::map<std::string, Property> parseProperties(tinyxml2::XMLElement* object) {
     //common properties
     parsed["x"] = toFloat(object->Attribute("x"));
     parsed["y"] = toFloat(object->Attribute("y"));
-    parsed["width"] = toFloat(object->Attribute("width"));
+    parsed["width"]  = toFloat(object->Attribute("width"));
     parsed["height"] = toFloat(object->Attribute("height"));
-    parsed["name"] = toString(object->Attribute("name"));
+    parsed["name"]   = toString(object->Attribute("name"));
  
     //specific properties
     tinyxml2::XMLElement* properties = object->FirstChildElement("properties");
@@ -763,10 +763,10 @@ void MarioGameScene::draw(sf::RenderWindow* render_window) {
 }
 
 void MarioGameScene::events(const sf::Event& event) {
-    if (event.type == sf::Event::Resized) {
+    //if (event.is<sf::Event::Resized>()) {
        // screen_size = Vector(event.size.width / scale_factor, event.size.height / scale_factor);
        // m_view.setSize(screen_size);
-    }
+   // }
 }
 
 Vector MarioGameScene::pointToScreen(const Vector& vector) {
@@ -849,11 +849,11 @@ MarioGUI::MarioGUI() {
 
     const auto scr_size = MARIO_GAME.screenSize();
 
-    m_game_logo = new Label(sf::Sprite(*MARIO_GAME.textureManager().get("Logo"), { 0,0, 750, 300 }));
+    m_game_logo = new Label(sf::Sprite(*MARIO_GAME.textureManager().get("Logo"), sf::IntRect( {0,0}, {750, 300})));
     m_game_logo->setPosition(scr_size.x * 0.3f, scr_size.y * 0.25f);
     addChild(m_game_logo);
 
-    m_menu_selector = new Label(sf::Sprite(*MARIO_GAME.textureManager().get("Items"), { 128, 150, 32, 32 }));
+    m_menu_selector = new Label(sf::Sprite(*MARIO_GAME.textureManager().get("Items"), sf::IntRect( {128, 150}, {32, 32})));
    // m_menu_selector->setPosition(scr_size.x * 0.8, scr_size.y * 2);
     addChild(m_menu_selector);
 
@@ -906,7 +906,7 @@ void MarioGUI::update(int delta_time) {
         const auto scr_size = MARIO_GAME.screenSize();
         float x = 0.85f + 0.15f*cos(m_tmr * 0.01f);
         m_menu_selector->setPosition(scr_size.x * 0.4 + 16*(1-x), scr_size.y * 0.57 + 16 *(1-x));
-        m_menu_selector->getSprite().setScale(x,x);
+        m_menu_selector->getSprite().setScale({x,x});
     }
 }
 

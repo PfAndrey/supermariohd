@@ -48,7 +48,8 @@ MarioBullet::MarioBullet(const Vector& pos, const Vector& direction) {
     setPosition(pos);
     m_speed = direction * SPEED;
     m_animator.create("fly", *MARIO_GAME.textureManager().get("Mario"),
-        { { 0,0,16,16 },{ 16,0,16,16 },{ 16,0,-16,16 },{ 16,16,16,-16 } }, 0.01f);
+        { { {0,0},{16,16} },{ {16,0},{16,16} },{ {16,0},{-16,16}},{ {16,16}, {16,-16} } }, 0.01f);
+
     m_animator.create("splash", *MARIO_GAME.textureManager().get("Mario"),
         Vector(31,0), Vector(16,16), 3,1, 0.02f, AnimType::FORWARD_BACKWARD_CYCLE);
 }
@@ -135,11 +136,11 @@ Mario::Mario() {
     m_animator->create("slip_big", texture, { 128,32,32,64 });
     m_animator->create("seat_big", texture, { 192,52,32,44 });
     m_animator->create("climb_big", texture, Vector(256, 32), Vector(32, 64), 2, 1, 0.01f);
-    m_animator->create("growing", texture, { { 0,32,32,64 }, { 0,96,32,32 } }, 0.01f );
+    m_animator->create("growing", texture, { { {0,32},{32,64} }, { {0,96}, {32,32} } }, 0.01f );
     m_animator->setSpriteOffset("growing", 1, { 0, 32 });
-    m_animator->create("demoting", texture, { { 401,32,40,64 },{ 288,96,32,32 } }, 0.01f);
+    m_animator->create("demoting", texture, { { {401,32}, {40,64}},{{288,96}, {32,32}} }, 0.01f);
     m_animator->setSpriteOffset("demoting", 1, { 4, 32 });
-    m_animator->create("firing", texture, { { 0,32,32,64 },{ 224,32,32,64 } }, 0.01f);
+    m_animator->create("firing", texture, { {{0,32}, {32,64}}, {{224,32}, {32,64}} }, 0.01f);
     m_animator->create("idle_small", texture, { 0,96,32,32 });
     m_animator->create("walk_small", texture, { 32, 96 }, { 32, 32 }, 3, 1, 0.01f);
     m_animator->create("swim_small", texture,   { 288, 96 }, { 32, 32 }, 3, 1, 0.01f);
@@ -156,7 +157,7 @@ Mario::Mario() {
     m_black_pallete.create({ sf::Color(64,64,128), sf::Color(64,96,192), sf::Color(160,32,0), sf::Color(192,0,64), sf::Color(224,32,64) },
                            { sf::Color(128,64,0), sf::Color(160,96,0),sf::Color(20,20,10),sf::Color(30,30,20), sf::Color(0,0,0) });
     m_animator->play("idle_small");
-    m_animator->get("seat_big")->setOrigin(-Vector::UP*12);
+    m_animator->setOrigin("seat_big", -Vector::UP*12);
 }
 
 bool Mario::isAlive() const {

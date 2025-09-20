@@ -10,9 +10,9 @@ struct StateActions {
 Koopa::Koopa() {
     setSize({ 32, 48 });
     const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
-    m_animator.create("walk",   texture, { { 0,32,32,48 },{ 32,32,32,48 } }, 0.005f);
+    m_animator.create("walk",   texture, { {{0,32}, {32,48}},{{32,32}, {32,48}} }, 0.005f);
     m_animator.create("flying", texture, { 224,32 }, { 32, 48 }, 2, 1, 0.005f);
-    m_animator.create("climb",  texture, { { 64,48,32,32 },{ 192,48,32,32 } }, 0.005f);
+    m_animator.create("climb",  texture, { {{64,48}, {32,32}},{{192,48}, {32,32}} }, 0.005f);
     m_animator.create("hidden", texture, { 64,48,32,32 });
     m_animator.create("bullet", texture, { 64, 48 }, { 32, 32 }, 4, 1, 0.01f);
     m_animator.create("fall",   texture, { 0,80, 32, -48 });

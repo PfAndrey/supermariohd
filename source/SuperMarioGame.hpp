@@ -75,7 +75,7 @@ private:
     void updateMusic();
     std::string nextLevelName() const;
 
-    const std::string FIRST_STAGE_NAME = "WORLD 3-1";
+    const std::string FIRST_STAGE_NAME = "WORLD 1-1";
     GameState m_game_state = GameState::MAIN_MENU;
     TimeOutState m_time_out_state = TimeOutState::NONE;
     TimerManager m_timer;

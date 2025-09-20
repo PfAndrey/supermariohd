@@ -1,6 +1,0 @@
-[submodule "ext/SFML"]
-	path = ext/SFML
-	url = git://github.com/SFML/SFML.git
-[submodule "ext/tinyxml2"]
-	path = ext/tinyxml2
-	url = git://github.com/leethomason/tinyxml2.git

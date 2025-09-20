@@ -314,18 +314,20 @@ void QuestionBlock::update(int delta_time) {
 //---------------------------------------------------------------------------
 //! Background
 //---------------------------------------------------------------------------
-Background::Background() {
-    m_background.setTextureRect({0, 0, 1280, 720});
+Background::Background() 
+{
 }
 
 void Background::draw(sf::RenderWindow* render_window) {
-    render_window->draw(m_background);
+    if (m_background) {
+        render_window->draw(*m_background);
+    }
 }
 
 void Background::update(int delta_time) {
     Rect cameraRect = getParent()->castTo<MarioGameScene>()->cameraRect();
     setBounds(cameraRect);
-    m_background.setPosition(cameraRect.leftTop());
+    m_background->setPosition(cameraRect.leftTop());
 }
 
 void Background::onStarted() {
@@ -333,9 +335,8 @@ void Background::onStarted() {
     const bool nightViewOn = getProperty("NightViewFilter").isValid() && getProperty("NightViewFilter").asBool();
 
     auto texture = MARIO_GAME.textureManager().get(picture_name);
+    m_background = std::make_unique<sf::Sprite>(*texture, sf::IntRect({0,0}, {1280, 720}));
 
-    m_background.setTexture(*texture);
-    m_background.setTextureRect({ 0, 0, 1280, 720 });
     setSize({10, 10});
     getParent()->findChildObjectByType<Blocks>()->enableNightViewFilter(nightViewOn);
     moveToBack();
@@ -350,7 +351,7 @@ Blocks::Blocks(int cols, int rows, int tile_width, int tile_height) {
 
     AbstractBlock::init();
 
-    static const sf::String frag_shader =
+    static const std::string frag_shader =
         "#version 120\n"\
         "uniform sampler2D texture;\n"\
         "void main()"\
@@ -360,7 +361,7 @@ Blocks::Blocks(int cols, int rows, int tile_width, int tile_height) {
         "   gl_FragColor = vec4(color.g,middle,middle,color.a);"\
         "}";
  
-    m_nightViewFilterShader.loadFromMemory(frag_shader, sf::Shader::Fragment);
+    m_nightViewFilterShader.loadFromMemory(frag_shader, sf::Shader::Type::Fragment);
     m_nightViewFilterShader.setUniform("texture", sf::Shader::CurrentTexture);
 }
 
@@ -613,7 +614,7 @@ OneBrick::OneBrick(const Vector& pos, const Vector& speed_vector) {
     setName("OneBrick");
     setPosition(pos);
     m_speed = speed_vector;
-    m_sprite_sheet.load(*MARIO_GAME.textureManager().get("Items"), { { 96,0,16,16 }, { 96,16,16,-16 } });
+    m_sprite_sheet.load(*MARIO_GAME.textureManager().get("Items"), { { {96,0},{16,16} }, { {96,16},{16,-16} } });
 
     m_sprite_sheet.setAnimType(AnimType::FORWARD_CYCLE);
     m_sprite_sheet.setSpeed(0.005f);
@@ -640,7 +641,7 @@ TwistedCoin::TwistedCoin(const Vector& pos) {
     auto& texture = *MARIO_GAME.textureManager().get("Items");
     m_animator.create("twist", texture, Vector(0, 84), Vector(32, 32), 4, 1, 0.01f);
     m_animator.create("shine", texture, Vector(0, 116), Vector(40, 32), 5, 1, 0.01f, AnimType::FORWARD);
-    m_animator.get("shine")->setOrigin(Vector(4, 0));
+    m_animator.setOrigin("shine", {4, 0});
 
     setPosition(pos);
     m_speed = Vector::UP * 0.05f;

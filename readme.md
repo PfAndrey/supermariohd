@@ -1,4 +1,6 @@
-# SuperMarioHD  
+# SuperMarioHD
+![Build](https://github.com/PfAndrey/SuperMarioHD/actions/workflows/win64-build.yml/badge.svg)
+![Latest Tag](https://img.shields.io/github/v/tag/PfAndrey/SuperMarioHD?display_name=tag)
 ![MARIO logo](https://github.com/PfAndrey/supermariohd/blob/master/res/Screen.jpg?raw=true)
 Cross-platform HD remake of Super Mario Bros. (NES, 1985).  
 Project was created for learning purposes only.  
@@ -14,12 +16,9 @@ Visual Studio Community: https://visualstudio.microsoft.com/downloads/ or MinGW 
 **3. Install CMake:**  
 	https://cmake.org/download
 
-**4. Install OpenAL:**  
-	https://www.openal.org/downloads
-
-**5. Open git-bash and type:**  
+**4. Open git-bash and type:**
 ```console
-git clone https://github.com/PfAndrey/supermariohd.git --recursive
+git clone https://github.com/PfAndrey/supermariohd.git
 cd supermariohd 
 mkdir build && cd build
 cmake ..
@@ -40,7 +39,7 @@ sudo apt-get -y install libx11-dev libudev-dev xorg-dev freeglut3-dev libalut-de
 
 **3. download mario repo**
 ```console
-git clone https://github.com/PfAndrey/supermariohd.git --recursive
+git clone https://github.com/PfAndrey/supermariohd.git
 ```
 
 **4. build project** 

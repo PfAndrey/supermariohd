@@ -54,7 +54,29 @@ inline bool ResourceManager<sf::Music>::loadFromFile(const std::string& name, co
         std::cerr << "can't load resource from file: " << file_path << std::endl;
         return false;
     }
-    m_resources[name]->setLoop(true);
+    m_resources[name]->setLooping(true);
+    return true;
+}
+
+template <>
+inline bool ResourceManager<sf::Font>::loadFromFile(const std::string& name, const std::string& file_path) {
+    auto it = m_resources.find(name);
+    if (it != m_resources.end())
+    {
+        LOG("RES_MNG", ERROR, "Resource with name %s already exists", name.c_str());
+        return false;
+    }
+
+    auto resource = new sf::Font();
+    if (!resource->openFromFile(file_path))
+    {
+        LOG("RES_MNG", ERROR, "Failed to load %s", name.c_str());
+        return false;
+    }
+
+    LOG("RES_MNG", DEBUG, "Loaded resource '%s' from file %s", name.c_str(), file_path.c_str());
+
+    m_resources[name] = resource;
     return true;
 }
 
@@ -99,7 +121,7 @@ private:
     MusicManager m_music_manager;
     EventManager m_event_manager;
     InputManager m_input_manager;
-    sf::Sound m_sounds_buf[40];
+    std::vector<sf::Sound> m_activeSounds;
 
     std::unique_ptr<sf::RenderWindow> m_window;
 
@@ -180,7 +202,7 @@ public:
     void create(const std::string& name, const sf::Texture& texture, const Vector& off_set, const Vector& size,
                 int cols, int rows, float speed, AnimType anim_type = AnimType::FORWARD_CYCLE);
     void create(const std::string& name, const sf::Texture& texture, const Rect& rect);
-    void create(const std::string& name, const sf::Texture& texture, const std::vector<sf::IntRect>& rects, float speed);
+    void create(const std::string& name, const sf::Texture& texture, const std::vector<Rect>& rects, float speed);
     void play(const std::string& name);
     void update(int delta_time) override;
     void draw(sf::RenderWindow* wnd) override;
@@ -190,7 +212,7 @@ public:
     void setSpriteOffset(const std::string& anim_name, int sprite_index, const Vector& value);
     void setPallete(Pallete* pallete);
     void scale(float fX, float fY);
-    SpriteSheet* get(const std::string& str);
+    void setOrigin(const std::string& animName, const Vector& diff);
 
 private:
     Pallete* m_pallete = nullptr;
@@ -226,7 +248,6 @@ class Label : public GameObject {
 public:
     enum { left, center };
     Label();
-    Label(const std::string& str);
     Label(const sf::Sprite& sprite);
     void setSprite(const sf::Sprite& sprite);
     void setString(const std::string& str);
@@ -239,7 +260,7 @@ public:
     void setBounds(int x, int y, int w, int h);
     Rect getBounds() const override;
     void setFontName(const sf::Font& font);
-    void setFontStyle(sf::Uint32 style);
+    void setFontStyle(uint32_t style);
     bool contains(const Vector& point) const;
     Label* clone() const;
     sf::Sprite& getSprite();
@@ -253,9 +274,9 @@ protected:
 private:
     void init();
     int m_text_align = center;
-    sf::Sprite m_sprite;
+    std::unique_ptr<sf::Sprite> m_sprite;
+    std::unique_ptr<sf::Text> m_text;
     Rect m_rect;
-    sf::Text m_text;
 };
 
 #endif // GAME_ENGINE_HPP
