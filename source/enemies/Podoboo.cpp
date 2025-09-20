@@ -31,27 +31,25 @@ void Podoboo::update(int delta_time) {
     Enemy::update(delta_time);
     m_timer += delta_time;
 
-    if (getPosition().y > m_center.y) {
-        m_speed += Vector::UP * m_acceleration * delta_time;
-    }
-    else {
-        m_speed += Vector::DOWN * m_acceleration * delta_time;
-    }
+    Vector forceVector = (getPosition().y > m_center.y) ? Vector::UP
+                                                        : Vector::DOWN;
+    m_velocity += forceVector * m_acceleration * delta_time;
+ 
 
     if (m_timer > PERIOD_TIME) { // synchronization
         setPosition(m_center);
-        m_speed = Vector::UP * m_acceleration * PERIOD_TIME * 0.25;
+        m_velocity = Vector::UP * m_acceleration * PERIOD_TIME * 0.25;
         m_timer = 0;
     }
 
     m_animator.update(delta_time);
-    move(m_speed * delta_time);
-    m_animator.play((m_speed.y < 0) ? "down" : "up");
+    move(m_velocity * delta_time);
+    m_animator.play((m_velocity.y < 0) ? "down" : "up");
 }
 
 void Podoboo::onStarted() {
     Enemy::onStarted();
     m_center = getPosition();
     m_acceleration = AMPLITUDE / (PERIOD_TIME * PERIOD_TIME * 0.25f * 0.25f);
-    m_speed = Vector::UP * m_acceleration * PERIOD_TIME * 0.25f;
+    m_velocity = Vector::UP * m_acceleration * PERIOD_TIME * 0.25f;
 }

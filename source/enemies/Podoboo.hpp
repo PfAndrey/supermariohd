@@ -21,5 +21,5 @@ private:
     float m_acceleration = 0;
     float m_max_speed;
     Vector m_center;
-    Vector m_speed;
+    Vector m_velocity;
 };

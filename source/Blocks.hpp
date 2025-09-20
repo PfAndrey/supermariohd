@@ -1,6 +1,8 @@
 #ifndef BLOCKS_HPP
 #define BLOCKS_HPP
 
+#include <memory>
+
 #include "GameEngine.hpp"
 #include "TileMap.hpp"
 #include "Items.hpp"
@@ -167,7 +169,7 @@ public:
 
 private:
     void onStarted() override;
-    sf::Sprite m_background;
+    std::unique_ptr<sf::Sprite> m_background;
 };
 
 class OneBrick : public GameObject {

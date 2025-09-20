@@ -7,7 +7,7 @@ Fireball::Fireball(const Vector& Position, const Vector& SpeedVector) {
     m_speed = SpeedVector;
     setPosition(Position);
     m_animator.flipX(SpeedVector.x < 0);
-    m_animator.get("fire")->setOrigin({ 16,18 });
+    m_animator.setOrigin("fire", { 16,18 });
 }
 
 void Fireball::draw(sf::RenderWindow* render_window) {

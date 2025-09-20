@@ -16,7 +16,7 @@ private:
 
     enum class State : uint8_t {
         NORMAL = 0,
-        DIED = 1
+        DIED   = 1
     };
 
     void setState(State state);

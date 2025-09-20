@@ -4,7 +4,7 @@
 BuzzyBeetle::BuzzyBeetle() {
     setSize({ 32, 32 });
     const sf::Texture& texture = *MARIO_GAME.textureManager().get("Enemies");
-    m_animator.create("walk", texture, { { 96,0,32,32 },{ 128,0,32,32 } }, 0.005f);
+    m_animator.create("walk", texture, { {{96,0}, {32,32}},{{128,0}, {32,32}} }, 0.005f);
     m_animator.create("hidden", texture, { 160,0,32,32 });
     m_animator.create("bullet", texture, { 160, 0 }, { 32, 32 }, 4, 1, 0.01f);
     m_animator.create("fall", texture, { 96,32, 32, -32 });

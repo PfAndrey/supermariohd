@@ -1,6 +1,8 @@
 #include "InputManager.hpp"
 #include <Format.hpp>
 
+using Key = sf::Keyboard::Key;
+
 InputManager::InputManager() {
     m_keys_prev_ptr = &m_keys_prev;
     m_keys_now_ptr = &m_keys_now;
@@ -54,10 +56,11 @@ Vector InputManager::getXYAxis() const
         value.y = applyDeadzone(value.y, 0.5f);
     }
 
-    if ((m_axis_keys[0] != -1) && sf::Keyboard::isKeyPressed(m_axis_keys[0])) value.y = -1;
-    if ((m_axis_keys[1] != -1) && sf::Keyboard::isKeyPressed(m_axis_keys[1])) value.x = 1;
-    if ((m_axis_keys[2] != -1) && sf::Keyboard::isKeyPressed(m_axis_keys[2])) value.y = 1;
-    if ((m_axis_keys[3] != -1) && sf::Keyboard::isKeyPressed(m_axis_keys[3])) value.x = -1;
+
+    if ((m_axis_keys[0] != Key::Unknown) && sf::Keyboard::isKeyPressed(m_axis_keys[0])) value.y = -1;
+    if ((m_axis_keys[1] != Key::Unknown) && sf::Keyboard::isKeyPressed(m_axis_keys[1])) value.x = 1;
+    if ((m_axis_keys[2] != Key::Unknown) && sf::Keyboard::isKeyPressed(m_axis_keys[2])) value.y = 1;
+    if ((m_axis_keys[3] != Key::Unknown) && sf::Keyboard::isKeyPressed(m_axis_keys[3])) value.x = -1;
 
     return value;
 }
@@ -86,23 +89,23 @@ sf::Keyboard::Key InputManager::toKey(const std::string& str) {
 
     switch (strHash(str.c_str())) {
     case strHash("Left"):
-        return sf::Keyboard::Left;
+        return Key::Left;
     case strHash("Right"):
-        return sf::Keyboard::Right;
+        return Key::Right;
     case strHash("Up"):
-        return sf::Keyboard::Up;
+        return Key::Up;
     case strHash("Down"):
-        return sf::Keyboard::Down;
+        return Key::Down;
     case strHash("Space"):
-        return sf::Keyboard::Space;
+        return Key::Space;
     case strHash("LShift"):
-        return sf::Keyboard::LShift;
+        return Key::LShift;
     case strHash("Enter"):
-        return sf::Keyboard::Enter;
+        return Key::Enter;
     case strHash("Return"):
-        return sf::Keyboard::Return;
+        return Key::Backspace;
     default:
-        return sf::Keyboard::Unknown;
+        return Key::Unknown;
         break;
     }
 }

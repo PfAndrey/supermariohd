@@ -2,9 +2,10 @@
 #include "SuperMarioGame.hpp"
 #include "Star.hpp"
 
-Star::Star(const Vector& pos) {
-    m_sprite.setTexture(*MARIO_GAME.textureManager().get("Items"));
-    m_sprite.setTextureRect({ 0,0,0,0 });
+Star::Star(const Vector& pos) 
+    : m_sprite(*MARIO_GAME.textureManager().get("Items"),
+        { {0,0},{0,0} })
+{
     setSize({ 31, 1 });
     setPosition(pos.x, pos.y + 32);
     m_speed.y = -JUMP_POWER;
@@ -40,7 +41,7 @@ void Star::update(int delta_time) {
     case State::BORNING: {
         int height = m_timer * 0.02;
         if (height <= 32) {
-            m_sprite.setTextureRect({ 128 + sprite_index * 32 ,212,32,height });
+            m_sprite.setTextureRect({ {128 + sprite_index * 32, 212}, {32, height} });
             auto old_bounds = getBounds();
             old_bounds.setTop(old_bounds.bottom() - height);
             setBounds(old_bounds);
@@ -50,7 +51,7 @@ void Star::update(int delta_time) {
         break;
     }
     case State::NORMAL: {
-        m_sprite.setTextureRect({ 128 + sprite_index * 32 ,212,32,32 });
+        m_sprite.setTextureRect({{128 + sprite_index * 32, 212}, {32,32} });
 
         //update collissions
         auto collision_tag = ECollisionTag::NONE;

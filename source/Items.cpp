@@ -29,7 +29,10 @@ void Platform::collsionResponse(Mario* mario, ECollisionTag& collision_tag, int 
                                            getSpeedVector(), delta_time, collision_tag));
 }
 
-MoveablePlatform::MoveablePlatform() {
+MoveablePlatform::MoveablePlatform()
+    : m_sprite(*MARIO_GAME.textureManager().get("Items"),
+        {{0,0}, {m_size, 16 }})
+ {
     m_platform_type = PlatformType::UNKNOWN;
     m_amplitude = 0;
 }
@@ -87,8 +90,7 @@ void MoveablePlatform::onStarted() {
     }
 
     // prepare sprite
-    m_sprite.setTexture(*MARIO_GAME.textureManager().get("Items"));
-    m_sprite.setTextureRect({ 0,0,m_size,height });
+    m_sprite.setTextureRect({{0,0}, {m_size,height}});
     setSize(Vector(m_size, height));
  
     m_timer = 0;// m_amplitude + getProperty("Phase").asInt() / (m_max_speed*speed_koef);
@@ -108,7 +110,7 @@ void MoveablePlatform::onStarted() {
         setPosition(m_center);
         break;
     case PlatformType::SKATE:
-        m_sprite.setTextureRect({ 112, 0 , m_size,height });
+        m_sprite.setTextureRect({{112, 0}, {m_size,height}});
         m_orientation = Vector::RIGHT;
         m_speed = Vector::ZERO;
         break;
@@ -132,6 +134,12 @@ void MoveablePlatform::collsionResponse(Mario* mario, ECollisionTag& collision_t
 //---------------------------------------------------------------------------
 //! FallingPlatform
 //---------------------------------------------------------------------------
+FallingPlatform::FallingPlatform()
+    : m_sprite(*MARIO_GAME.textureManager().get("Items"),
+        { {0,0}, {1,1}})
+{
+}
+
 void FallingPlatform::draw(sf::RenderWindow* render_window) {
     m_sprite.setPosition(getPosition());
     render_window->draw(m_sprite);
@@ -177,8 +185,7 @@ void FallingPlatform::onStarted() {
 
     setBounds(Rect(getPosition(), size));
 
-    m_sprite.setTexture(*MARIO_GAME.textureManager().get("Items"));
-    m_sprite.setTextureRect({ 0,0, (int)size.x, (int)size.y });
+    m_sprite.setTextureRect({ {0,0}, {(int)size.x, (int)size.y }});
 }
 
 void FallingPlatform::addImpulse(const Vector& speed) {
@@ -195,11 +202,11 @@ PlatformSystem::PlatformSystem() {
     auto texture = MARIO_GAME.textureManager().get("Items");
 
     m_sprite_sheet.load(*texture, {
-        { 100, 16, 32,  32 },  // lNode
-        { 132, 16, -32, 32 },  // rNode
-        { 132, 16, 32,  32 },  // H-line
-        { 100, 48, 32,  32 },  // lV-line
-        { 132, 48, -32, 32 }   // rV-line
+        { {100, 16}, {32,  32}},  // lNode
+        { {132, 16}, {-32, 32}},  // rNode
+        { {132, 16}, {32,  32}},  // H-line
+        { {100, 48}, {32,  32}},  // lV-line
+        { {132, 48}, {-32, 32}}   // rV-line
      });
 }
 
@@ -341,9 +348,10 @@ void Jumper::onStarted() {
 //---------------------------------------------------------------------------
 //! Ladder
 //---------------------------------------------------------------------------
-Ladder::Ladder() {
+Ladder::Ladder() 
+    : m_sprite(*MARIO_GAME.textureManager().get("Items"), {{0,0}, {1,1}})
+{
     setSize({ 10, 32 });
-    m_sprite.setTexture(*MARIO_GAME.textureManager().get("Items"));
 }
 
 void Ladder::draw(sf::RenderWindow* render_window) {
@@ -360,8 +368,8 @@ void Ladder::draw(sf::RenderWindow* render_window) {
         int height = (i == k) ? remainder
                               : BLOCK_HEIGHT;
 
-        m_sprite.setTextureRect({ 212, top, BLOCK_HEIGHT, height});
-        m_sprite.setPosition(pos_x, i * BLOCK_HEIGHT + getPosition().y);
+        m_sprite.setTextureRect({{212, top}, {BLOCK_HEIGHT, height}});
+        m_sprite.setPosition(sf::Vector2f(pos_x, i * BLOCK_HEIGHT + getPosition().y));
         render_window->draw(m_sprite);
     }
 }
@@ -392,10 +400,10 @@ void Ladder::onStarted() {
 //---------------------------------------------------------------------------
 FireBar::FireBar() {
     m_animator.create("fly", *MARIO_GAME.textureManager().get("Mario"),
-        { { 0,  0, 16, 16 },
-          { 16, 0, 16, 16 },
-          { 16, 0, -16, 16 },
-          { 16, 16, 16, -16 }
+        { { {0,  0}, {16, 16 }},
+          { {16, 0}, {16, 16 }},
+          { {16, 0}, {-16, 16 }},
+          { {16, 16}, {16, -16 }}
         }, 0.01f);
 }
 
@@ -568,9 +576,9 @@ void EndLevelFlag::update(int delta_time) {
     m_animator.update(delta_time);
 }
 
-EndLevelKey::EndLevelKey() {
-    m_sprite.setTexture(*MARIO_GAME.textureManager().get("Items"));
-    m_sprite.setTextureRect({ 0,212,32,32 });
+EndLevelKey::EndLevelKey() 
+    : m_sprite(*MARIO_GAME.textureManager().get("Items"), { {0,212}, {32,32} })
+    {
     setSize({ 32, 32 });
 }
 

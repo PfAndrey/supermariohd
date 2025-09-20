@@ -1,50 +1,24 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.21)
 
 project(SuperMario VERSION 0.99 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
+if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# BUILD EXTERNAL LIBRARIES
-include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
-ExternalProject_Add(SFML
-        #GIT_REPOSITORY https://github.com/SFML/SFML.git GIT_TAG 2.5.1
-        SOURCE_DIR  ${CMAKE_SOURCE_DIR}/ext/SFML
-            CMAKE_ARGS
-            -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
-        ExternalProject_Get_Property(SFML INSTALL_DIR)
-set(SFML_LIB ${INSTALL_DIR})
+list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-ExternalProject_Add(TinyXml2
-        #GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
-        SOURCE_DIR  ${CMAKE_SOURCE_DIR}/ext/tinyxml2
-            CMAKE_ARGS
-            -DBUILD_TESTS=OFF
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-            -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>)
-ExternalProject_Get_Property(TinyXml2 INSTALL_DIR)
-set(TINY_XML_LIB ${INSTALL_DIR})
-
-link_directories(${SFML_LIB}/lib ${TINY_XML_LIB}/lib)
 
 set(MARIO_SOURCE_DIR ${CMAKE_SOURCE_DIR}/source)
 
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/source/game_framework)
+
 set(SOURCE
-    ${MARIO_SOURCE_DIR}/game_framework/Collisions.cpp
-    ${MARIO_SOURCE_DIR}/game_framework/InputManager.cpp
-    ${MARIO_SOURCE_DIR}/game_framework/TimerManager.cpp
-    ${MARIO_SOURCE_DIR}/game_framework/GameObject.cpp
-    ${MARIO_SOURCE_DIR}/game_framework/Property.cpp
-    ${MARIO_SOURCE_DIR}/game_framework/StateMachine.cpp
-    ${MARIO_SOURCE_DIR}/game_framework/Logger.cpp
-    ${MARIO_SOURCE_DIR}/game_framework/Rect.cpp
-    ${MARIO_SOURCE_DIR}/game_framework/Vector.cpp
-    ${MARIO_SOURCE_DIR}/utils/Format.cpp
     ${MARIO_SOURCE_DIR}/Blocks.cpp
     ${MARIO_SOURCE_DIR}/GameEngine.cpp
     ${MARIO_SOURCE_DIR}/Items.cpp
@@ -71,18 +45,6 @@ set(SOURCE
 )
 
 set(HEADERS
-    ${MARIO_SOURCE_DIR}/game_framework/Collisions.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/InputManager.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/TimerManager.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/GameObject.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/Logger.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/Property.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/Rect.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/StateMachine.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/ResourceManager.hpp
-    ${MARIO_SOURCE_DIR}/game_framework/Vector.hpp
-    ${MARIO_SOURCE_DIR}/utils/Format.hpp
-    ${MARIO_SOURCE_DIR}/utils/RTIIX.hpp
     ${MARIO_SOURCE_DIR}/Character.hpp
     ${MARIO_SOURCE_DIR}/TileMap.hpp
     ${MARIO_SOURCE_DIR}/Blocks.hpp
@@ -112,7 +74,13 @@ set(HEADERS
 )
 
 # Target
-add_executable(SuperMario ${SOURCE} ${HEADERS})
+add_executable(SuperMario)
+
+target_sources(SuperMario
+PRIVATE
+    ${SOURCE}
+    ${HEADERS}
+)
 
 # Include directories
 target_include_directories(SuperMario
@@ -121,10 +89,6 @@ target_include_directories(SuperMario
     ${MARIO_SOURCE_DIR}/enemies
     ${MARIO_SOURCE_DIR}/game_framework
     ${MARIO_SOURCE_DIR}/pickups
-    ${MARIO_SOURCE_DIR}/utils
-    ${CMAKE_SOURCE_DIR}/include
-    ${SFML_LIB}/include
-    ${TINY_XML_LIB}/include
 )
 
 if (MSVC)
@@ -133,43 +97,21 @@ if (MSVC)
     set_target_properties( SuperMario PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/Build")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
-    file(GLOB_RECURSE GAME_FILES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/source/*.cpp"
-    "${CMAKE_SOURCE_DIR}/source/*.c"
-    "${CMAKE_SOURCE_DIR}/source/*.hpp"
-    "${CMAKE_SOURCE_DIR}/source/*.h"
-)
-
-source_group(TREE "${CMAKE_SOURCE_DIR}/source" FILES ${GAME_FILES})
-
+    source_group(TREE "${MARIO_SOURCE_DIR}" FILES ${SOURCE} ${HEADERS})
 
 endif(MSVC)
 
-# ADD DEPENDISIES FOR EXECUTABLE
-add_dependencies(SuperMario SFML TinyXml2)
-
-#find_library(MYLIB1 NAMES mylibrary1 PATHS /path/to/libraries REQUIRED)
-
 target_link_libraries(SuperMario
-    optimized sfml-system       debug sfml-system-d
-    optimized sfml-window       debug sfml-window-d
-    optimized sfml-graphics     debug sfml-graphics-d
-    optimized sfml-audio        debug sfml-audio-d
-    optimized tinyxml2          debug tinyxml2d
+    PRIVATE
+    game-framework
 )
 
 if (UNIX AND NOT APPLE)
     target_link_libraries(SuperMario  stdc++ m pthread)
 endif()
 
-# POST BUILD SCRIPTS
-set(POST_LIB_DIR "lib")
-if (WIN32)
-    set(POST_LIB_DIR "bin")
-endif()
-
-ADD_CUSTOM_COMMAND(TARGET SuperMario POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${SFML_LIB}/${POST_LIB_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${TINY_XML_LIB}/${POST_LIB_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/res" "${CMAKE_CURRENT_BINARY_DIR}/res")
-
+add_custom_command(TARGET SuperMario POST_BUILD
+  COMMAND "${CMAKE_COMMAND}" -E copy_directory
+          "${CMAKE_SOURCE_DIR}/res"
+          "$<TARGET_FILE_DIR:SuperMario>/res"
+)

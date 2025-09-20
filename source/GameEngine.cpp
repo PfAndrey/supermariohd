@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <iostream>
+#include <future>
 
 #include <Format.hpp>
 #include "GameEngine.hpp"
@@ -12,6 +13,7 @@ int sign(float value) {
 }
 
 } // namespace math
+
 
 
 void EventManager::pushEvent(const sf::Event& event) {
@@ -66,10 +68,9 @@ void Game::setClearColor(const sf::Color& color) {
 }
 
 void Game::run() {
-    m_window = std::make_unique<sf::RenderWindow>(sf::VideoMode(m_screen_size.x, m_screen_size.y), m_root_object->getName());
+    m_window = std::make_unique<sf::RenderWindow>(sf::VideoMode({(unsigned)m_screen_size.x, (unsigned)m_screen_size.y}), "title");
     init();
 
-    sf::Event event;
     sf::Clock clock;
     sf::Time acumulator = sf::Time::Zero;
     const sf::Time ups = sf::seconds(1.f / 60.f);
@@ -78,15 +79,16 @@ void Game::run() {
 
     m_root_object->start();
 
-    while (true) {
+    while (m_window->isOpen()) {
         // game loop
         // pull mouse, keyboard events
-        while (m_window->pollEvent(event)) {
-            if (event.type == sf::Event::EventType::Closed) {
+        while (const std::optional event = m_window->pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
                 m_window->close();
                 exit(0);
             }
-            eventManager().pushEvent(event);
+            if (event.has_value())
+                eventManager().pushEvent(event.value());
         }
 
         // update tick
@@ -154,19 +156,17 @@ void Game::stopMusic() {
 }
 
 void Game::playSound(const std::string& name) {
-    const int SOUND_BUFFER_SIZE = 40;
+    auto& soundBuff = *soundManager().get(name);
 
-    int i = 0;
-    while (m_sounds_buf[i].getStatus() == sf::Sound::Playing) {
-        ++i;
-        if (i >= SOUND_BUFFER_SIZE) {
-            throw std::runtime_error("sound buffer overflow");
-        }
-    }
+    // remove older sounds
+    m_activeSounds.erase(
+        std::remove_if(m_activeSounds.begin(), m_activeSounds.end(),
+            [](const sf::Sound& s) { return s.getStatus() == sf::Sound::Status::Stopped; }),
+        m_activeSounds.end()
+    );
 
-    auto& soundSlot = m_sounds_buf[i];
-    soundSlot.setBuffer(*soundManager().get(name));
-    soundSlot.play();
+    m_activeSounds.emplace_back(soundBuff);
+    m_activeSounds.back().play();
 }
 
 Vector Game::screenSize() const {
@@ -197,10 +197,9 @@ void SpriteSheet::load(const sf::Texture& texture, const Vector& off_set, const 
     m_sprites.clear();
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < cols; ++x){
-            m_sprites.emplace_back(texture, sf::IntRect(x * std::abs(size.x) + off_set.x,
-                                                        y * std::abs(size.y) + off_set.y,
-                                                        size.x,
-                                                        size.y));
+            m_sprites.emplace_back(texture, sf::IntRect({(int)(x * std::abs(size.x) + off_set.x),
+                                                         (int)(y * std::abs(size.y) + off_set.y)},
+                                                        {(int)size.x, (int)size.y}));
         }
     }
 
@@ -246,49 +245,50 @@ void SpriteSheet::draw(sf::RenderWindow* wnd, int spriteIndex, const Rect& _draw
     auto sprite = m_sprites[spriteIndex];
     sprite.setPosition(m_position + m_torigin);
 
-    const sf::Rect<int> draw_area(_draw_area.left(), _draw_area.top(), _draw_area.width(), _draw_area.height());
+    const sf::Rect<int> draw_area({ (int)_draw_area.left(), (int)_draw_area.top()},
+                                  { (int)_draw_area.width(), (int)_draw_area.height()});
 
-    if (!draw_area.height || !draw_area.width) {
+    if (!draw_area.size.x || !draw_area.size.y) {
         return;
     }
 
-    Vector size = { (float)abs(sprite.getTextureRect().width), (float)abs(sprite.getTextureRect().height) };
+    Vector size = { (float)abs(sprite.getTextureRect().size.x), (float)abs(sprite.getTextureRect().size.y) };
 
-    int c_w = draw_area.width / size.x;
-    int c_h = draw_area.height / size.y;
+    int c_w = draw_area.size.x / size.x;
+    int c_h = draw_area.size.y / size.y;
 
-    int rem_w = draw_area.width % (int)size.x;
-    int rem_h = draw_area.height % (int)size.y;
+    int rem_w = draw_area.size.x % (int)size.x;
+    int rem_h = draw_area.size.y % (int)size.y;
 
     for (int y = 0; y < c_h; ++y) {
         for (int x = 0; x < c_w; ++x) {
-            sprite.setPosition(x * size.x + draw_area.left, y * size.y + draw_area.top);
+            sprite.setPosition({x * size.x + draw_area.position.x, y * size.y + draw_area.position.y});
             wnd->draw(sprite);
         }
     }
 
     if (rem_h) {
         auto new_rect = sprite.getTextureRect();
-        auto old_height = new_rect.height;
-        new_rect.height = rem_h;
+        auto old_height = new_rect.size.y;
+        new_rect.size.y = rem_h;
         sprite.setTextureRect(new_rect);
 
         for (int x = 0; x < c_w; ++x) {
-            sprite.setPosition(x * size.x + draw_area.left, c_h * size.y + draw_area.top);
+            sprite.setPosition({x * size.x + draw_area.position.x, c_h * size.y + draw_area.position.y});
             wnd->draw(sprite);
         }
 
-        new_rect.height = old_height;
+        new_rect.size.y = old_height;
         sprite.setTextureRect(new_rect);
     }
 
     if (rem_w) {
         auto new_rect = sprite.getTextureRect();
-        new_rect.width = rem_w;
+        new_rect.size.x = rem_w;
         sprite.setTextureRect(new_rect);
 
         for (int y = 0; y < c_h; ++y) {
-            sprite.setPosition(c_w * size.x + draw_area.left, y * size.y + draw_area.top);
+            sprite.setPosition({c_w * size.x + draw_area.position.x, y * size.y + draw_area.position.y});
             wnd->draw(sprite);
         }
     }
@@ -325,7 +325,7 @@ Vector SpriteSheet::getPosition() const
 
 void SpriteSheet::scale(float fX, float fY) {
     for (auto& sprite : m_sprites) {
-        sprite.scale(fX, fY);
+        sprite.scale({fX, fY});
     }
 }
 
@@ -390,8 +390,8 @@ void SpriteSheet::flipX(bool value) {
         m_flipped = value;
         for (auto& sprite : m_sprites) {
             auto rect = sprite.getTextureRect();
-            rect.left += rect.width;
-            rect.width = -rect.width;
+            rect.position.x += rect.size.x;
+            rect.size.x = -rect.size.x;
             sprite.setTextureRect(rect);
         }
     }
@@ -405,7 +405,7 @@ Pallete::Pallete() {
 void Pallete::create(const std::initializer_list<sf::Color>& original_colors, const std::initializer_list<sf::Color>& swaped_colors) {
     assert(original_colors.size() == swaped_colors.size());
     int arr_size = original_colors.size();
-    const sf::String frag_shader =
+    const std::string frag_shader =
             "#version 120\n"\
             "const int arr_size = " + utils::toString(arr_size) + ";"\
             "uniform vec3 color1[arr_size];"\
@@ -422,7 +422,7 @@ void Pallete::create(const std::initializer_list<sf::Color>& original_colors, co
             "           break; }"\
             "}";
 
-    m_shader.loadFromMemory(frag_shader, sf::Shader::Fragment);
+    m_shader.loadFromMemory(frag_shader, sf::Shader::Type::Fragment);
 
     std::vector<sf::Glsl::Vec3> colors1(arr_size);
     std::vector<sf::Glsl::Vec3> colors2(arr_size);
@@ -477,7 +477,7 @@ void Animator::create(const std::string& name, const sf::Texture& texture, const
     }
 
     SpriteSheet* animation = new SpriteSheet();
-    animation->load(texture, { { (int)rect.left(), (int)rect.top(), (int)rect.width(), (int)rect.height() } });
+    animation->load(texture, { { {(int)rect.left(), (int)rect.top()}, {(int)rect.width(), (int)rect.height()} } });
     m_animations[name] = animation;
 
     if (!m_current_animation) {
@@ -485,14 +485,23 @@ void Animator::create(const std::string& name, const sf::Texture& texture, const
     }
 }
 
-void Animator::create(const std::string& name, const sf::Texture& texture, const std::vector<sf::IntRect>& rects, float speed) {
+void Animator::create(const std::string& name, const sf::Texture& texture, const std::vector<Rect>& rects, float speed) {
     if (m_animations.find(name) != m_animations.end()) {
         LOG("Animator", ERROR, "animation already exist: " + name);
         return;
     }
 
+    std::vector<sf::IntRect> intRects(rects.size());
+    for (size_t i = 0; i < intRects.size(); ++i) {
+        auto& intRect = intRects[i];
+        intRect.position.x = rects[i].left();
+        intRect.position.y = rects[i].top();
+        intRect.size.x = rects[i].width();
+        intRect.size.y = rects[i].height();
+    }
+
     SpriteSheet* animation = new SpriteSheet();
-    animation->load(texture, rects);
+    animation->load(texture, intRects);
     animation->setAnimType(AnimType::FORWARD_CYCLE);
     animation->setSpeed(speed);
 
@@ -568,9 +577,16 @@ void Animator::scale(float fX, float fY) {
     }
 }
 
-SpriteSheet* Animator::get(const std::string& str) {
-    return m_animations[str];
+void Animator::setOrigin(const std::string& animName, const Vector& diff) {
+    auto it = m_animations.find(animName);
+    if (it != m_animations.end()) {
+        it->second->setOrigin(diff);
+    }
 }
+
+//SpriteSheet* Animator::get(const std::string& str) {
+//    return m_animations[str];
+//}
 //---------------------------------------------------------------------------
 //! MusicManager
 //---------------------------------------------------------------------------
@@ -609,8 +625,9 @@ void MusicManager::setPitch(float value) {
 //---------------------------------------------------------------------------
 //! FlowText
 //---------------------------------------------------------------------------
-FlowText::FlowText(const sf::Font& font, bool self_remove) {
-    m_text.setFont(font);
+FlowText::FlowText(const sf::Font& font, bool self_remove) 
+    : m_text(font, "")
+{
     m_text.setFillColor(sf::Color::Black);
     m_text.setCharacterSize(20);
     m_text.setStyle(sf::Text::Bold);
@@ -619,7 +636,8 @@ FlowText::FlowText(const sf::Font& font, bool self_remove) {
 }
 
 FlowText* FlowText::clone() const {
-    auto flow_text = new FlowText(*m_text.getFont());
+    const sf::Font& font = m_text.getFont();
+    auto flow_text = new FlowText(font);
     flow_text->m_text =  m_text;
     flow_text->m_splash_vector = m_splash_vector;
     return flow_text;
@@ -681,55 +699,56 @@ Label::Label() {
     init();
 }
 
-Label::Label(const std::string& str) {
-    init();
-    setString(str);
-}
-
 Label::Label(const sf::Sprite& sprite) {
     init();
+    m_sprite = std::make_unique<sf::Sprite>(sprite);
+    m_sprite->setColor({ 255,255,255,50 });
     setSprite(sprite);
 }
 
-void Label::init()
-{
+void Label::init() {
     setName("Label");
-    setFontColor(sf::Color::Black);
-	m_sprite.setColor({ 255,255,255,50 });
 }
 
 void Label::setBounds(int x, int y, int w, int h) {
     setPosition(x, y);
     m_rect = Rect(x, y, w, h);
 
-    m_shape.setPosition(x, y);
+    m_shape.setPosition(sf::Vector2f(x, y));
     m_shape.setSize(sf::Vector2f(w, h));
 
-
-    if (m_sprite.getTexture()) {
-        m_sprite.setPosition(sf::Vector2f(x, y));
-        m_sprite.setScale((float)w / m_sprite.getTextureRect().width, (float)h / m_sprite.getTextureRect().height);
+    if (m_sprite) {
+        m_sprite->setPosition(sf::Vector2f(x, y));
+        m_sprite->setScale({(float)w / m_sprite->getTextureRect().size.x,
+                            (float)h / m_sprite->getTextureRect().size.y});
     }
 }
 
 void Label::setSprite(const sf::Sprite& sprite) {
-    m_sprite = sprite;
+    *m_sprite = sprite;
 }
 
 void Label::setFontColor(const sf::Color& color) {
-    m_text.setFillColor(color);
+    if (m_text) {
+        m_text->setFillColor(color);
+    }
 }
 
 void Label::setFontSize(int size) {
-    m_text.setCharacterSize(size);
+    m_text->setCharacterSize(size);
 }
 
 void Label::setFontName(const sf::Font& font) {
-    m_text.setFont(font);
+    if (!m_text) {
+        m_text = std::make_unique<sf::Text>(font, "");
+        return;
+    }
+
+    m_text->setFont(font);
 }
 
-void Label::setFontStyle(sf::Uint32 style) {
-    m_text.setStyle(style);
+void Label::setFontStyle(uint32_t style) {
+    m_text->setStyle(style);
 }
 
 void Label::setTextAlign(int value) {
@@ -737,7 +756,7 @@ void Label::setTextAlign(int value) {
 }
 
 void Label::setString(const std::string& str) {
-    m_text.setString(str);
+    m_text->setString(str);
 }
 
 void Label::setOutlineColor(const sf::Color& color) {
@@ -759,20 +778,20 @@ bool Label::contains(const Vector& point) const {
 void Label::draw(sf::RenderWindow* window) {
     window->draw(m_shape);
 
-    if (m_sprite.getTexture()) {
-        m_sprite.setPosition(getPosition());
-        window->draw(m_sprite);
+    if (m_sprite) {
+        m_sprite->setPosition(getPosition());
+        window->draw(*m_sprite);
     }
 
-    if (!m_text.getString().isEmpty()) {
+    if (m_text && !m_text->getString().isEmpty()) {
         if (m_text_align == center) {
-            Vector textBounds(m_text.getGlobalBounds().width, m_text.getGlobalBounds().height);
-            m_text.setPosition(getPosition() + m_rect.size() / 2 - textBounds / 2);
+            Vector textBounds(m_text->getGlobalBounds().size.x, m_text->getGlobalBounds().size.y);
+            m_text->setPosition(getPosition() + m_rect.size() / 2 - textBounds / 2);
         } else if (m_text_align == left) {
-            m_text.setPosition(getPosition().x, getPosition().y);
+            m_text->setPosition({getPosition().x, getPosition().y});
         }
 
-        window->draw(m_text);
+        window->draw(*m_text);
     }
 }
 
@@ -802,14 +821,18 @@ Rect Label::getBounds() const {
 }
 
 sf::Sprite& Label::getSprite() {
-    return m_sprite;
+    return *m_sprite;
 }
 
 Label* Label::clone() const {
     Label* new_label = new Label();
 
-    new_label->m_text = m_text;
-    new_label->m_sprite = m_sprite;
+    if (m_text)
+        new_label->m_text = std::make_unique<sf::Text>(*m_text);
+ 
+    if (m_sprite)
+        new_label->m_sprite = std::make_unique<sf::Sprite>(*m_sprite);
+
     new_label->m_rect = m_rect;
     new_label->m_shape = m_shape;
     new_label->m_text_align = m_text_align;

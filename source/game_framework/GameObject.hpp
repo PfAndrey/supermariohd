@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <list>
+#include <map>
 
 #include "Property.hpp"
 #include "Rect.hpp"
