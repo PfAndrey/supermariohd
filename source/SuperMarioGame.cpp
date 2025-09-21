@@ -1,5 +1,7 @@
 #include <iomanip>
 #include <cmath>
+#include <stdexcept>
+
 #include <cstdio>  // for sscanf
 
 #include "tinyxml2.h"
@@ -705,10 +707,25 @@ void MarioGameScene::loadFromFile(const std::string& filepath) {
         }
     }
 
+    // Arrange objects Z-order
     m_mario = findChildObjectByType<Mario>();
-    m_mario->moveToFront();
-    assert(m_mario); // no mario object in scene
-    setCameraOnTarget();
+    if (m_mario) {
+        m_mario->moveToFront();
+        setCameraOnTarget();
+    }
+    else {
+        throw std::runtime_error("No mario object in scene");
+    }
+
+    auto piranas = findChildObjectsByType<PiranhaPlant>();
+    for (const auto& pirana : piranas) {
+        pirana->moveToBack();
+    }
+
+    auto background = findChildObjectByType<Background>();
+    if (background) {
+        background->moveToBack();
+    }
 }
 
 const std::string& MarioGameScene::getLevelName() const {

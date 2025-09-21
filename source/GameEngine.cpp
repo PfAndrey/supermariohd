@@ -42,6 +42,7 @@ Game::Game(const std::string& name, const Vector& screen_size) {
     m_root_object = new GameObject();
     m_root_object->setName(name);
     m_screen_size = screen_size;
+    m_activeSounds.resize(256);
 }
 
 void Game::updateStats(const sf::Time time) {
@@ -156,17 +157,21 @@ void Game::stopMusic() {
 }
 
 void Game::playSound(const std::string& name) {
-    auto& soundBuff = *soundManager().get(name);
+    const sf::SoundBuffer* soundBuff = soundManager().get(name);
 
-    // remove older sounds
-    m_activeSounds.erase(
-        std::remove_if(m_activeSounds.begin(), m_activeSounds.end(),
-            [](const sf::Sound& s) { return s.getStatus() == sf::Sound::Status::Stopped; }),
-        m_activeSounds.end()
-    );
+    // Circular buffer
+    size_t i = m_activeSoundSlot % m_activeSounds.size();
+    m_activeSoundSlot++;
 
-    m_activeSounds.emplace_back(soundBuff);
-    m_activeSounds.back().play();
+    auto& out = m_activeSounds[i];
+
+    if (out && out->getStatus() == sf::Sound::Status::Playing) {
+        return;
+    }
+
+    auto& buffRef = *soundBuff;
+    out = std::make_unique<sf::Sound>(buffRef);
+    out->play();
 }
 
 Vector Game::screenSize() const {

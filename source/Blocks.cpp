@@ -339,7 +339,7 @@ void Background::onStarted() {
 
     setSize({10, 10});
     getParent()->findChildObjectByType<Blocks>()->enableNightViewFilter(nightViewOn);
-    moveToBack();
+    // moveToBack();
 }
 //---------------------------------------------------------------------------
 //! Blocks

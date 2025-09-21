@@ -28,14 +28,11 @@ const Vector BIG_MARIO_SIZE    = { 31,64 };
 const Vector SEATED_MARIO_SIZE = SMALL_MARIO_SIZE;
 
 
-void processTimer(float& timer, float delta_time)
-{
-    if (timer)
-    {
+void processTimer(float& timer, float delta_time) {
+    if (timer) {
         timer -= delta_time;
 
-        if (timer < 0)
-        {
+        if (timer < 0) {
             timer = 0;
         }
     }
@@ -484,8 +481,7 @@ void Mario::animationProcessing(float delta_time) {
         }
         break;
     case EnvState::WATER:
-        if (isSeated())
-        {
+        if (isSeated()) {
             playAnimation(AnimType::SEAT);
         } else if (m_speed.y) {
             playAnimation(AnimType::SWIM, 0.02f * (std::abs(m_speed.x) / WALK_SPEED));
@@ -929,7 +925,7 @@ void TransitionMarioState::onEnter() {
     auto piranas = getScene()->findChildObjectsByType<PiranhaPlant>();
     for (auto pirana : piranas) {
         pirana->hideInTube();
-    };
+    }
 
     if ((m_speed.y > 0) || (m_speed.x > 0)) {
         MARIO_GAME.playSound("pipe");
@@ -1062,8 +1058,7 @@ void GoToPortalState::update(int delta_time) {
 //---------------------------------------------------------------------------
 // !GoToPrincessMarioState
 //---------------------------------------------------------------------------
-GoToPrincessState::GoToPrincessState()
-{
+GoToPrincessState::GoToPrincessState() {
 }
 
 void GoToPrincessState::onEnter() {
@@ -1114,8 +1109,7 @@ void DiedMarioState::update(int delta_time) {
     marioPhysicProcessing(delta_time);
     m_delay_timer -= delta_time;
 
-    if (m_delay_timer < 0)
-    {
+    if (m_delay_timer < 0) {
         MARIO_GAME.marioDied();
     }
 }

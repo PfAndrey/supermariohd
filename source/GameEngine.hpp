@@ -2,6 +2,7 @@
 #define GAME_ENGINE_HPP
 
 #include <assert.h>
+#include <memory>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -121,7 +122,8 @@ private:
     MusicManager m_music_manager;
     EventManager m_event_manager;
     InputManager m_input_manager;
-    std::vector<sf::Sound> m_activeSounds;
+    std::vector<std::unique_ptr<sf::Sound>> m_activeSounds;
+    int m_activeSoundSlot = 0;
 
     std::unique_ptr<sf::RenderWindow> m_window;
 

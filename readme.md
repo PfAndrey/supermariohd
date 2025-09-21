@@ -1,6 +1,6 @@
 # SuperMarioHD
-![Win64](https://img.shields.io/github/actions/workflow/status/PfAndrey/SuperMarioHD/win64-build.yml?branch=master&label=windows%20x64&logo=windows&logoColor=white)
-![Ubuntu](https://img.shields.io/github/actions/workflow/status/PfAndrey/SuperMarioHD/linux-build.yml?branch=master&label=ubuntu%20gcc&logo=ubuntu&logoColor=white)
+![Win64](https://img.shields.io/github/actions/workflow/status/PfAndrey/SuperMarioHD/win64-build.yml?branch=master&label=Win64%20%28MSVC%29&logo=windows&logoColor=white)
+![Ubuntu](https://img.shields.io/github/actions/workflow/status/PfAndrey/SuperMarioHD/linux-build.yml?branch=master&label=ubuntu%20%28GCC%29&logo=ubuntu&logoColor=white)
 ![Latest Tag](https://img.shields.io/github/v/tag/PfAndrey/SuperMarioHD?display_name=tag)
 ---
 ![MARIO logo](https://github.com/PfAndrey/supermariohd/blob/master/res/Screen.jpg?raw=true)
@@ -9,7 +9,7 @@ Project was created for learning purposes only.
 The game demo on the YouTube: https://youtu.be/RJ181cc_AMI
 
 ## Windows
-**1. Install a C++11 compiler:**  
+**1. Install a C++17 compiler:**
 Visual Studio Community: https://visualstudio.microsoft.com/downloads/ or MinGW https://osdn.net/projects/mingw/releases/
 
 **2. Install Git:**  
